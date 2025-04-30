@@ -8,26 +8,26 @@ from ase.data import atomic_numbers
 import numpy as np
 
 # --- コマンドライン引数の定義 ---
-parser = argparse.ArgumentParser(description="fcc100表面の4元素系合金（Pt, Rh, Ir, Pd）を生成")
+parser = argparse.ArgumentParser(description="fcc100表面の4元素系合金（Pt, Pd, Cu）を生成")
 parser.add_argument("--num", type=int, default=1,
                     help="生成する構造の数（デフォルトは1）")
 args = parser.parse_args()
 
 # --- パラメータ設定 ---
 # セルサイズ [4, 4, 3]、真空層15.0 Å、格子定数（Pt基準: 3.9 Å）
-size = [8, 8, 3]
-vacuum = 15.0
+size = [5, 5, 4]
+vacuum = 0.0
 lattice_const = 3.9
-alloy_elements = ["Pt", "Rh", "Ir", "Pd"]
+alloy_elements = ["Pt", "Cu", "Pd"]
 
 # --- 出力先ディレクトリの設定 ---
 # 相対パスで "data" フォルダを指定（存在しない場合は作成）
-data_dir = os.path.join(".", "data")
+data_dir = os.path.join("..", "data")
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
 
 # 出力ファイルのパス（iter0_surf.jsonをdataフォルダ内に出力）
-db_path = os.path.join(data_dir, "iter0_surf.json")
+db_path = os.path.join(data_dir, "iter0_structure.json")
 if os.path.exists(db_path):
     os.remove(db_path)
 db = connect(db_path)
