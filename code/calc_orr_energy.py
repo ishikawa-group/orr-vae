@@ -63,7 +63,7 @@ def optimize_bulk(bulk: Atoms, work_dir: str, calc_type: str = "mattersim") -> T
     opt_bulk = my_calculator(bulk_atoms, "bulk", calc_type=calc_type, calc_directory=work_dir)
     auto_lmaxmix(opt_bulk)
     E_opt_bulk = opt_bulk.get_potential_energy()
-    return opt_bulk.atoms, E_opt_bulk
+    return opt_bulk, E_opt_bulk
 
 def optimize_slab(opt_bulk: Atoms, work_dir: str, calc_type: str = "mattersim") -> Tuple[Atoms, float]:
     slab = opt_bulk.copy()

@@ -1,105 +1,94 @@
-#!/usr/bin/env python
-import json
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+未計算の構造について、bulk_db と reaction_energy.json を比較し、
+最初の未計算 unique_id を取得して calc_energy_EMT.py を実行するスクリプト
+"""
 import os
+import json
 import subprocess
 import sys
+import shutil  # 追加：ディレクトリ削除のため
 from ase.db import connect
 
-def get_surface_ids(surf_file):
-    """表面構造ファイルからすべてのユニークIDを取得する"""
-    unique_ids = []
-    try:
-        db = connect(surf_file)
-        for row in db.select():
-            if hasattr(row, 'unique_id'):
-                unique_ids.append(row.unique_id)
-            else:
-                # 数値IDの場合
-                unique_ids.append(str(row.id))
-    except Exception as e:
-        print(f"表面構造ファイルの読み込みエラー: {e}")
-        sys.exit(1)
-    
-    return unique_ids
+# 入力ファイル指定
+bulk_file = "data/iter0_structure.json"
+reaction_energy_file = "data/reaction_energy.json"
 
-def get_calculated_ids(reaction_energy_file):
-    """反応エネルギーファイルから既に計算済みのIDを取得する"""
-    calculated_ids = []
-    
-    if not os.path.exists(reaction_energy_file):
-        return calculated_ids
-    
-    try:
-        with open(reaction_energy_file, 'r') as f:
-            data = json.load(f)
-            
-        # 単一のエントリか配列かを確認
-        if isinstance(data, list):
-            calculated_ids = [entry.get("unique_id") for entry in data]
-        elif isinstance(data, dict) and "unique_id" in data:
-            calculated_ids = [data.get("unique_id")]
-    except Exception as e:
-        print(f"反応エネルギーファイルの読み込みエラー: {e}")
-    
-    return calculated_ids
+# reaction_energy_file のディレクトリを作成
+os.makedirs(os.path.dirname(reaction_energy_file) or ".", exist_ok=True)
 
-def run_calculation(unique_id, surf_file, reaction_energy_file):
-    """指定されたIDに対して計算を実行する"""
-    print(f"ID {unique_id} の計算を開始します...")
-    
-    cmd = [
-        "python", 
-        "/Users/wakamiya/Documents/ORR_catalyst_generator/calc_orr_reaction_energy.py",
-        "--id", unique_id,
-        "--slab_file", surf_file,
-        "--out_json", reaction_energy_file
-    ]
-    
-    try:
-        subprocess.run(cmd, check=True)
-        print(f"ID {unique_id} の計算が完了しました。")
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"ID {unique_id} の計算中にエラーが発生しました: {e}")
-        return False
+# reaction_energy_file が存在しない or 空の場合は空リストを初期化
+if not os.path.exists(reaction_energy_file) or os.path.getsize(reaction_energy_file) == 0:
+    with open(reaction_energy_file, 'w') as f:
+        json.dump([], f)
 
-def main():
-    # ファイルパスの設定
-    surf_file = "data/iter0_surf.json"
-    reaction_energy_file = "data/reaction_energy.json"
-    
-    # コマンドライン引数から別のファイルパスを指定可能にする
-    if len(sys.argv) > 1:
-        surf_file = sys.argv[1]
-    if len(sys.argv) > 2:
-        reaction_energy_file = sys.argv[2]
-    
-    print(f"表面構造ファイル: {surf_file}")
-    print(f"反応エネルギーファイル: {reaction_energy_file}")
-    
-    # 表面構造IDの取得
-    surface_ids = get_surface_ids(surf_file)
-    print(f"表面構造ファイル内のID数: {len(surface_ids)}")
-    
-    # 計算済みIDの取得
-    calculated_ids = get_calculated_ids(reaction_energy_file)
-    print(f"既に計算済みのID数: {len(calculated_ids)}")
-    
-    # 未計算のIDを特定
-    uncalculated_ids = [id for id in surface_ids if id not in calculated_ids]
-    print(f"未計算のID数: {len(uncalculated_ids)}")
-    
-    if not uncalculated_ids:
-        print("すべてのIDが既に計算済みです。")
-        return
-    
-    # 未計算のIDに対して計算を実行
-    success_count = 0
-    for unique_id in uncalculated_ids:
-        if run_calculation(unique_id, surf_file, reaction_energy_file):
-            success_count += 1
-    
-    print(f"計算完了: {success_count}/{len(uncalculated_ids)} 件の計算が成功しました。")
+# Bulk DB から unique_id リストを抽出
+try:
+    db = connect(bulk_file)
+except Exception as e:
+    print(f"Error: bulk DB に接続できませんでした({e})")
+    sys.exit(1)
 
-if __name__ == "__main__":
-    main()
+bulk_ids = []
+for row in db.select():
+    if hasattr(row, 'unique_id') and row.unique_id is not None:
+        bulk_ids.append(str(row.unique_id))
+    else:
+        # フィールド unique_id がなければ id を使用
+        bulk_ids.append(str(row.id))
+
+# reaction_energy_file の読み込み
+with open(reaction_energy_file, 'r') as f:
+    reaction_data = json.load(f)
+reaction_ids = [str(entry.get('unique_id', entry.get('id'))) for entry in reaction_data]
+
+# 最初の未計算 unique_id を取得
+uncalculated = [uid for uid in bulk_ids if uid not in reaction_ids]
+if not uncalculated:
+    print("未計算の構造はありません。")
+    sys.exit(0)
+
+uid = uncalculated[0]
+print(f"未計算の構造: unique_id={uid}. 計算を開始します...")
+
+# 一時ディレクトリを作成
+temp_dir = f"/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/result/temp_{uid}"
+os.makedirs(temp_dir, exist_ok=True)
+print(f"一時ディレクトリを作成しました: {temp_dir}")
+
+# ORR_catalyst_generator/code/eta_from_json.py を呼び出して計算
+cmd = [
+    "python3",
+    "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/code/eta_from_json.py",
+    "--bulk_db", bulk_file,
+    "--unique_id", uid,
+    "--out_json", reaction_energy_file,
+    "--base_dir", temp_dir,  # 一時ディレクトリを使用
+    "--force", "True",  # force オプションに値を追加
+    "--log_level", "INFO",  # ログレベルを INFO に設定
+    "--calc_type", "mattersim"  # 計算タイプを指定
+]
+
+print(f"Calculating unique_id={uid}...")
+result = subprocess.run(cmd)
+if result.returncode != 0:
+    print(f"Error: unique_id={uid} の計算に失敗しました (exit code {result.returncode})")
+    sys.exit(result.returncode)
+else:
+    print(f"unique_id={uid} の計算が完了しました。")
+
+# 計算後、reaction_energy_file を再読み込みして成功数を表示
+with open(reaction_energy_file, 'r') as f:
+    updated = json.load(f)
+updated_ids = [str(entry.get('unique_id', entry.get('id'))) for entry in updated]
+success = updated_ids.count(uid)
+
+print(f"{len(updated_ids)}/{len(bulk_ids)} 件の計算が成功しました。(計算済みunique_id={uid})")
+
+# 一時ディレクトリを削除
+try:
+    shutil.rmtree(temp_dir)
+    print(f"一時ディレクトリを削除しました: {temp_dir}")
+except Exception as e:
+    print(f"警告: 一時ディレクトリの削除に失敗しました: {e}")

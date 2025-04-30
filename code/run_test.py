@@ -15,10 +15,10 @@ from calc_orr_overpotential import calc_orr_overpotential
 base_dir = "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/result/RPBE/Pt111"
 force = True
 log_level = "INFO"
-calc_type = "mattersim"
+calc_type = "vasp"
 #----------------
 
-bulk = fcc100("Pt", size=(5, 5, 4), a=4.0, vacuum=None, periodic=True)
+bulk = fcc111("Pt", size=(3, 3, 4), a=4.0, vacuum=None, periodic=True)
 
 eta = calc_orr_overpotential(
     bulk=bulk,

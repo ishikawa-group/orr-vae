@@ -14,15 +14,14 @@ parser.add_argument("--num", type=int, default=1,
 args = parser.parse_args()
 
 # --- パラメータ設定 ---
-# セルサイズ [4, 4, 3]、真空層15.0 Å、格子定数（Pt基準: 3.9 Å）
 size = [5, 5, 4]
-vacuum = 0.0
+vacuum = None
 lattice_const = 4.0
-alloy_elements = ["Pt", "Cu", "Pd"]
+alloy_elements = ["Pt", "Ag", "Au"]
 
 # --- 出力先ディレクトリの設定 ---
 # 相対パスで "data" フォルダを指定（存在しない場合は作成）
-data_dir = os.path.join("..", "data")
+data_dir = os.path.join(".", "data")
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
 
@@ -35,8 +34,11 @@ db = connect(db_path)
 # --- 指定された数だけ構造生成 ---
 for i in range(args.num):
     # fcc100表面の作成（基本はPtの構造）
-    surf = fcc100(symbol="Pt", size=size, a=lattice_const,
-                  vacuum=vacuum, orthogonal=True, periodic=True)
+    surf = fcc100(symbol="Pt", 
+                  size=size, 
+                  a=lattice_const,
+                  vacuum=vacuum, 
+                  periodic=True)
 
     # --- 合金組成の均等配置 ---
     natoms = len(surf)  # 表面内の原子数

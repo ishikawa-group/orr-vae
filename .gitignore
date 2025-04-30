@@ -1,5 +1,5 @@
 ORR_catalyst_generator_env/
-result/
+/result/
 __pycache__/
 *.pyc
 *.xyz
