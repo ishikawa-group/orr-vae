@@ -17,7 +17,7 @@ args = parser.parse_args()
 # セルサイズ [4, 4, 3]、真空層15.0 Å、格子定数（Pt基準: 3.9 Å）
 size = [5, 5, 4]
 vacuum = 0.0
-lattice_const = 3.9
+lattice_const = 4.0
 alloy_elements = ["Pt", "Cu", "Pd"]
 
 # --- 出力先ディレクトリの設定 ---

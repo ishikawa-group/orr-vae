@@ -1,156 +1,151 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Unified workflow to (1) obtain ORR‑related adsorption energies
-and (2) evaluate the 4‑electron ORR overpotential (η).
+ORR over-potential workflow (offset-based adsorption version)
+============================================================
 
-Steps
------
-1. Pt bulk optimisation → slab construction/optimisation.
-2. Gas‑phase optimisation of O‑, H‑containing molecules.
-3. Adsorption‑site scan (ontop/bridge/fcc/hcp); stores the most stable site.
-4. Reaction‑energy (ΔE) evaluation for the 4e⁻ pathway.
-5. Free‑energy diagram + overpotential following the Nørskov scheme.
+- Gas-phase optimisation   : O2, H2, H2O, OH, HO2(=OOH), O  (計6種)
+- Adsorption optimisation  : O2*, OOH*, O*, OH*  (計4種)
+  * Offsets to evaluate
+      O2*  : (0,0) (0.5,0) (0.5,0.5)
+      OOH* : (1,1) (1.5,1) (1.5,1.5)
+      O*   : (2,2) (2.5,2) (2.5,2.5)
+      OH*  : (3,3) (3.5,3) (3.5,3.5)
 
-Run
----
-$ python orr_workflow.py  --base-dir result/matter_sim  --force   # re‑run everything
-$ python orr_workflow.py                                          # skip finished jobs
-
-The script is intentionally kept as a *single* entry point so that the whole
-analysis is reproducible with one command.  Heavy DFT jobs (VASP) are handled
-by helper functions in ``calc_orr_energy.py``; those functions must already be
-working in your environment.
+計算回数 : 6 (gas) + 1 (clean slab) + 12 (4 adsorbates × 3 offsets) = 19
+最安エネルギーを各吸着種の代表値として採用し ΔE, η を評価する。
 """
 
 from __future__ import annotations
-import argparse
-import json
-import logging
-import os
-import sys
-import time
+import argparse, json, logging, os, sys, time
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 
 import numpy as np
 from ase import Atoms
-from ase.build import fcc111
+from ase.build import fcc111, add_adsorbate
 
-# ---  external helper -------------------------------------------------------
+# ----- external helpers ----------------------------------------------------
 from calc_orr_energy import (
     optimize_bulk,
-    optimize_slab,
+    optimize_slab,          # clean slab or slab+adsorbate ともに使う
     optimize_gas,
-    calc_adsorption_on_site,
+    calc_adsorption_with_offset,
 )
-
 from tool import convert_numpy_types
 
 # ---------------------------------------------------------------------------
-# Global settings (edit if needed)
+# 1. 分子ライブラリ  (gas-phase は全種、adsorbate はサブセット)
 # ---------------------------------------------------------------------------
-SITES: List[str] = ["ontop", "bridge", "fcc", "hcp"]
-
 MOLECULES: Dict[str, Atoms] = {
+    # adsorbates (gas + adsorption)
     "OH":  Atoms("OH",  positions=[(0, 0, 0), (0, 0, 0.97)]),
-    "H2O": Atoms("OHH", positions=[(0, 0, 0), (0.759, 0, 0.588), (-0.759, 0, 0.588)]),
-    "HO2": Atoms("OOH", positions=[(0, 0, 0), (0, 0, 1.46), (0.939, 0, 1.705)]),
-    "H2":  Atoms("HH",  positions=[(0, 0, 0), (0, 0, 0.74)]),
+    "HO2": Atoms("OOH", positions=[(0, 0, 0), (0, 0.723, 1.264), (1.666, 0, 1.007)]), #(0, 0, 0), (0, 0, 1.46), (0.939, 0, 1.705)を30度回転
     "O2":  Atoms("OO",  positions=[(0, 0, 0), (0, 0, 1.21)]),
-    "H":   Atoms("H" ,  positions=[(0, 0, 0)]),
-    "O":   Atoms("O" ,  positions=[(0, 0, 0)]),
+    "O":   Atoms("O",   positions=[(0, 0, 0)]),
+    # gas-phase only
+    "H2O": Atoms("OHH", positions=[(0, 0, 0), (0.759, 0, 0.588), (-0.759, 0, 0.588)]),
+    "H2":  Atoms("HH",  positions=[(0, 0, 0), (0, 0, 0.74)]),
 }
 
-SLAB_VACUUM = 30.0  # Å
-GAS_BOX     = 15.0  # Å
-ADS_HEIGHT  = 2.0   # Å
+GAS_ONLY: set[str] = {"H2", "H2O"}      # 吸着計算を行わない分子
+
+ADSORBATES: Dict[str, List[Tuple[float, float]]] = {
+    "O2":  [(0.0, 0.0), (0.5, 0.0), (0.5, 0.5)],
+    "HO2": [(0.0, 0.0), (0.5, 0.0), (0.5, 0.5)],
+    "O":   [(0.0, 0.0), (0.5, 0.0), (0.5, 0.5)],
+    "OH":  [(0.0, 0.0), (0.5, 0.0), (0.5, 0.5)],
+}
+
+SLAB_VACUUM = 30.0   # Å
+GAS_BOX     = 15.0   # Å
+ADS_HEIGHT  = 2.0    # Å
 
 logger = logging.getLogger("orr_workflow")
 
-# ---------------------------------------------------------------------------
-# Adsorption‑energy part
-# ---------------------------------------------------------------------------
 
-def calculate_all_molecules(
+# ---------------------------------------------------------------------------
+# 2. Adsorption-energy utilities (offset ベース)
+# ---------------------------------------------------------------------------
+def calculate_required_molecules(
     opt_slab: Atoms,
     E_opt_slab: float,
     base_dir: Path,
     force: bool = False,
     calc_type: str = "mattersim",
 ) -> Dict[str, Any]:
-    """Optimise all molecules + adsorption on *opt_slab*.
 
-    Returns a nested dict keyed by molecule name.
-    The sub‑dict contains *E_gas*, *E_total_best* (slab+adsorbate),
-    *best_site*, and *E_ads* (=E_total_best−E_slab−E_gas).
-    """
     results: Dict[str, Any] = {}
     base_dir.mkdir(parents=True, exist_ok=True)
 
     for mol_name, mol in MOLECULES.items():
         logger.info("=== %s ===", mol_name)
-        mol_dir   = base_dir / mol_name
-        gas_dir   = mol_dir / f"{mol_name}_gas"
-        ads_dir   = mol_dir / "adsorption"
+        mol_dir  = base_dir / mol_name
+        gas_dir  = mol_dir / f"{mol_name}_gas"
+        ads_dir  = mol_dir / "adsorption"
         gas_dir.mkdir(parents=True, exist_ok=True)
         ads_dir.mkdir(parents=True, exist_ok=True)
 
-        try:
-            # 1) gas optimisation ------------------------------------------------
-            gas_json = gas_dir / "opt_result.json"
-            if gas_json.exists() and not force:
-                with gas_json.open() as f:
-                    gas_data = json.load(f)
-                opt_mol_energy = gas_data["E_opt"]
-                opt_mol = mol  # geometry not required afterwards
-                logger.info("  Re‑using existing gas optimisation result.")
+        # ---------- 1. gas optimisation ----------------------------------
+        gas_json  = gas_dir / "opt_result.json"
+        xyz_gas   = gas_dir / "opt.xyz"
+        if gas_json.exists() and xyz_gas.exists() and not force:
+            E_gas   = json.load(gas_json.open())["E_opt"]
+            opt_mol = read(xyz_gas)
+            logger.info("  reuse gas-phase energy = %.3f eV", E_gas)
+        else:
+            opt_mol, E_gas = optimize_gas(mol_name, GAS_BOX, str(gas_dir), calc_type)
+            opt_mol.write(xyz_gas)
+            json.dump({"E_opt": float(E_gas)}, gas_json.open("w"))
+        results.setdefault(mol_name, {})["E_gas"] = float(E_gas)
+
+        # ---------- 2. adsorption skip for gas-only ----------------------
+        if mol_name in GAS_ONLY:
+            continue
+
+        offsets = ADSORBATES[mol_name]
+        offset_data: Dict[str, Dict[str, float]] = {}
+
+        for ofst in offsets:
+            key = f"ofst_{ofst[0]}_{ofst[1]}"
+            ofst_json = ads_dir / f"{key}.json"
+            # calc sub-dir → …/adsorption/ofst_x_y/
+            work_dir   = ads_dir / key
+
+            if ofst_json.exists() and (work_dir / ".done").exists() and not force:
+                data    = json.load(ofst_json.open())
+                E_total = data["E_total"]
+                elapsed = data["elapsed"]
             else:
-                opt_mol, opt_mol_energy = optimize_gas(mol_name, GAS_BOX, str(gas_dir), calc_type)
-                with gas_json.open("w") as f:
-                    json.dump({"E_opt": float(opt_mol_energy)}, f)
+                E_total, elapsed = calc_adsorption_with_offset(
+                    opt_slab, opt_mol, ofst, str(work_dir), calc_type
+                )
+                json.dump({"E_total": E_total,
+                           "elapsed": elapsed}, ofst_json.open("w"))
+                (work_dir / ".done").touch()
+            offset_data[key] = {"E_total": E_total, "elapsed": elapsed}
 
-            # 2) adsorption on each site --------------------------------------
-            sites_data: Dict[str, Dict[str, float]] = {}
-            for site in SITES:
-                site_key = f"{site}.json"
-                site_json = ads_dir / site_key
-                if site_json.exists() and not force:
-                    with site_json.open() as f:
-                        data = json.load(f)
-                    E_total = data["E_total"]
-                    elapsed = data.get("elapsed", 0.0)
-                else:
-                    E_total, elapsed = calc_adsorption_on_site(opt_slab, opt_mol, site, str(ads_dir), calc_type)
-                    with site_json.open("w") as f:
-                        json.dump({"E_total": float(E_total), "elapsed": elapsed}, f)
-                sites_data[site] = {"E_total": E_total, "elapsed": elapsed}
+        # ---------- 3. pick lowest-E -------------------------------------
+        best_key, E_best = min(
+            ((k, d["E_total"]) for k, d in offset_data.items()),
+            key=lambda x: x[1]
+        )
+        E_ads_best = E_best - (E_opt_slab + E_gas)
+        results[mol_name].update({
+            "E_slab":        float(E_opt_slab),
+            "E_total_best":  float(E_best),
+            "best_offset":   best_key,
+            "E_ads_best":    float(E_ads_best),
+            "offsets":       offset_data,
+        })
+        logger.info("  -> best offset: %s   E_ads = %.3f eV",
+                    best_key, E_ads_best)
 
-            # 3) pick the most stable site -----------------------------------
-            best_site, E_total_best = min(
-                ((s, d["E_total"]) for s, d in sites_data.items()),
-                key=lambda x: x[1],
-            )
-            E_ads_best = E_total_best - (E_opt_slab + opt_mol_energy)
-
-            results[mol_name] = {
-                "E_gas":            float(opt_mol_energy),
-                "E_slab":           float(E_opt_slab),
-                "E_total_best":     float(E_total_best),
-                "best_site":        best_site,
-                "E_ads_best":       float(E_ads_best),
-                "sites":            sites_data,
-            }
-            logger.info("  -> best site: %s  E_ads = %.3f eV", best_site, E_ads_best)
-        except Exception as exc:
-            logger.exception("  Failed for %s: %s", mol_name, exc)
-            results[mol_name] = {"error": str(exc)}
-
-    # write summary -----------------------------------------------------------
-    with (base_dir / "all_results.json").open("w") as f:
-        results = convert_numpy_types(results)
-        json.dump(results, f, indent=2)
+    # ---------- 4. write summary -----------------------------------------
+    json.dump(convert_numpy_types(results),
+              (base_dir / "all_results.json").open("w"), indent=2)
     return results
+
 
 # ---------------------------------------------------------------------------
 # Reaction/overpotential part
@@ -302,74 +297,50 @@ def get_overpotential_orr(
 
 def calc_orr_overpotential(
     bulk: Atoms,
-    base_dir: str = "result/something",
+    base_dir: str = "result/matter_sim",
     force: bool = False,
     log_level: str = "INFO",
-    calc_type: str = "mattersim"
+    calc_type: str = "mattersim",
 ) -> float:
     """
-    ORR過電圧計算を実行するメイン関数
-    
-    Parameters:
-    -----------
-    bulk : Atoms
-        バルク構造
-    base_dir : str
-        計算結果を保存するディレクトリ
-    force : bool
-        Trueの場合、既存の計算結果を上書きする
-    log_level : str
-        ログレベル（"DEBUG"/"INFO"/"WARNING"/"ERROR"）
-    calc_type : str
-        計算タイプ（"mattersim"/"vasp"など）
-        
-    Returns:
-    --------
-    float
-        計算されたORR過電圧（η）
+    Entry point : bulk → (slab, ads) → ΔE → η
     """
-    # ロギングの設定
     logging.basicConfig(
         level=getattr(logging, log_level.upper()),
         format="%(levelname)s: %(message)s",
         stream=sys.stdout,
     )
-    
-    # ディレクトリのパス設定
+
     base_path = Path(base_dir).resolve()
     base_path.mkdir(parents=True, exist_ok=True)
-    
-    # 1. バルク最適化
+
+    # 1. bulk optimisation
     logger.info("Optimising bulk …")
     opt_bulk, E_bulk = optimize_bulk(bulk, str(base_path / "bulk"), calc_type)
-    
-    # 2. スラブ最適化
-    logger.info("Optimising slab …")
+
+    # 2. clean-slab optimisation
+    logger.info("Optimising clean slab …")
     opt_slab, E_slab = optimize_slab(opt_bulk, str(base_path / "slab"), calc_type)
-    
-    # 3. 分子吸着計算
-    logger.info("Running adsorption scan for all molecules …")
-    results = calculate_all_molecules(opt_slab, E_slab, base_path, force=force, calc_type=calc_type)
-    
-    # 4. 反応エネルギー計算
+
+    # 3. gas + adsorption calculations (offset scheme)
+    logger.info("Running required molecule calculations …")
+    results = calculate_required_molecules(
+        opt_slab, E_slab, base_path,
+        force=force, calc_type=calc_type
+    )
+
+    # 4. ΔE & over-potential
     deltaEs, energies = compute_reaction_energies(results, E_slab)
-    logger.info("ΔE values: %s", [f"{e:+.3f}" for e in deltaEs])
-    
-    # 5. 過電圧計算
-    logger.info("Evaluating ORR overpotential …")
     eta = get_overpotential_orr(deltaEs, base_path, verbose=True)
-    logger.info("==> η_ORR = %.3f V ", eta)
-    
-    # 6. サマリー出力
+
+    # 5. summary
     with (base_path / "ORR_summary.txt").open("w") as f:
         f.write("--- ORR Summary ---\n\n")
-        energies = convert_numpy_types(energies)
-        f.write(json.dumps(energies, indent=2))
+        f.write(json.dumps(convert_numpy_types(energies), indent=2))
         f.write("\n\nΔE (eV): " + ", ".join(f"{e:+.3f}" for e in deltaEs) + "\n")
         f.write(f"Overpotential η = {eta:.3f} V\n")
-    
     logger.info("Summary written → %s", base_path / "ORR_summary.txt")
-    
+
     return eta
 
 # ---------------------------------------------------------------------------
@@ -379,23 +350,20 @@ def calc_orr_overpotential(
 
 # main関数を修正してcalc_orr_overpotential関数を活用する
 def main():
-    p = argparse.ArgumentParser(description="ORR adsorption + overpotential workflow")
-    p.add_argument("--base-dir", default="result/matter_sim", help="top directory for calculations")
-    p.add_argument("--force", action="store_true", help="re‑run even if results exist")
-    p.add_argument("--log", default="INFO", help="logging level (DEBUG/INFO/WARNING/ERROR)")
-    p.add_argument("--calc-type", default="mattersim", help="calculation type (mattersim/vasp/etc)")
+    p = argparse.ArgumentParser(description="ORR workflow (offset adsorption)")
+    p.add_argument("--base-dir", default="result/matter_sim")
+    p.add_argument("--force",  action="store_true")
+    p.add_argument("--log",    default="INFO")
+    p.add_argument("--calc-type", default="mattersim")
     args = p.parse_args()
-    
-    # バルク構造の作成
-    bulk = fcc111("Pt", size=(3, 3, 4), a=4.0, vacuum=None, periodic=True)
-    
-    # 関数を呼び出して計算を実行
+
+    bulk = fcc111("Pt", size=(5, 5, 4), a=4.0, vacuum=None, periodic=True)
     eta = calc_orr_overpotential(
-        bulk=bulk,
-        base_dir=args.base_dir,
-        force=args.force,
-        log_level=args.log,
-        calc_type=args.calc_type
+        bulk, args.base_dir, args.force, args.log, args.calc_type
     )
-    
+    print(f"η_ORR = {eta:.3f} V")
     return eta
+
+
+if __name__ == "__main__":
+    main()

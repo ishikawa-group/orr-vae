@@ -155,7 +155,11 @@ def auto_lmaxmix(atoms):
 
     return atoms
 
-def my_calculator(atoms, kind:str, calc_type:str="sevennet", yaml_path:str="code/vasp.yaml",calc_directory:str="calc"): 
+def my_calculator(
+        atoms, kind:str, 
+        calc_type:str="mattersim", 
+        yaml_path:str="/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/code/vasp.yaml",
+        calc_directory:str="calc"): 
     """
     Create calculator instance based on parameters from YAML file and attach to atoms.
 
@@ -231,7 +235,7 @@ def my_calculator(atoms, kind:str, calc_type:str="sevennet", yaml_path:str="code
         
         #構造最適化の実行
         opt = FIRE(atoms)
-        opt.run(fmax=0.05, steps=200)
+        opt.run(fmax=0.05, steps=300)
 
     elif calc_type.lower() == "sevennet":
         # MatterSimを使用する場合

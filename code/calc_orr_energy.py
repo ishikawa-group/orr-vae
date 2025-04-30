@@ -119,6 +119,61 @@ def calc_adsorption_on_site(opt_slab:Atoms, opt_mol: Atoms, site: str, work_dir:
 
     return E_opt_slab_ads, dt
 
+
+def calc_adsorption_with_offset(
+    opt_slab: Atoms,
+    opt_mol: Atoms,
+    offset: Tuple[float, float],
+    work_dir: str,
+    calc_type: str = "mattersim",
+) -> Tuple[float, float]:
+
+    import os, time
+    from pathlib import Path
+    from ase.io import write
+    from ase.build import add_adsorbate          # offset は分率座標 :contentReference[oaicite:0]{index=0}
+
+    os.makedirs(work_dir, exist_ok=True)
+    t0 = time.time()
+
+    # ---------- 1. slab ── copy & set magmoms ----------------------------
+    slab = opt_slab.copy()
+    slab = set_initial_magmoms(slab, kind="slab")              # ユーザ定義 util
+    slab.set_pbc(True)
+
+    # ---------- 2. adsorbate ── copy, magmoms, center --------------------
+    ads = opt_mol.copy()
+    ads = set_initial_magmoms(ads,
+                              kind="gas",
+                              formula=ads.get_chemical_formula())  # 自動判定 :contentReference[oaicite:1]{index=1}
+    ads.center()                      # 原点で中心化 :contentReference[oaicite:2]{index=2}
+    ads.set_pbc(False)
+    ads.set_cell(None)                # 自由分子として扱う :contentReference[oaicite:3]{index=3}
+
+    # ---------- 3. make slab+ads system ----------------------------------
+    slab_ads = slab.copy()
+    slab_ads = fix_lower_surface(slab_ads)      # 下層を FixAtoms で固定 :contentReference[oaicite:4]{index=4}
+    add_adsorbate(slab_ads, ads, 
+                  ADS_HEIGHT,
+                  #position="ontop", 
+                  offset=offset)
+
+    # ---------- 4. calculator & energy -----------------------------------
+    calc = my_calculator(slab_ads,
+                         "slab",
+                         calc_type=calc_type,
+                         calc_directory=work_dir)
+    E_total = calc.get_potential_energy()
+
+    # ---------- 5. save relaxed geometry ---------------------------------
+    xyz_out = Path(work_dir).with_suffix(".xyz")   # 例 …/ofst_0.0_0.0.xyz
+    write(xyz_out, calc)                           # XYZ 出力 :contentReference[oaicite:5]{index=5}
+
+    dt = time.time() - t0
+    print(f"     E_total = {E_total:.6f} eV, Time = {dt:.2f} s")
+    return float(E_total), dt
+
+
 def calculate_all_molecules(opt_slab: Atoms, E_opt_slab: float, calc_type: str = "mattersim") -> Dict[str, Any]:
     """MOLECULESに含まれる全ての分子について吸着エネルギー計算を実行する"""
 

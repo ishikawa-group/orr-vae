@@ -1,3 +1,6 @@
 ORR_catalyst_generator_env/
 __pycache__/
 *.pyc
+
+# 除外するディレクトリ
+!/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/result/
