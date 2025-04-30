@@ -24,6 +24,7 @@ from typing import Dict, Any, List, Tuple
 import numpy as np
 from ase import Atoms
 from ase.build import fcc111, add_adsorbate
+from ase.io import read
 
 # ----- external helpers ----------------------------------------------------
 from calc_orr_energy import (
