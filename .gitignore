@@ -1,6 +1,5 @@
 ORR_catalyst_generator_env/
+result/
 __pycache__/
 *.pyc
-
-# result ディレクトリを追跡対象にする
-!/result/
+*.xyz
