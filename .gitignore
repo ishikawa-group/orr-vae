@@ -3,3 +3,4 @@ ORR_catalyst_generator_env/
 __pycache__/
 *.pyc
 *.xyz
+*.sh

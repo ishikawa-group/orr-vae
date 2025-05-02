@@ -5,7 +5,7 @@ from ase.visualize import view
 from ase import Atoms
 
 # Path to trajectory file
-file = "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/result/matter_sim/OH/adsorption/ofst_3.0_3.xyz"
+file = "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/result/temp_f77cfe833cb8481da42342e9eb71078f/f77cfe833cb8481da42342e9eb71078f/OH/adsorption/ofst_2.5_2.xyz"
 
 # Read the trajectory file
 atoms = read(

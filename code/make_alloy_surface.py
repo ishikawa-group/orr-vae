@@ -8,13 +8,13 @@ from ase.data import atomic_numbers
 import numpy as np
 
 # --- コマンドライン引数の定義 ---
-parser = argparse.ArgumentParser(description="fcc100表面の4元素系合金（Pt, Pd, Cu）を生成")
+parser = argparse.ArgumentParser(description="fcc100表面の4元素系合金（Pt, Ag, Au）を生成")
 parser.add_argument("--num", type=int, default=1,
                     help="生成する構造の数（デフォルトは1）")
 args = parser.parse_args()
 
 # --- パラメータ設定 ---
-size = [5, 5, 4]
+size = [4, 4, 4]
 vacuum = None
 lattice_const = 4.0
 alloy_elements = ["Pt", "Ag", "Au"]
@@ -59,6 +59,13 @@ for i in range(args.num):
     # --- EMT計算器の設定（FutureWarning解消のため calc 属性を直接代入） ---
     surf.calc = EMT()
 
+    # --- 表面情報の取得 ---
+    ads_info = surf.info["adsorbate_info"]
+
     # --- データベースへの書き込み ---
-    data = {"chemical_formula": surf.get_chemical_formula(), "run": i}
+    data = {"chemical_formula": surf.get_chemical_formula(), 
+            "run": i,
+            "adsorbate_info": ads_info
+            }
+    
     db.write(surf, data=data)

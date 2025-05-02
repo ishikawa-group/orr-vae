@@ -13,7 +13,7 @@ from ase.db import connect
 
 # 入力ファイル指定
 bulk_file = "data/iter0_structure.json"
-reaction_energy_file = "data/reaction_energy.json"
+reaction_energy_file = "data/iter0_reaction_energy.json"
 
 # reaction_energy_file のディレクトリを作成
 os.makedirs(os.path.dirname(reaction_energy_file) or ".", exist_ok=True)
@@ -53,7 +53,7 @@ uid = uncalculated[0]
 print(f"未計算の構造: unique_id={uid}. 計算を開始します...")
 
 # 一時ディレクトリを作成
-temp_dir = f"/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/result/temp_{uid}"
+temp_dir = f"/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/result/test/temp_{uid}"
 os.makedirs(temp_dir, exist_ok=True)
 print(f"一時ディレクトリを作成しました: {temp_dir}")
 
@@ -88,7 +88,7 @@ print(f"{len(updated_ids)}/{len(bulk_ids)} 件の計算が成功しました。(
 
 # 一時ディレクトリを削除
 try:
-    shutil.rmtree(temp_dir)
+    #shutil.rmtree(temp_dir)
     print(f"一時ディレクトリを削除しました: {temp_dir}")
 except Exception as e:
     print(f"警告: 一時ディレクトリの削除に失敗しました: {e}")

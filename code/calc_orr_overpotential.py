@@ -5,14 +5,12 @@ ORR over-potential workflow (offset-based adsorption version)
 ============================================================
 
 - Gas-phase optimisation   : O2, H2, H2O, OH, HO2(=OOH), O  (計6種)
-- Adsorption optimisation  : O2*, OOH*, O*, OH*  (計4種)
-  * Offsets to evaluate
-      O2*  : (0,0) (0.5,0) (0.5,0.5)
-      OOH* : (1,1) (1.5,1) (1.5,1.5)
-      O*   : (2,2) (2.5,2) (2.5,2.5)
-      OH*  : (3,3) (3.5,3) (3.5,3.5)
+- Adsorption optimisation  : OOH*, O*, OH*  (計3種)
+    * Offsets to evaluate
+            OOH* : (0.0,0.0) (0.5,0.0) (0.5,0.5)
+            O*   : (1.0,1.0) (1.5,1.0) (1.5,1.5)
+            OH*  : (2.0,2.0) (2.5,2.0) (2.5,2.5)
 
-計算回数 : 6 (gas) + 1 (clean slab) + 12 (4 adsorbates × 3 offsets) = 19
 最安エネルギーを各吸着種の代表値として採用し ΔE, η を評価する。
 """
 
@@ -42,20 +40,19 @@ MOLECULES: Dict[str, Atoms] = {
     # adsorbates (gas + adsorption)
     "OH":  Atoms("OH",  positions=[(0, 0, 0), (0, 0, 0.97)]),
     "HO2": Atoms("OOH", positions=[(0, 0, 0), (0, 0.723, 1.264), (1.666, 0, 1.007)]), #(0, 0, 0), (0, 0, 1.46), (0.939, 0, 1.705)を30度回転
-    "O2":  Atoms("OO",  positions=[(0, 0, 0), (0, 0, 1.21)]),
     "O":   Atoms("O",   positions=[(0, 0, 0)]),
     # gas-phase only
+    "O2":  Atoms("OO",  positions=[(0, 0, 0), (0, 0, 1.21)]),
     "H2O": Atoms("OHH", positions=[(0, 0, 0), (0.759, 0, 0.588), (-0.759, 0, 0.588)]),
     "H2":  Atoms("HH",  positions=[(0, 0, 0), (0, 0, 0.74)]),
 }
 
-GAS_ONLY: set[str] = {"H2", "H2O"}      # 吸着計算を行わない分子
+GAS_ONLY: set[str] = {"H2", "O2", "H2O"}      # 吸着計算を行わない分子
 
 ADSORBATES: Dict[str, List[Tuple[float, float]]] = {
-    "O2":  [(0.0, 0.0), (0.5, 0.0), (0.33, 0.33)],
-    "HO2": [(0.0, 0.0), (0.5, 0.0), (0.33, 0.33)],
-    "O":   [(0.0, 0.0), (0.5, 0.0), (0.33, 0.33)],
-    "OH":  [(0.0, 0.0), (0.5, 0.0), (0.33, 0.33)],
+    "HO2": [(0.0, 0.0), (0.5, 0.0), (0.5, 0.5)],
+    "O":   [(1.0, 1.0), (1.5, 1.0), (1.5, 1.5)],
+    "OH":  [(2.0, 2.0), (2.5, 2.0), (2.5, 2.5)],
 }
 
 SLAB_VACUUM = 30.0   # Å
@@ -90,14 +87,11 @@ def calculate_required_molecules(
         # ---------- 1. gas optimisation ----------------------------------
         gas_json  = gas_dir / "opt_result.json"
         xyz_gas   = gas_dir / "opt.xyz"
-        if gas_json.exists() and xyz_gas.exists() and not force:
-            E_gas   = json.load(gas_json.open())["E_opt"]
-            opt_mol = read(xyz_gas)
-            logger.info("  reuse gas-phase energy = %.3f eV", E_gas)
-        else:
-            opt_mol, E_gas = optimize_gas(mol_name, GAS_BOX, str(gas_dir), calc_type)
-            opt_mol.write(xyz_gas)
-            json.dump({"E_opt": float(E_gas)}, gas_json.open("w"))
+
+        opt_mol, E_gas = optimize_gas(mol_name, GAS_BOX, str(gas_dir), calc_type)
+        opt_mol.write(xyz_gas)
+        json.dump({"E_opt": float(E_gas)}, gas_json.open("w"))
+        
         results.setdefault(mol_name, {})["E_gas"] = float(E_gas)
 
         # ---------- 2. adsorption skip for gas-only ----------------------
@@ -168,7 +162,6 @@ def compute_reaction_energies(results: Dict[str, Any], E_slab: float) -> Tuple[L
     E_O2_g   = 2 * (2.46 + E_H2O_g - E_H2_g)
 
     # slab+adsorbate total energies -----------------------------------------
-    E_slab_O2  = e_total("O2")
     E_slab_OOH = e_total("HO2")     # HO2 = OOH*
     E_slab_O   = e_total("O")
     E_slab_OH  = e_total("OH")
@@ -178,22 +171,20 @@ def compute_reaction_energies(results: Dict[str, Any], E_slab: float) -> Tuple[L
         "E_H2O_g":   E_H2O_g,
         "E_O2_g":    E_O2_g,
         "E_slab":    E_slab,
-        "E_slab_O2": E_slab_O2,
         "E_slab_OOH":E_slab_OOH,
         "E_slab_O":  E_slab_O,
         "E_slab_OH": E_slab_OH,
     }
 
-    # reaction energies ΔE ----------------------------------------------------
-    dE1 = E_slab_O2 - (E_slab + E_O2_g)                       # O2(g) + * → O2*
-    dE2 = E_slab_OOH - (E_slab_O2 + 0.5 * E_H2_g)             # O2* + ½H2 → OOH*
-    dE3 = (E_slab_O + E_H2O_g) - (E_slab_OOH + 0.5 * E_H2_g)  # OOH* + ½H2 → O* + H2O
-    dE4 = E_slab_OH - (E_slab_O + 0.5 * E_H2_g)               # O* + ½H2 → OH*
-    dE5 = (E_slab + E_H2O_g) - (E_slab_OH + 0.5 * E_H2_g)     # OH* + ½H2 → * + H2O
+    # reaction energies ΔE ----------------------------------------------------                      
+    dE1 = E_slab_OOH - (E_O2_g + E_slab +  0.5 * E_H2_g)            # O2(g) + * + ½H2 → OOH*
+    dE2 = (E_slab_O + E_H2O_g) - (E_slab_OOH + 0.5 * E_H2_g)        # OOH* + ½H2 → O* + H2O
+    dE3 = E_slab_OH - (E_slab_O + 0.5 * E_H2_g)                     # O* + ½H2 → OH*
+    dE4 = (E_slab + E_H2O_g) - (E_slab_OH + 0.5 * E_H2_g)           # OH* + ½H2 → * + H2O
 
-    deltaEs = [dE1 + dE2, dE3, dE4, dE5]  #   dE2 is combined with dE1
+    deltaEs = [dE1, dE2, dE3, dE4] # ΔE1, ΔE2, ΔE3, ΔE4
     energies.update({
-        "dE1": dE1, "dE2": dE2, "dE3": dE3, "dE4": dE4, "dE5": dE5
+        "dE1": dE1, "dE2": dE2, "dE3": dE3, "dE4": dE4,
     })
     return deltaEs, energies
 

@@ -72,8 +72,10 @@ def main():
         print(f"Error: unique_id '{uid}' not found in database")
         sys.exit(1)
     
-    # バルク構造を取得
-    bulk_atoms = row.toatoms()
+    # バルク構造を取得&表面情報の追加
+    bulk_atoms = row.toatoms(add_additional_information=True)
+    d = bulk_atoms.info.pop("data", {})
+    bulk_atoms.info["adsorbate_info"] = d["adsorbate_info"]
     
     # 計算ディレクトリの設定
     calc_dir = Path(args.base_dir) / uid

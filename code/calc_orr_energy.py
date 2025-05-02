@@ -155,7 +155,7 @@ def calc_adsorption_with_offset(
     slab_ads = fix_lower_surface(slab_ads)      # 下層を FixAtoms で固定 :contentReference[oaicite:4]{index=4}
     add_adsorbate(slab_ads, ads, 
                   ADS_HEIGHT,
-                  #position="ontop", 
+                  position="ontop", 
                   offset=offset)
 
     # ---------- 4. calculator & energy -----------------------------------
