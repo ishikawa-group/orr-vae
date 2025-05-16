@@ -1,4 +1,4 @@
-# Theoretical Generation of Catalysts for Oxygen Reduction Reaction with First-Principle Calculation and Generative Adversarial Network
+## Theoretical Generation of Catalysts for Oxygen Reduction Reaction with First-Principle Calculation and Generative Adversarial Network
 
 1. Introduction
 
