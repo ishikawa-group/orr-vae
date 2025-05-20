@@ -11,6 +11,29 @@ def convert_numpy_types(obj):
         return tuple(convert_numpy_types(item) for item in obj)
     return obj
 
+def elemental_a(symbol: str) -> float:
+    """ASE の reference_states から FCC 格子定数 (Å) を返す"""
+    from ase.data import reference_states, atomic_numbers
+    Z = atomic_numbers[symbol]
+    a = reference_states[Z].get('a')  # FCC は 'a' キーに格子定数
+    if a is None:
+        raise ValueError(f"No reference lattice constant for {symbol}")
+    return a
+
+def vegard_lattice_constant(elements, fractions=None):
+    """
+    elements : ['Pt','Ni', ...]
+    fractions: [0.5,0.5] など。None の場合は等分
+    """
+    from ase.data import reference_states, atomic_numbers
+    n = len(elements)
+    if fractions is None:
+        fractions = [1.0 / n] * n
+    if abs(sum(fractions) - 1) > 1e-6:
+        raise ValueError("Fractions must sum to 1")
+    constants = [elemental_a(el) for el in elements]
+    return sum(a * x for a, x in zip(constants, fractions))
+
 def get_number_of_layers(atoms):
     """
     原子の z 座標に基づいて、モデル内の層の数を計算する関数。
@@ -240,7 +263,7 @@ def my_calculator(
     elif calc_type.lower() == "sevennet":
         # MatterSimを使用する場合
         import torch
-        from sevenn.calculator import SevenNetCalculator
+        #from sevenn.calculator import SevenNetCalculator
         from ase.filters import FrechetCellFilter, ExpCellFilter
         from ase.constraints import FixSymmetry
         from ase.optimize import FIRE, LBFGS
@@ -361,8 +384,10 @@ def slab_to_tensor(slab, grid_size):
     new_y_size = 2 * y_size
     
     # z はそのまま
-    interleaved = torch.zeros((z_size, new_y_size, new_x_size), dtype=torch.int64)
-    
+    #interleaved = torch.zeros((z_size, new_y_size, new_x_size), dtype=torch.int64)
+    # z はそのまま, zeros の代わりに full を使用して任意の初期値を設定
+    interleaved = torch.full((z_size, new_y_size, new_x_size), fill_value=0.0, dtype=torch.float64)
+
     # 各 z 層に対して、パターンを設定
     for z in range(z_size):
         if z % 2 == 0:

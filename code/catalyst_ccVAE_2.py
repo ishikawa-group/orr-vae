@@ -87,7 +87,7 @@ class CatalystDataset(Dataset):
         slab_tensor = slab_to_tensor(atoms_sorted, self.grid_size)
         
         # 0（未使用位置）はそのままに、原子番号をID値にマッピング
-        result = torch.full_like(slab_tensor, 0.0)  # すべて0.0で初期化
+        result = torch.zeros_like(slab_tensor, dtype=torch.long)  # すべて0.0で初期化
         
         # Pd(46)の位置を0にマッピング
         pd_mask = (slab_tensor == 46)
@@ -97,7 +97,7 @@ class CatalystDataset(Dataset):
         pt_mask = (slab_tensor == 78)
         result[pt_mask] = 2.0
         
-        return result.to(dtype=torch.float32), torch.tensor(overpot, dtype=torch.float32)
+        return result, torch.tensor(overpot, dtype=torch.float32)
 
 def make_data_loaders(struct_json, energy_json, 
                      grid_size=GRID_SIZE,
@@ -133,7 +133,7 @@ def make_data_loaders(struct_json, energy_json,
 # ------------------------------
 batch_size    = 16
 learning_rate = 1e-3
-max_epoch     = 50
+max_epoch     = 30
 num_workers   = 4
 load_epoch    = -1     # ロードするエポック（-1なら新規学習）
 
@@ -180,7 +180,7 @@ class CVAE(nn.Module):
         self.bn4     = nn.BatchNorm2d(32)
         self.deconv2 = nn.ConvTranspose2d(in_channels=32, out_channels=16, kernel_size=3, stride=2, padding=1, output_padding=1)
         self.bn5     = nn.BatchNorm2d(16)
-        self.deconv3 = nn.ConvTranspose2d(in_channels=16, out_channels=4, kernel_size=3, stride=1, padding=1)
+        self.deconv3 = nn.ConvTranspose2d(in_channels=16, out_channels=4*3, kernel_size=3, stride=1, padding=1)
 
     def encoder(self, x, y):
         """
@@ -256,11 +256,25 @@ class CVAE(nn.Module):
 # 損失関数
 # ------------------------------
 def loss_function(x, pred, mu, logvar):
-    """再構成誤差とKLダイバージェンスの計算"""
-    recon_loss = F.mse_loss(pred, x, reduction='sum')
+    # pred: [B, 12, H, W] - logits
+    # x: [B, 4, H, W] - クラスインデックス（各層ごとに0,1,2のいずれか）
     
-    #recon_loss = F.binary_cross_entropy(pred, x, reduction='mean')
+    x = x.to(dtype=torch.long)
+    
+    # 各層ごとに処理する場合
+    recon_loss = 0
+    for z in range(4):  # 4層
+        # 各層で3クラス分類
+        layer_pred = pred[:, z*3:(z+1)*3]  # 各層に3チャネル
+        recon_loss += F.cross_entropy(
+            layer_pred, 
+            x[:, z], 
+            reduction='sum'
+        )
+    
+    # KL損失
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+
     return recon_loss, kld
 
 # ------------------------------
@@ -365,18 +379,26 @@ def generate_samples(model, result_dir):
         z_cat = torch.cat((z, label_embedding), dim=1)
         pred = model.decoder(z_cat)
         
-        fig = plt.figure(figsize=(16, 12))
-        for i in range(6):
-            for z in range(4):
-                ax = fig.add_subplot(6, 4, i*4 + z + 1)
-                ax.imshow(pred[i, z].cpu().numpy(), cmap='viridis')
-                ax.axis('off')
-                if z == 0:
-                    ax.set_title(f"OP: {y_values[i, 0]:.3f}")
-        
-        plt.tight_layout()
-        plt.savefig(f"{result_dir}/generated_samples.png")
-        plt.close()
+        # 各位置で最も確率の高いクラスを選択
+        # 4層×3クラスの場合
+        final_output = torch.zeros(6, 4, 8, 8)
+        for z in range(4):
+            layer_logits = pred[:, z*3:(z+1)*3]
+            probs = F.softmax(layer_logits, dim=1)
+            # 最も確率の高いクラスを選択
+            _, predicted = torch.max(probs, dim=1)
+            
+            # 表示用に値をマッピング
+            viz_map = torch.zeros_like(predicted, dtype=torch.float)
+            viz_map[predicted == 0] = 0.0  # 空位置
+            viz_map[predicted == 1] = 1.0  # Pt
+            viz_map[predicted == 2] = 2.0  # Pd
+            
+            final_output[:, z] = viz_map
+            
+            plt.tight_layout()
+            plt.savefig(f"{result_dir}/generated_samples.png")
+            plt.close()
 
 def plot_learning_curves(train_loss, test_loss, result_dir):
     """学習曲線のプロット - 最終結果のみ保存"""
