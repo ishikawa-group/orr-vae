@@ -3,11 +3,11 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Dict, Any, List, Tuple
 from ase.db import connect
 
 # 自作モジュールからORR過電圧計算関数をインポート
-sys.path.append(str(Path(__file__).parent))
-from calc_orr_overpotential import calc_orr_overpotential
+from orr_overpotential_calculator import calc_orr_overpotential
 
 def main():
     parser = argparse.ArgumentParser(description="ORR過電圧計算ツール")
@@ -17,7 +17,8 @@ def main():
     parser.add_argument('--base_dir', default="./result", help='計算用ベースディレクトリ')
     parser.add_argument('--force', default=True, help='強制的に計算を実行')
     parser.add_argument('--log_level', default="INFO", help='ログレベル')
-    parser.add_argument('--calc_type', default="mattersim", help='計算機タイプ')
+    parser.add_argument('--calc_type', default="vasp", help='計算機タイプ')
+    parser.add_argument('--yaml_path', help='VASP設定YAMLファイルパス')
     args = parser.parse_args()
 
     # 出力ディレクトリの作成
@@ -80,19 +81,35 @@ def main():
     # 計算ディレクトリの設定
     calc_dir = Path(args.base_dir) / uid
     
-    # ORR過電圧の計算 - 複雑な計算ロジックがcalc_orr_overpotentialに隠蔽されている
-    eta = calc_orr_overpotential(
+    # ORR吸着サイト定義
+    orr_adsorbates: Dict[str, List[Tuple[float, float]]] = {
+        "HO2": [(0.0, 0.0), (0.5, 0.0), (0.33, 0.33), (0.66, 0.66)], #ontop, bridge, fcc, hcp
+        "O":   [(0.0, 0.0), (0.5, 0.0), (0.33, 0.33), (0.66, 0.66)],
+        "OH":  [(0.0, 0.0), (0.5, 0.0), (0.33, 0.33), (0.66, 0.66)],
+    }
+    
+    # ORR過電圧の計算（修正部分）
+    result = calc_orr_overpotential(
         bulk=bulk_atoms,
         base_dir=str(calc_dir),
         force=args.force,
         log_level=args.log_level,
-        calc_type=args.calc_type
+        calc_type=args.calc_type,
+        adsorbates=orr_adsorbates,
+        yaml_path=args.yaml_path
     )
+    
+    # 必要な値を辞書から取得
+    eta = result["eta"]
+    diffG_U0 = result["diffG_U0"]
+    diffG_eq = result["diffG_eq"]
     
     # 結果の更新 - 要求された最小限の情報のみを含む
     entry = {
         'unique_id': uid,
-        'overpotential': eta
+        'overpotential': eta,
+        'diffG_U0': diffG_U0,
+        'diffG_eq': diffG_eq
     }
     
     # 既存エントリの更新または新規追加
@@ -111,6 +128,8 @@ def main():
         json.dump(results, f, indent=2)
     
     print(f"ORR overpotential for {uid}: {eta:.3f} V")
+    print(f"Reaction Free Energy Change at U=0V: {diffG_U0}")
+    print(f"Reaction Free Energy Change at U=1.23V: {diffG_eq}")
 
 if __name__ == '__main__':
     main()

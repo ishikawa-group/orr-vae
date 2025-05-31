@@ -2,7 +2,6 @@ import os
 import sys
 import time
 import traceback
-
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -11,136 +10,43 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from torch.multiprocessing import freeze_support
 
-# ------------------------------
-# 触媒データローダーの実装
-# ------------------------------
-from pathlib import Path
-import json
-from decimal import Decimal, ROUND_HALF_UP
-
-from torch.utils.data import Dataset, DataLoader, random_split
-from ase.db import connect
-
-# tool.py のユーティリティをインポート
-from tool import sort_atoms, slab_to_tensor
-
-# データローダーのデフォルト設定
-GRID_SIZE = (4, 4, 4)  # original slab shape (x, y, z)
-BATCH_SIZE = 16
-NUM_WORKERS = 4
-
-class CatalystDataset(Dataset):
-    """(slab_tensor, overpotential) ペアを返すデータセット"""
-    def __init__(self, struct_json, energy_json, grid_size=GRID_SIZE):
-        self.grid_size = grid_size
-
-        # 1. ラベル（過電圧）を読み込む
-        with open(energy_json, "r", encoding="utf-8") as f:
-            energy_records = json.load(f)
-
-        self.id_list = [rec["unique_id"] for rec in energy_records]
-        self.labels = {
-            rec["unique_id"]:
-                float(Decimal(rec["overpotential"])
-                      .quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))  # 小数点第3位まで
-            for rec in energy_records
-        }
-
-        # 2. 構造 DB を開く
-        self.db = connect(str(struct_json))
-
-    def __len__(self):
-        return len(self.id_list)
-
-    # 内部ヘルパー：unique_id → ASE Atoms 取得
-    def _fetch_atoms(self, uid):
-        row = None
-        for query in (
-            lambda: list(self.db.select(f'unique_id="{uid}"')),
-            lambda: list(self.db.select(unique_id=uid)),
-            lambda: [r for r in self.db.select()
-                     if r.key_value_pairs.get("unique_id") == uid]
-        ):
-            try:
-                rows = query()
-                if rows:
-                    row = rows[0]
-                    break
-            except (ValueError, KeyError):
-                continue
-                
-        if row is None:
-            raise KeyError(f"[CatalystDataset] unique_id {uid} not found")
-
-        atoms = row.toatoms(add_additional_information=True)
-        if hasattr(atoms, 'info') and 'data' in atoms.info:
-            info = atoms.info.pop("data", {})
-            atoms.info["adsorbate_info"] = info.get("adsorbate_info", {})
-        return atoms
-
-    def __getitem__(self, idx):
-        uid = self.id_list[idx]
-        overpot = self.labels[uid]
-
-        atoms_sorted = sort_atoms(self._fetch_atoms(uid), axes=("z", "y", "x"))
-        slab_tensor = slab_to_tensor(atoms_sorted, self.grid_size)
-        
-        # 0（未使用位置）はそのままに、原子番号をID値にマッピング
-        result = torch.full_like(slab_tensor, 0.0)  # すべて0.0で初期化
-        
-        # Pd(46)の位置を0にマッピング
-        pd_mask = (slab_tensor == 46)
-        result[pd_mask] = 1.0
-        
-        # Pt(78)の位置を1にマッピング
-        pt_mask = (slab_tensor == 78)
-        result[pt_mask] = 2.0
-        
-        return result.to(dtype=torch.float32), torch.tensor(overpot, dtype=torch.float32)
-
-def make_data_loaders(struct_json, energy_json, 
-                     grid_size=GRID_SIZE,
-                     train_ratio=0.9, 
-                     batch_size=BATCH_SIZE, 
-                     num_workers=NUM_WORKERS,
-                     seed=42):
-    """触媒データセットのローダーを作成"""
-    dataset = CatalystDataset(struct_json=struct_json,
-                             energy_json=energy_json,
-                             grid_size=grid_size)
-    
-    # train / test にランダム分割
-    n_train = int(len(dataset) * train_ratio)
-    n_test = len(dataset) - n_train
-    g = torch.Generator().manual_seed(seed)
-    train_set, test_set = random_split(dataset, [n_train, n_test], generator=g)
-    
-    # DataLoaderの作成
-    train_loader = DataLoader(train_set,
-                             batch_size=batch_size,
-                             shuffle=True,
-                             num_workers=num_workers)
-    test_loader = DataLoader(test_set,
-                            batch_size=batch_size,
-                            shuffle=False,
-                            num_workers=num_workers)
-    
-    return train_loader, test_loader
+from data_loader_from_json import make_data_loaders_from_json
 
 # ------------------------------
 # ハイパーパラメータの設定
 # ------------------------------
-batch_size    = 16
+batch_size    = 32
 learning_rate = 1e-3
-max_epoch     = 50
-num_workers   = 4
+max_epoch     = 40
+num_workers   = 0  # マルチプロセス回避のために0に設定
 load_epoch    = -1     # ロードするエポック（-1なら新規学習）
 
-# 潜在変数の次元
-latent_size   = 64
+# データセット設定
+GRID_SIZE = [4, 4, 4]  # Pt-Pdスラブの形状
+TRAIN_RATIO = 0.8
+SEED = 42
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# 潜在変数の次元
+latent_size   = 128
+
+# JSONファイルのパス設定
+STRUCTURES_DB_PATHS = [
+    "./data/iter0_structure.json",
+]
+
+# 過電圧JSONファイルも複数指定
+OVERPOTENTIALS_JSON_PATHS = [
+    "./results/iter0_overpotentials.json",
+]
+
+if torch.cuda.is_available():
+    device = torch.device("cuda:0")
+elif torch.backends.mps.is_available():
+    device = torch.device("mps")
+else:
+    device = torch.device("cpu")
 print(f"使用デバイス: {device}")
 
 # ------------------------------
@@ -150,16 +56,21 @@ class CVAE(nn.Module):
     def __init__(self, latent_size=64, condition_dim=1):
         """
         latent_size : 潜在変数の次元数
-        condition_dim : 条件の次元数（overpotentialの連続値は1次元）
+        condition_dim : 条件の次元数（Pd比率の連続値は1次元）
         """
         super(CVAE, self).__init__()
         self.latent_size = latent_size
         self.condition_dim = condition_dim
-        self.activation = nn.SiLU()
+        self.activation = nn.LeakyReLU(0.1, inplace=False)
 
-        # Encoder
-        # 入力はスラブ構造 (Z=4層) と条件値（チャネルとして結合）
-        self.conv1   = nn.Conv2d(in_channels=5, out_channels=32, kernel_size=3, stride=1, padding=1)
+        # 条件値の非線形変換（エンコーダ用）
+        self.enc_label_fc1 = nn.Linear(condition_dim, 32)
+        self.enc_label_fc2 = nn.Linear(32, 32)
+        self.enc_label_fc3 = nn.Linear(32, 16)
+
+        # Encoder - 入力は結合後のテンソル [B, 12, 8, 8]
+        # 4(入力チャネル) + 16(条件埋め込み) = 20チャネル
+        self.conv1   = nn.Conv2d(in_channels=20, out_channels=32, kernel_size=3, stride=1, padding=1)
         self.bn1     = nn.BatchNorm2d(32)
         self.conv2   = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=2, padding=1)
         self.bn2     = nn.BatchNorm2d(64)
@@ -169,9 +80,10 @@ class CVAE(nn.Module):
         self.mu      = nn.Linear(256, self.latent_size)
         self.logvar  = nn.Linear(256, self.latent_size)
 
-        # 条件値の非線形変換
-        self.label_fc1 = nn.Linear(condition_dim, 64)
-        self.label_fc2 = nn.Linear(64, 16)
+        # 条件値の非線形変換(デコーダ用)
+        self.label_fc1 = nn.Linear(condition_dim, 32)
+        self.label_fc2 = nn.Linear(32, 32)
+        self.label_fc3 = nn.Linear(32, 16)
 
         # Decoder
         self.linear2 = nn.Linear(self.latent_size + 16, 256)
@@ -180,17 +92,36 @@ class CVAE(nn.Module):
         self.bn4     = nn.BatchNorm2d(32)
         self.deconv2 = nn.ConvTranspose2d(in_channels=32, out_channels=16, kernel_size=3, stride=2, padding=1, output_padding=1)
         self.bn5     = nn.BatchNorm2d(16)
-        self.deconv3 = nn.ConvTranspose2d(in_channels=16, out_channels=4, kernel_size=3, stride=1, padding=1)
+        self.deconv3 = nn.ConvTranspose2d(in_channels=16, out_channels=16, kernel_size=3, stride=1, padding=1)
+        self.bn6     = nn.BatchNorm2d(16)
+        self.deconv4 = nn.ConvTranspose2d(in_channels=16, out_channels=4*3, kernel_size=3, stride=1, padding=1)
 
-    def encoder(self, x, y):
+    def encoder_label(self, y):
+        """
+        エンコーダ用の条件埋め込み生成
+        y : [B, 1] (Pd比率の値)
+        """
+        h1 = self.activation(self.enc_label_fc1(y))
+        h2 = self.activation(self.enc_label_fc2(h1))
+        h3 = self.activation(self.enc_label_fc3(h2))
+
+        return h3
+    
+    def encoder(self, x, label_embedding):
         """
         x : 入力スラブテンソル [B, 4, 8, 8]
-        y : 連続値overpotential [B, 1]
+        label_embedding : 条件埋め込みテンソル [B, 8]
         """
-        # 連続値を特徴マップとして拡張
-        y_expanded = y.view(-1, 1, 1, 1).expand(-1, 1, x.size(2), x.size(3))
-        # チャネル方向に結合（Z=4のスラブ + 条件値1チャネル）
-        t = torch.cat((x, y_expanded), dim=1)
+        # 条件埋め込みをチャネルとして拡張
+        batch_size = x.size(0)
+        label_channels = label_embedding.size(1)
+        
+        # 条件埋め込みを各位置に拡張 [B, 8] -> [B, 8, 8, 8]
+        label_expanded = label_embedding.view(batch_size, label_channels, 1, 1)
+        label_expanded = label_expanded.expand(-1, -1, x.size(2), x.size(3))
+        
+        # チャネル方向に結合 [B, 4, 8, 8] + [B, 8, 8, 8] -> [B, 12, 8, 8]
+        t = torch.cat((x, label_expanded), dim=1)
         
         t = self.activation(self.bn1(self.conv1(t)))
         t = self.activation(self.bn2(self.conv2(t)))
@@ -219,54 +150,139 @@ class CVAE(nn.Module):
         t = self.unflatten(t)
         t = self.activation(self.bn4(self.deconv1(t)))
         t = self.activation(self.bn5(self.deconv2(t)))
-        t = self.deconv3(t)  
-
-        # シグモイド関数の代わりに温度付きシグモイド関数を使用
-        #temperature = 0.1  # 小さい温度でより鋭い分布に
-        #t = torch.sigmoid(t / temperature)
+        t = self.activation(self.bn5(self.deconv3(t)))
+        t = self.deconv4(t)  
 
         return t
 
     def label_encoder(self, y):
         """
         連続値を非線形変換
-        y : [B, 1] (overpotentialの値)
+        y : [B, 1] (Pd比率の値)
         """
         h1 = self.activation(self.label_fc1(y))
         h2 = self.activation(self.label_fc2(h1))
-        return h2
+        h3 = self.activation(self.label_fc3(h2))
+
+        return h3
 
     def forward(self, x, y):
         """
         x : 入力スラブ [B, 4, 8, 8]
-        y : overpotential値 [B, 1]
+        y : Pd比率値 [B, 1]
         """
-        mu, logvar = self.encoder(x, y)
+        # 条件を非線形変換（エンコーダ用とデコーダ用で別々に処理）
+        enc_label_embedding = self.encoder_label(y)
+        dec_label_embedding = self.label_encoder(y)
+        
+        # エンコーダで条件付き変換
+        mu, logvar = self.encoder(x, enc_label_embedding)
         z = self.reparameterize(mu, logvar)
         
-        # 連続値をエンコード
-        label_embedding = self.label_encoder(y)
-        
-        # 潜在変数と条件埋め込みを結合
-        z_cat = torch.cat((z, label_embedding), dim=1)
+        # デコーダで条件付き生成
+        z_cat = torch.cat((z, dec_label_embedding), dim=1)
         pred = self.decoder(z_cat)
+        
         return pred, mu, logvar
 
 # ------------------------------
 # 損失関数
 # ------------------------------
 def loss_function(x, pred, mu, logvar):
-    """再構成誤差とKLダイバージェンスの計算"""
-    recon_loss = F.mse_loss(pred, x, reduction='sum')
+    # pred: [B, 12, H, W] - logits
+    # x: [B, 4, H, W] - クラスインデックス（各層ごとに0,1,2のいずれか）
     
-    #recon_loss = F.binary_cross_entropy(pred, x, reduction='mean')
+    x = x.to(dtype=torch.long)
+    
+    # クラスごとの重みを設定（0=空:倍、1=Pd:10倍、2=Pt:10倍）
+    class_weights = torch.tensor([1.0, 10.0, 10.0], device=x.device)
+    
+    # 各層ごとに処理する場合
+    recon_loss = 0
+    for z in range(4):  # 4層
+        # 各層で3クラス分類
+        layer_pred = pred[:, z*3:(z+1)*3]  # 各層に3チャネル
+        recon_loss += F.cross_entropy(
+            layer_pred, 
+            x[:, z], 
+            weight=class_weights,
+            reduction='sum'
+        )
+    
+    # KL損失
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+
     return recon_loss, kld
+
+# ------------------------------
+# 可視化関数
+# ------------------------------
+def visualize_slabs(pred, labels, result_dir):
+    """Visualize the reconstructed structures with gridlines."""
+    batch_size = min(8, pred.size(0))  # Visualize up to 8 structures
+    
+    fig, axes = plt.subplots(batch_size, 5, figsize=(20, 4 * batch_size))
+    
+    for i in range(batch_size):
+        for z in range(4):
+            # Get the softmax of the predicted results
+            layer_pred = pred[i, z * 3:(z + 1) * 3]
+            layer_pred = F.softmax(layer_pred, dim=0)
+            
+            # Get the class with the highest probability
+            _, predicted_class = torch.max(layer_pred, dim=0)
+            
+            # Set the colormap (0: white, 1: blue, 2: red)
+            cmap = plt.cm.colors.ListedColormap(['white', 'blue', 'red'])
+            bounds = [-0.5, 0.5, 1.5, 2.5]
+            norm = plt.cm.colors.BoundaryNorm(bounds, cmap.N)
+            
+            # Visualize the predicted class with gridlines
+            im = axes[i, z].imshow(predicted_class.numpy(), cmap=cmap, norm=norm)
+            axes[i, z].set_title(f'Layer {z}')
+            axes[i, z].axis('on')
+            axes[i, z].grid(color='black', linestyle='--', linewidth=0.5)
+            axes[i, z].set_xticks(np.arange(-0.5, predicted_class.size(1), 1), minor=True)
+            axes[i, z].set_yticks(np.arange(-0.5, predicted_class.size(0), 1), minor=True)
+            axes[i, z].tick_params(which='minor', length=0)  # Hide minor ticks
+        
+        # Display the Pd ratio
+        axes[i, 4].text(0.5, 0.5, f'Pd Ratio: {labels[i].item():.3f}', 
+                        horizontalalignment='center',
+                        verticalalignment='center',
+                        fontsize=14)
+        axes[i, 4].axis('off')
+    
+    plt.tight_layout()
+    plt.savefig(f"{result_dir}/reconstructed_samples.png")
+    plt.close()
+
+def generate_samples(model, result_dir, num_samples=8):
+    """新しいサンプルを生成"""
+    model.eval()
+    with torch.no_grad():
+        # ランダムな潜在変数
+        z = torch.randn(num_samples, model.latent_size).to(device)
+        
+        # 異なるPd比率の条件を設定
+        pd_ratios = torch.linspace(0.125, 1, num_samples).view(-1, 1).to(device)
+        
+        # 条件を非線形変換
+        label_embedding = model.label_encoder(pd_ratios)
+        
+        # 潜在変数と条件を結合してデコード
+        z_cat = torch.cat((z, label_embedding), dim=1)
+        pred = model.decoder(z_cat)
+        
+        # 生成された構造の可視化
+        visualize_slabs(pred.cpu(), pd_ratios.cpu(), result_dir)
+        
+        print(f"条件付き生成サンプルを {result_dir}/generated_samples.png に保存しました")
 
 # ------------------------------
 # 学習ループ
 # ------------------------------
-def train(epoch, model, train_loader, optimizer):
+def train(epoch, model, train_loader, optimizer, kld_weight=0.5):
     model.train()
     total_recon, total_kld, total_loss = 0, 0, 0
     start_time = time.time()
@@ -280,27 +296,31 @@ def train(epoch, model, train_loader, optimizer):
             optimizer.zero_grad()
             pred, mu, logvar = model(x, y)
             recon_loss, kld = loss_function(x, pred, mu, logvar)
-            loss = recon_loss + (epoch/max_epoch)*kld*0.1
+            
+            # エポックが進むにつれてKL項の重みを徐々に増やす
+            beta = min(1.0, epoch / (max_epoch)) * kld_weight
+            #beta = 1
+            loss = recon_loss + beta * kld
+            
             loss.backward()
             optimizer.step()
 
-            total_loss  += loss.item() * x.size(0)
-            total_recon += recon_loss.item() * x.size(0)
-            total_kld   += kld.item() * x.size(0)
+            total_loss  += loss.item()
+            total_recon += recon_loss.item()
+            total_kld   += kld.item()
             
-            if i % 1 == 0:
+            if i % 10 == 0:
                 print(f"Batch {i}/{len(train_loader)}: Loss={loss.item():.4f}")
                 
         except Exception as e:
             traceback.print_exc()
-            torch.cuda.empty_cache()
             continue
     
     dataset_size = len(train_loader.dataset)
     elapsed = time.time() - start_time
-    return total_loss / dataset_size, total_kld / dataset_size, total_recon / dataset_size, elapsed
+    return total_loss / len(train_loader), total_kld / len(train_loader), total_recon / len(train_loader), elapsed
 
-def test(epoch, model, test_loader):
+def test(epoch, model, test_loader, result_dir, kld_weight=0.1):
     model.eval()
     total_recon, total_kld, total_loss = 0, 0, 0
     start_time = time.time()
@@ -313,11 +333,14 @@ def test(epoch, model, test_loader):
 
                 pred, mu, logvar = model(x, y)
                 recon_loss, kld = loss_function(x, pred, mu, logvar)
-                loss = recon_loss + kld
+                
+                # 訓練と同じベータ値を使用
+                beta = min(1.0, epoch / (max_epoch * 0.8)) * kld_weight
+                loss = recon_loss + beta * kld
 
-                total_loss  += loss.item() * x.size(0)
-                total_recon += recon_loss.item() * x.size(0)
-                total_kld   += kld.item() * x.size(0)
+                total_loss  += loss.item()
+                total_recon += recon_loss.item()
+                total_kld   += kld.item()
                 
                 # 最終エポックのみ可視化
                 if epoch == max_epoch - 1 and i == 0:
@@ -325,91 +348,47 @@ def test(epoch, model, test_loader):
                     
             except Exception as e:
                 traceback.print_exc()
-                torch.cuda.empty_cache()
                 continue
 
-    dataset_size = len(test_loader.dataset)
     elapsed = time.time() - start_time
-    return total_loss / dataset_size, total_kld / dataset_size, total_recon / dataset_size, elapsed
+    return total_loss / len(test_loader), total_kld / len(test_loader), total_recon / len(test_loader), elapsed
 
 # ------------------------------
-# 可視化と結果保存
-# ------------------------------
-def visualize_slabs(pred, y, result_dir):
-    """スラブ構造の可視化 - 最終結果のみ保存"""
-    fig = plt.figure(figsize=(16, 12))
-    
-    for i in range(min(6, pred.size(0))):
-        # スラブの各層を表示
-        for z in range(4):
-            ax = fig.add_subplot(6, 4, i*4 + z + 1)
-            ax.imshow(pred[i, z].numpy(), cmap='viridis')
-            ax.axis('off')
-            if z == 0:
-                ax.set_title(f"OP: {y[i, 0]:.3f}")
-    
-    plt.tight_layout()
-    plt.savefig(f"{result_dir}/reconstructed_slabs.png")
-    plt.close()
-
-def generate_samples(model, result_dir):
-    """潜在空間からのサンプル生成 - 最終結果のみ保存"""
-    model.eval()
-    with torch.no_grad():
-        # 異なるoverpotential値でサンプル生成
-        z = torch.randn(6, latent_size).to(device)
-        y_values = torch.tensor([[0.2], [0.3], [0.4], [0.5], [0.6], [0.7]], dtype=torch.float).to(device)
-        
-        # 条件と潜在変数からスラブ生成
-        label_embedding = model.label_encoder(y_values)
-        z_cat = torch.cat((z, label_embedding), dim=1)
-        pred = model.decoder(z_cat)
-        
-        fig = plt.figure(figsize=(16, 12))
-        for i in range(6):
-            for z in range(4):
-                ax = fig.add_subplot(6, 4, i*4 + z + 1)
-                ax.imshow(pred[i, z].cpu().numpy(), cmap='viridis')
-                ax.axis('off')
-                if z == 0:
-                    ax.set_title(f"OP: {y_values[i, 0]:.3f}")
-        
-        plt.tight_layout()
-        plt.savefig(f"{result_dir}/generated_samples.png")
-        plt.close()
-
+# 学習曲線のプロット
+# -----------------------------
 def plot_learning_curves(train_loss, test_loss, result_dir):
-    """学習曲線のプロット - 最終結果のみ保存"""
+    """Plot learning curves and save the final figure."""
     epochs = np.arange(1, len(train_loss) + 1)
-    
+
     plt.figure(figsize=(15, 10))
+
     plt.subplot(3, 1, 1)
-    plt.plot(epochs, train_loss[:, 0], 'b-', label='Training Total Loss')
+    plt.plot(epochs, train_loss[:, 0], 'b-', label='Train Total Loss')
     plt.plot(epochs, test_loss[:, 0], 'r-', label='Test Total Loss')
-    plt.title('Total Loss Progress', fontsize=14)
+    plt.title('Total Loss over Epochs', fontsize=14)
     plt.xlabel('Epoch')
-    plt.ylabel('Loss Value')
+    plt.ylabel('Loss')
     plt.grid(True, alpha=0.3)
     plt.legend()
 
     plt.subplot(3, 1, 2)
-    plt.plot(epochs, train_loss[:, 1], 'b-', label='Training KL Loss')
+    plt.plot(epochs, train_loss[:, 1], 'b-', label='Train KL Loss')
     plt.plot(epochs, test_loss[:, 1], 'r-', label='Test KL Loss')
-    plt.title('KL Divergence Progress', fontsize=14)
+    plt.title('KL Loss over Epochs', fontsize=14)
     plt.xlabel('Epoch')
-    plt.ylabel('KL Loss Value')
+    plt.ylabel('KL Loss')
     plt.grid(True, alpha=0.3)
     plt.legend()
 
     plt.subplot(3, 1, 3)
-    plt.plot(epochs, train_loss[:, 2], 'b-', label='Training Reconstruction Loss')
+    plt.plot(epochs, train_loss[:, 2], 'b-', label='Train Reconstruction Loss')
     plt.plot(epochs, test_loss[:, 2], 'r-', label='Test Reconstruction Loss')
-    plt.title('Reconstruction Loss Progress', fontsize=14)
+    plt.title('Reconstruction Loss over Epochs', fontsize=14)
     plt.xlabel('Epoch')
-    plt.ylabel('Reconstruction Loss Value')
+    plt.ylabel('Reconstruction Loss')
     plt.grid(True, alpha=0.3)
     plt.legend()
-    
+
     plt.tight_layout()
     plt.savefig(f"{result_dir}/learning_curves.png")
     plt.close()
@@ -417,34 +396,38 @@ def plot_learning_curves(train_loss, test_loss, result_dir):
 # ------------------------------
 # メイン処理
 # ------------------------------
-if __name__ == "__main__":
+def main():
     # 結果保存先を設定
-    result_dir = "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/result/ccVAE"
+    result_dir = os.path.join(os.path.dirname(__file__), "result")
     os.makedirs(result_dir, exist_ok=True)
     
-    # データローダーを作成
-    train_loader, test_loader = make_data_loaders(
-        struct_json=Path("/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/data/iter0_structure.json"),
-        energy_json=Path("/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/data/iter0_reaction_energy.json"),
-        grid_size=(4, 4, 4),
+    # 修正: 新しいデータローダーを使用
+    train_loader, test_loader, dataset = make_data_loaders_from_json(
+        structures_db_paths=STRUCTURES_DB_PATHS,
+        overpotentials_json_paths=OVERPOTENTIALS_JSON_PATHS,
+        train_ratio=TRAIN_RATIO, 
+        batch_size=batch_size,
         num_workers=num_workers,
-        train_ratio=0.9,
-        batch_size=batch_size
+        seed=SEED,
+        grid_size=GRID_SIZE
     )
-    print("データローダーを作成しました")
     
-    # モデル初期化
+    print(f"データセットのサイズ: {len(dataset)}")
+    print(f"訓練データ数: {len(train_loader.dataset)}, テストデータ数: {len(test_loader.dataset)}")
+    print(f"過電圧の範囲: {dataset.target_min:.3f} 〜 {dataset.target_max:.3f}")
+    
+    # モデルの初期化
     model = CVAE(latent_size=latent_size, condition_dim=1).to(device)
     print("モデルを作成しました")
     
     # 既存モデルのロード（必要な場合）
     if load_epoch > 0:
-        checkpoint_path = f'./checkpoints/model_{load_epoch}.pt'
+        checkpoint_path = f'{result_dir}/model_{load_epoch}.pt'
         model.load_state_dict(torch.load(checkpoint_path, map_location=device))
         print(f"モデル {load_epoch} をロードしました")
     
-    # オプティマイザ設定
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=0.005)
+    # オプティマイザの設定
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)
     
     # 損失履歴を保存するリスト
     train_loss_list = []
@@ -452,27 +435,42 @@ if __name__ == "__main__":
     
     # 学習ループ
     for epoch in range(load_epoch + 1, max_epoch):
-        train_total, train_kld, train_recon, train_time = train(epoch, model, train_loader, optimizer)
-        test_total, test_kld, test_recon, test_time = test(epoch, model, test_loader)
+        print(f"\nエポック {epoch+1}/{max_epoch} 開始")
         
-        print(f"Epoch: {epoch+1}/{max_epoch} | 損失: {train_total:.4f} | 学習時間: {train_time:.2f}秒 / 評価時間: {test_time:.2f}秒")
+        train_total, train_kld, train_recon, train_time = train(epoch, model, train_loader, optimizer)
+        test_total, test_kld, test_recon, test_time = test(epoch, model, test_loader, result_dir)
+        
+        print(f"Epoch: {epoch+1}/{max_epoch} | 訓練損失: {train_total:.4f} | テスト損失: {test_total:.4f}")
+        print(f"訓練時間: {train_time:.2f}秒, 評価時間: {test_time:.2f}秒")
         
         # 損失履歴を追加
         train_loss_list.append([train_total, train_kld, train_recon])
         test_loss_list.append([test_total, test_kld, test_recon])
         
-        # 最終エポックのみモデル保存
-        if epoch == max_epoch - 1:
-            torch.save(model.state_dict(), f"{result_dir}/final_model.pt")
+        # 5エポックごとにチェックポイントを保存
+        #if (epoch + 1) % 5 == 0 or epoch == max_epoch - 1:
+        #    torch.save(model.state_dict(), f"{result_dir}/model_{epoch+1}.pt")
+        #    print(f"モデルをエポック {epoch+1} で保存しました")
     
     # 最終結果の保存
     train_loss_array = np.array(train_loss_list)
     test_loss_array = np.array(test_loss_list)
     
+    # 損失値をNumPy配列として保存
+    np.save(f"{result_dir}/train_loss.npy", train_loss_array)
+    np.save(f"{result_dir}/test_loss.npy", test_loss_array)
+    
     # 学習曲線をプロット・保存
     plot_learning_curves(train_loss_array, test_loss_array, result_dir)
     
-    # 生成サンプルを保存
+    # 最終モデルの保存
+    torch.save(model.state_dict(), f"{result_dir}/final_model.pt")
+    
+    # 生成サンプルを作成
     generate_samples(model, result_dir)
     
     print(f"学習結果は {result_dir} に保存されました")
+
+if __name__ == "__main__":
+    freeze_support()  # Windows環境でのマルチプロセス対応
+    main()
