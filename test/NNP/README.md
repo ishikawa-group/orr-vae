@@ -21,8 +21,11 @@ NNPの精度を確認するために、以下の計算を行う：
 |----------|--------------|
 | DFT: RPBE D3-PAW | <img src="result/orr_volcano_plot_vasp_rpbe_D3.png" width="80%"> |
 | NNP: Mattersim | <img src="result/orr_volcano_plot_mattersim.png" width="80%"> |
+ NNP: Mattersim MatPES PBE | <img src="result/orr_volcano_plot_mattersim_matpes_pbe.png" width="80%"> |
+| NNP: Mattersim MatPES PBE D3 | <img src="result/orr_volcano_plot_mattersim_matpes_pbe_D3.png" width="80%"> |
 | NNP: MACE MatPES PBE | <img src="result/orr_volcano_plot_mace_matbes_pbe.png" width="80%"> |
 | NNP: MACE MatPES PBE D3 | <img src="result/orr_volcano_plot_mace_matpes_pbe_D3.png" width="80%"> |
+
 
 ## 結果の考察
 - DFTとNNPの結果を比較すると、MACE MatPES PBE D3が最もDFTに近い結果を示した
