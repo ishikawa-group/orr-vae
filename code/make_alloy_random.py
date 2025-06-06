@@ -17,7 +17,7 @@ args = parser.parse_args()
 # --- パラメータ設定 ---
 size = [4, 4, 4]
 vacuum = None
-alloy_elements = ["Pt", "Pd"]
+alloy_elements = ["Pt", "Ni"]
 fractions = None 
 
 lattice_const = vegard_lattice_constant(alloy_elements, fractions)
