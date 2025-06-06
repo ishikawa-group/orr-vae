@@ -29,5 +29,6 @@ NNPの精度を確認するために、以下の計算を行う：
 
 ## 結果の考察
 - DFTとNNPの結果を比較すると、MACE MatPES PBE D3が最もDFTに近い結果を示した
+- MattersimもMatPESデータセットでfine-tuningすると、DFTに近い結果を示すようになったが、MACE MatPES PBE D3の方がよりは精度が低い。もしかすると、Mattersimは他のNNPと比較すると、パラメータ数が少ないので表現力不足なのかもしれない。
 - MACE MatPES PBE D3を用いたデータセット作成と、VAEやGANによる触媒性能最適化のデモンストレーションは可能であると判断
 - 以降は一旦MACE MatPES PBE D3を用いてORR過電圧の計算とデータセットの作成を行い、触媒性能最適化のデモンストレーションを実施する
