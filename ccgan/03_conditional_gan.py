@@ -21,7 +21,7 @@ from tool import make_data_loaders_from_json
 # ------------------------------
 batch_size    = 4
 learning_rate = 2e-4
-max_epoch     = 100
+max_epoch     = 50
 num_workers   = 0  # マルチプロセス回避のために0に設定
 load_epoch    = -1     # ロードするエポック（-1なら新規学習）
 
