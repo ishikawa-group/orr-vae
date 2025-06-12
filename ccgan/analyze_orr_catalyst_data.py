@@ -127,7 +127,7 @@ def analyze_orr_catalyst_data():
                    alpha=0.6,
                    label=iter_name,
                    color=colors.get(iter_name, 'gray'),
-                   s=20,
+                   s=30,
                    edgecolors='black',
                    linewidths=0.3)
     
@@ -140,7 +140,7 @@ def analyze_orr_catalyst_data():
     
     # Scatter plotを保存
     scatter_output = output_path / "overpotential_vs_ni_fraction.png"
-    plt.savefig(scatter_output, dpi=300, bbox_inches='tight')
+    plt.savefig(scatter_output, dpi=500, bbox_inches='tight')
     print(f"Scatter plot saved: {scatter_output}")
     plt.close()
     
