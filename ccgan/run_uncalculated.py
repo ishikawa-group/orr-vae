@@ -12,8 +12,8 @@ from ase.db import connect
 
 # 入力ファイル指定（修正：絶対パスに変更）
 base_data_dir = "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/data"
-bulk_file = os.path.join(base_data_dir, "iter1_structures.json")
-calculation_result_file = os.path.join(base_data_dir, "iter1_calculation_result.json")
+bulk_file = os.path.join(base_data_dir, "iter2_structures.json")
+calculation_result_file = os.path.join(base_data_dir, "iter2_calculation_result.json")
 
 # calculation_result_file のディレクトリを作成
 os.makedirs(os.path.dirname(calculation_result_file) or ".", exist_ok=True)
@@ -53,7 +53,7 @@ uid = uncalculated[0]
 print(f"未計算の構造: unique_id={uid}. 計算を開始します...")
 
 # 一時ディレクトリを作成
-temp_dir = f"/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/result/test/iter1_{uid}"
+temp_dir = f"/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/result/test/iter2_{uid}"
 os.makedirs(temp_dir, exist_ok=True)
 print(f"一時ディレクトリを作成しました: {temp_dir}")
 

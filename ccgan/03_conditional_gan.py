@@ -36,13 +36,13 @@ latent_size   = 128
 # JSONファイルのパス設定
 STRUCTURES_DB_PATHS = [
     "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/data/iter0_structures.json",
-    #"/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/data/iter0_structures.json",
+    "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/data/iter1_structures.json",
 ]
 
 # 過電圧JSONファイルも複数指定
 OVERPOTENTIALS_JSON_PATHS = [
     "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/data/iter0_calculation_result.json",
-    #"/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/data/iter0_calculation_result.json",
+    "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/data/iter1_calculation_result.json",
 ]
 
 
@@ -391,7 +391,7 @@ def plot_learning_curves(train_loss, test_loss, result_dir):
 # ------------------------------
 def main():
     # 結果保存先を設定
-    result_dir = "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/result/iter0"
+    result_dir = "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/result/iter1"
     os.makedirs(result_dir, exist_ok=True)
     
     # データローダーの作成
@@ -454,8 +454,8 @@ def main():
     plot_learning_curves(train_loss_array, test_loss_array, result_dir)
     
     # 最終モデルの保存
-    torch.save(generator.state_dict(), f"{result_dir}/final_generator_iter0.pt")
-    torch.save(discriminator.state_dict(), f"{result_dir}/final_discriminator_iter0.pt")
+    torch.save(generator.state_dict(), f"{result_dir}/final_generator_iter1.pt")
+    torch.save(discriminator.state_dict(), f"{result_dir}/final_discriminator_iter1.pt")
     
     
     print(f"学習結果は {result_dir} に保存されました")
