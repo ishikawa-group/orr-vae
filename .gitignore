@@ -8,3 +8,9 @@ __pycache__/
 
 ccgan/result/test/
 ccgan/result/log/
+
+ccvae/result/test/
+ccvae/result/log/
+
+ccvae_2/result/test/
+ccvae_2/result/log/

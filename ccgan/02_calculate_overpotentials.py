@@ -100,7 +100,7 @@ def main():
     # ORR過電圧の計算（修正部分）
     result = calc_orr_overpotential(
         bulk=bulk_atoms,
-        base_dir=str(calc_dir),
+        outdir=str(calc_dir),
         force=args.force,
         log_level=args.log_level,
         calc_type=args.calc_type,

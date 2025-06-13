@@ -9,7 +9,7 @@ import time
 import sys
 import re
 
-SCRIPT_PATH = "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/code/run_uncalculated.py"
+SCRIPT_PATH = "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccvae/run_uncalculated.py"
 MAX_COUNT = 128
 WAIT_TIME = 2  # 各実行間の待機時間（秒）
 
@@ -26,7 +26,8 @@ for i in range(1, MAX_COUNT + 1):
         ["python3", SCRIPT_PATH], 
         stdout=subprocess.PIPE, 
         stderr=subprocess.PIPE,
-        universal_newlines=True
+        universal_newlines=True,
+        cwd="/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccvae" 
     )
     stdout, stderr = process.communicate()
     

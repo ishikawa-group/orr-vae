@@ -1,26 +1,33 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-未計算の構造について、bulk_db と reaction_energy.json を比較し、
-最初の未計算 unique_id を取得して calc_energy_EMT.py を実行するスクリプト
+未計算の構造に対してORR過電圧計算を実行するスクリプト
 """
 import os
 import json
 import subprocess
 import sys
-import shutil  # 追加：ディレクトリ削除のため
+import shutil
 from ase.db import connect
 
-# 入力ファイル指定
-bulk_file = "data/iter0_structure.json"
-reaction_energy_file = "data/iter0_reaction_energy.json"
+# グローバル変数でiter番号を設定
+ITER = 3  # ここで現在のiter番号を設定
 
-# reaction_energy_file のディレクトリを作成
-os.makedirs(os.path.dirname(reaction_energy_file) or ".", exist_ok=True)
+# 入力ファイル指定（動的に生成）
+base_data_dir = "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccvae/data"
+bulk_file = os.path.join(base_data_dir, f"iter{ITER}_structures.json")
+calculation_result_file = os.path.join(base_data_dir, f"iter{ITER}_calculation_result.json")
 
-# reaction_energy_file が存在しない or 空の場合は空リストを初期化
-if not os.path.exists(reaction_energy_file) or os.path.getsize(reaction_energy_file) == 0:
-    with open(reaction_energy_file, 'w') as f:
+print(f"=== 未計算構造の過電圧計算 (iter{ITER}) ===")
+print(f"構造ファイル: {bulk_file}")
+print(f"結果ファイル: {calculation_result_file}")
+
+# calculation_result_file のディレクトリを作成
+os.makedirs(os.path.dirname(calculation_result_file) or ".", exist_ok=True)
+
+# calculation_result_file が存在しない or 空の場合は空リストを初期化
+if not os.path.exists(calculation_result_file) or os.path.getsize(calculation_result_file) == 0:
+    with open(calculation_result_file, 'w') as f:
         json.dump([], f)
 
 # Bulk DB から unique_id リストを抽出
@@ -38,8 +45,8 @@ for row in db.select():
         # フィールド unique_id がなければ id を使用
         bulk_ids.append(str(row.id))
 
-# reaction_energy_file の読み込み
-with open(reaction_energy_file, 'r') as f:
+# calculation_result_file の読み込み
+with open(calculation_result_file, 'r') as f:
     reaction_data = json.load(f)
 reaction_ids = [str(entry.get('unique_id', entry.get('id'))) for entry in reaction_data]
 
@@ -52,22 +59,22 @@ if not uncalculated:
 uid = uncalculated[0]
 print(f"未計算の構造: unique_id={uid}. 計算を開始します...")
 
-# 一時ディレクトリを作成
-temp_dir = f"/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/result/test/temp_{uid}"
+# 一時ディレクトリを動的に生成
+temp_dir = f"/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccvae/result/test/iter{ITER}_{uid}"
 os.makedirs(temp_dir, exist_ok=True)
 print(f"一時ディレクトリを作成しました: {temp_dir}")
 
 # ORR_catalyst_generator/code/eta_from_json.py を呼び出して計算
 cmd = [
     "python3",
-    "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/code/eta_from_json.py",
+    "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccvae/02_calculate_overpotentials.py",  
     "--bulk_db", bulk_file,
     "--unique_id", uid,
-    "--out_json", reaction_energy_file,
+    "--out_json", calculation_result_file,
     "--base_dir", temp_dir,  # 一時ディレクトリを使用
     "--force", "True",  # force オプションに値を追加
     "--log_level", "INFO",  # ログレベルを INFO に設定
-    "--calc_type", "mattersim"  # 計算タイプを指定
+    "--calc_type", "mace"  # 計算タイプを指定
 ]
 
 print(f"Calculating unique_id={uid}...")
@@ -78,8 +85,8 @@ if result.returncode != 0:
 else:
     print(f"unique_id={uid} の計算が完了しました。")
 
-# 計算後、reaction_energy_file を再読み込みして成功数を表示
-with open(reaction_energy_file, 'r') as f:
+# 計算後、calculation_result_file を再読み込みして成功数を表示
+with open(calculation_result_file, 'r') as f:
     updated = json.load(f)
 updated_ids = [str(entry.get('unique_id', entry.get('id'))) for entry in updated]
 success = updated_ids.count(uid)

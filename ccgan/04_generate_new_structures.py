@@ -100,7 +100,7 @@ def generate_structures():
     parser.add_argument("--output_dir", type=str, default="/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/data",
                         help="Output directory (default: /gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/data)")
     parser.add_argument("--generator_path", type=str, 
-                        default="/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/result/iter1/final_generator_iter1.pt",
+                        default="/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/result/iter2/final_generator_iter2.pt",
                         help="Path to the generator model")
     parser.add_argument("--target_condition", type=float, default=1.0,
                         help="Target condition for generation (default: 1.0)")
@@ -143,7 +143,7 @@ def generate_structures():
         os.makedirs(data_dir)
 
     # 出力ファイルのパス
-    db_path = os.path.join(data_dir, "iter2_structures.json")
+    db_path = os.path.join(data_dir, "iter3_structures.json")
     if os.path.exists(db_path):
         os.remove(db_path)
     db = connect(db_path)
