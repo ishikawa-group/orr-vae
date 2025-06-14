@@ -1,5 +1,6 @@
 import json
 import matplotlib
+import matplotlib.colors as mcolors
 matplotlib.use('Agg')  # バックエンドを非インタラクティブに設定
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,13 +18,13 @@ def analyze_orr_catalyst_data():
     """ORR触媒データの分析とプロット作成"""
     
     # データファイルのパス設定
-    base_path = Path("/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/data")
-    output_path = Path("/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/result/figure")
+    base_path = Path("/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccvae_2/data")
+    output_path = Path("/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccvae_2/result/figure")
     output_path.mkdir(parents=True, exist_ok=True)
     
     # iter0, iter1, iter2のデータを読み込み
     all_data = {}
-    for iter_num in [0, 1, 2]:
+    for iter_num in [0, 1, 2, 3, 4]:
         file_path = base_path / f"iter{iter_num}_calculation_result.json"
         if file_path.exists():
             data = load_json_data(file_path)
@@ -48,7 +49,10 @@ def analyze_orr_catalyst_data():
     print(f"Iter distribution: {combined_df['iter'].value_counts()}")
     
     # カラーパレットの設定
-    colors = {'iter0': '#1f77b4', 'iter1': '#ff7f0e', 'iter2': '#2ca02c'}
+    #colors = {'iter0': '#1f77b4', 'iter1': '#ff7f0e', 'iter2': '#2ca02c'}
+    
+    tab10_colors = plt.cm.tab10(np.linspace(0, 1, 10))
+    colors = {f'iter{i}': mcolors.to_hex(tab10_colors[i]) for i in range(10)}
     
     # 全データのレンジを計算してヒストグラムの範囲を統一
     ni_fraction_clean = combined_df['ni_fraction'].dropna()
@@ -66,8 +70,8 @@ def analyze_orr_catalyst_data():
         ni_fraction_clean = iter_data['ni_fraction'].dropna()
         plt.hist(ni_fraction_clean, 
                 bins=30, 
-                range=ni_range,  # 範囲を統一
-                alpha=0.6, 
+                range=ni_range,  #
+                alpha=0.4, 
                 label=iter_name, 
                 color=colors.get(iter_name, 'gray'),
                 edgecolor='black',
@@ -77,7 +81,7 @@ def analyze_orr_catalyst_data():
     plt.ylabel('Count', fontsize=12)
     plt.title('Distribution of Ni Fraction across Iterations', fontsize=14, fontweight='bold')
     plt.legend()
-    plt.grid(True, alpha=0.3)
+    plt.grid(True, alpha=0.4)
     plt.tight_layout()
     
     # ヒストグラムを保存
@@ -96,7 +100,7 @@ def analyze_orr_catalyst_data():
         plt.hist(overpotential_clean, 
                 bins=30, 
                 range=overpot_range,  # 範囲を統一
-                alpha=0.6, 
+                alpha=0.4, 
                 label=iter_name, 
                 color=colors.get(iter_name, 'gray'),
                 edgecolor='black',
@@ -106,7 +110,7 @@ def analyze_orr_catalyst_data():
     plt.ylabel('Count', fontsize=12)
     plt.title('Distribution of Overpotential across Iterations', fontsize=14, fontweight='bold')
     plt.legend()
-    plt.grid(True, alpha=0.3)
+    plt.grid(True, alpha=0.4)
     plt.tight_layout()
     
     # Overpotentialヒストグラムを保存
@@ -124,7 +128,7 @@ def analyze_orr_catalyst_data():
         valid_data = iter_data.dropna(subset=['ni_fraction', 'overpotential'])
         plt.scatter(valid_data['ni_fraction'], 
                    valid_data['overpotential'],
-                   alpha=0.6,
+                   alpha=0.4,
                    label=iter_name,
                    color=colors.get(iter_name, 'gray'),
                    s=30,
@@ -135,7 +139,7 @@ def analyze_orr_catalyst_data():
     plt.ylabel('Overpotential (V)', fontsize=12)
     plt.title('Overpotential vs Ni Fraction across Iterations', fontsize=14, fontweight='bold')
     plt.legend()
-    plt.grid(True, alpha=0.3)
+    plt.grid(True, alpha=0.4)
     plt.tight_layout()
     
     # Scatter plotを保存
@@ -220,7 +224,7 @@ if __name__ == "__main__":
     combined_df = analyze_orr_catalyst_data()
     
     if combined_df is not None and not combined_df.empty:
-        output_path = Path("/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccgan/result/figure")
+        output_path = Path("/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccvae_2/result/figure")
         
         print(f"\n=== Analysis Complete ===")
         print(f"All figures saved to: {output_path}")

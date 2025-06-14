@@ -18,7 +18,7 @@ from tool import make_data_loaders_from_json
 # ------------------------------
 # グローバル変数でiter番号を設定
 # ------------------------------
-ITER = 1  # ここで現在のiter番号を設定
+ITER = 3  # ここで現在のiter番号を設定
 
 # ------------------------------
 # ハイパーパラメータの設定
@@ -97,7 +97,7 @@ class ConditionalVAE(nn.Module):
         self.dec_fc2 = nn.Linear(256, 512)
         self.dec_fc3 = nn.Linear(512, 64 * 2 * 2)
         
-        # 逆畳み込み層
+        # 転置畳み込み層
         self.deconv1 = nn.ConvTranspose2d(64, 128, kernel_size=3, stride=2, padding=1, output_padding=1)
         self.dec_bn4 = nn.BatchNorm2d(128)
         self.deconv2 = nn.ConvTranspose2d(128, 64, kernel_size=3, stride=2, padding=1, output_padding=1)

@@ -18,7 +18,7 @@ from tool import vegard_lattice_constant, tensor_to_structure, sort_atoms
 import torch.nn.functional as F
 
 # グローバル変数でiter番号を設定
-ITER = 1  # ここで現在のiter番号を設定
+ITER = 3  # ここで現在のiter番号を設定
 
 def load_vae_class():
     """03_conditional_vae.pyからConditionalVAEクラスを動的にインポート"""
@@ -221,7 +221,7 @@ def generate_structures():
     unique_structures = existing_structures.copy()
     unique_numbers = existing_numbers.copy()  # numbersリストも管理
     successful_generations = 0
-    max_attempts = args.num * 1000
+    max_attempts = args.num * 10000
     attempt = 0
     duplicate_with_existing = 0  # 既存構造との重複カウント
     duplicate_with_new = 0       # 新規生成同士の重複カウント

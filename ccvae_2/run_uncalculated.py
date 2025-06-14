@@ -11,7 +11,7 @@ import shutil
 from ase.db import connect
 
 # グローバル変数でiter番号を設定
-ITER = 1  # ここで現在のiter番号を設定
+ITER = 4  # ここで現在のiter番号を設定
 
 # 入力ファイル指定（動的に生成）
 base_data_dir = "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/ccvae_2/data"
