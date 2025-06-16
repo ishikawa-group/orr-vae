@@ -1,0 +1,8 @@
+,ni_fraction,ni_fraction,ni_fraction,ni_fraction,ni_fraction,overpotential,overpotential,overpotential,overpotential,overpotential,pt_fraction,pt_fraction,pt_fraction,limiting_potential,limiting_potential,limiting_potential
+,count,mean,std,min,max,count,mean,std,min,max,count,mean,std,count,mean,std
+iter,,,,,,,,,,,,,,,,
+iter0,128,0.4774,0.3108,0.0156,0.9844,128,0.8868,0.3849,0.2971,1.5702,128,0.5226,0.3108,128,0.3432,0.3849
+iter1,128,0.4666,0.2795,0.0,1.0,128,0.9417,0.5019,0.2845,1.6702,128,0.5334,0.2795,128,0.2883,0.5019
+iter2,128,0.3276,0.2749,0.0156,0.9844,128,0.7303,0.4159,0.2969,1.6214,128,0.6724,0.2749,128,0.4997,0.4159
+iter3,128,0.3169,0.2495,0.0156,0.9844,128,0.6709,0.3819,0.2821,1.603,128,0.6831,0.2495,128,0.5591,0.3819
+iter4,128,0.3757,0.2665,0.0156,0.9688,128,0.7997,0.4439,0.2818,1.6195,128,0.6243,0.2665,128,0.4303,0.4439
