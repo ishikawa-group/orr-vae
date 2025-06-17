@@ -1,0 +1,792 @@
+Loading mpi version 2021.11
+INFO: Optimizing bulk structure...
+cuequivariance or cuequivariance_torch is not available. Cuequivariance acceleration will be disabled.
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:33:57     -361.418710       67.095485
+FIRE:    1 18:33:57     -348.560431      188.626787
+FIRE:    2 18:33:58     -353.969495      130.535072
+FIRE:    3 18:33:58     -364.025892       45.427920
+FIRE:    4 18:33:59     -364.611490       27.761472
+FIRE:    5 18:33:59     -364.970354        4.267835
+FIRE:    6 18:33:59     -364.837402       18.930302
+FIRE:    7 18:33:59     -364.881191       17.350228
+FIRE:    8 18:33:59     -364.956984       14.291783
+FIRE:    9 18:34:00     -365.044178       10.354783
+FIRE:   10 18:34:00     -365.120546        6.084581
+FIRE:   11 18:34:00     -365.171615        3.989163
+FIRE:   12 18:34:00     -365.196822        6.110939
+FIRE:   13 18:34:00     -365.214229        9.812484
+FIRE:   14 18:34:00     -365.249297       11.751146
+FIRE:   15 18:34:00     -365.322048       11.267638
+FIRE:   16 18:34:00     -365.435894        8.034455
+FIRE:   17 18:34:01     -365.568037        3.714902
+FIRE:   18 18:34:01     -365.685882        4.069721
+FIRE:   19 18:34:01     -365.800643        8.429888
+FIRE:   20 18:34:01     -365.965339        8.477987
+FIRE:   21 18:34:01     -366.192882        4.665627
+FIRE:   22 18:34:01     -366.416866        5.199378
+FIRE:   23 18:34:01     -366.650783        8.652609
+FIRE:   24 18:34:02     -366.966770        2.456281
+FIRE:   25 18:34:02     -367.253861        7.753827
+FIRE:   26 18:34:02     -367.606014        4.751301
+FIRE:   27 18:34:02     -367.921032        9.585774
+FIRE:   28 18:34:02     -368.300609        1.323209
+FIRE:   29 18:34:02     -368.573143       10.647884
+FIRE:   30 18:34:02     -368.828783       12.652064
+FIRE:   31 18:34:02     -368.910976        4.897302
+FIRE:   32 18:34:03     -368.908897        6.236259
+FIRE:   33 18:34:03     -368.916115        5.306313
+FIRE:   34 18:34:03     -368.927133        3.574011
+FIRE:   35 18:34:03     -368.936878        1.298459
+FIRE:   36 18:34:03     -368.942141        1.107463
+FIRE:   37 18:34:03     -368.944180        2.993070
+FIRE:   38 18:34:03     -368.944803        2.874952
+FIRE:   39 18:34:03     -368.945991        2.643815
+FIRE:   40 18:34:03     -368.947620        2.310092
+FIRE:   41 18:34:04     -368.949571        1.889531
+FIRE:   42 18:34:04     -368.951711        1.403420
+FIRE:   43 18:34:04     -368.953910        0.909154
+FIRE:   44 18:34:04     -368.956090        0.907571
+FIRE:   45 18:34:04     -368.958517        0.905670
+FIRE:   46 18:34:04     -368.961294        0.903445
+FIRE:   47 18:34:04     -368.964685        1.176763
+FIRE:   48 18:34:04     -368.969082        1.439581
+FIRE:   49 18:34:05     -368.974916        1.462159
+FIRE:   50 18:34:05     -368.982497        1.191981
+FIRE:   51 18:34:05     -368.991845        0.887511
+FIRE:   52 18:34:05     -369.002790        0.882619
+FIRE:   53 18:34:05     -369.015480        0.876335
+FIRE:   54 18:34:05     -369.030821        1.169309
+FIRE:   55 18:34:05     -369.049869        0.857590
+FIRE:   56 18:34:05     -369.072550        0.844441
+FIRE:   57 18:34:05     -369.098806        0.895089
+FIRE:   58 18:34:06     -369.130583        0.850638
+FIRE:   59 18:34:06     -369.168356        0.789779
+FIRE:   60 18:34:06     -369.211450        0.985379
+FIRE:   61 18:34:06     -369.261648        0.732082
+FIRE:   62 18:34:06     -369.317772        0.964239
+FIRE:   63 18:34:06     -369.381311        0.701700
+FIRE:   64 18:34:06     -369.450174        0.596973
+FIRE:   65 18:34:06     -369.522968        0.735548
+FIRE:   66 18:34:07     -369.595112        2.385951
+FIRE:   67 18:34:07     -369.645569        6.172213
+FIRE:   68 18:34:07     -369.619646       14.578733
+FIRE:   69 18:34:07     -369.728426        0.350577
+FIRE:   70 18:34:07     -369.644942       12.212990
+FIRE:   71 18:34:07     -369.679953        9.450436
+FIRE:   72 18:34:07     -369.720319        4.437082
+FIRE:   73 18:34:07     -369.731057        1.790356
+FIRE:   74 18:34:08     -369.731289        1.681747
+FIRE:   75 18:34:08     -369.731709        1.471414
+FIRE:   76 18:34:08     -369.732240        1.173121
+FIRE:   77 18:34:08     -369.732783        0.807209
+FIRE:   78 18:34:08     -369.733237        0.401338
+FIRE:   79 18:34:08     -369.733592        0.346802
+FIRE:   80 18:34:08     -369.733855        0.375299
+FIRE:   81 18:34:08     -369.734130        0.685475
+FIRE:   82 18:34:08     -369.734545        0.890841
+FIRE:   83 18:34:09     -369.735216        0.946735
+FIRE:   84 18:34:09     -369.736246        0.817831
+FIRE:   85 18:34:09     -369.737593        0.491941
+FIRE:   86 18:34:09     -369.739107        0.342867
+FIRE:   87 18:34:09     -369.740677        0.476808
+FIRE:   88 18:34:09     -369.742527        0.738363
+FIRE:   89 18:34:09     -369.744976        0.606407
+FIRE:   90 18:34:09     -369.747947        0.336515
+FIRE:   91 18:34:10     -369.751195        0.521891
+FIRE:   92 18:34:10     -369.755293        0.601988
+FIRE:   93 18:34:10     -369.760522        0.327470
+FIRE:   94 18:34:10     -369.766369        0.616578
+FIRE:   95 18:34:10     -369.773476        0.317704
+FIRE:   96 18:34:10     -369.781407        0.657766
+FIRE:   97 18:34:10     -369.791352        0.303833
+FIRE:   98 18:34:10     -369.802512        0.438240
+FIRE:   99 18:34:10     -369.814697        0.981273
+FIRE:  100 18:34:11     -369.828483        1.583094
+INFO: Optimizing clean slab...
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:11     -348.875645        0.000000
+INFO: Running required molecule calculations...
+INFO: === Processing OH ===
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:11       -8.226386        0.774839
+FIRE:    1 18:34:11       -8.232348        0.007408
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:11     -358.220654        0.800994
+FIRE:    1 18:34:11     -358.225249        0.262991
+FIRE:    2 18:34:11     -358.225147        0.694979
+FIRE:    3 18:34:12     -358.226745        0.560068
+FIRE:    4 18:34:12     -358.228680        0.345025
+FIRE:    5 18:34:12     -358.229812        0.356565
+FIRE:    6 18:34:12     -358.230437        0.521200
+FIRE:    7 18:34:12     -358.231741        0.586849
+FIRE:    8 18:34:12     -358.234294        0.540121
+FIRE:    9 18:34:12     -358.237668        0.425231
+FIRE:   10 18:34:12     -358.241473        0.357495
+FIRE:   11 18:34:12     -358.245904        0.443304
+FIRE:   12 18:34:12     -358.252865        0.502976
+FIRE:   13 18:34:12     -358.263571        0.504225
+FIRE:   14 18:34:12     -358.277943        0.605780
+FIRE:   15 18:34:12     -358.299604        0.688241
+FIRE:   16 18:34:12     -358.333957        0.691130
+FIRE:   17 18:34:12     -358.384091        0.742392
+FIRE:   18 18:34:12     -358.452449        0.858669
+FIRE:   19 18:34:12     -358.529418        1.192056
+FIRE:   20 18:34:12     -358.605394        1.084941
+FIRE:   21 18:34:12     -358.661071        0.682307
+FIRE:   22 18:34:12     -358.695351        1.057682
+FIRE:   23 18:34:12     -358.742043        1.169388
+FIRE:   24 18:34:12     -358.803410        0.961931
+FIRE:   25 18:34:12     -358.738042        2.074060
+FIRE:   26 18:34:12     -358.775721        0.933731
+FIRE:   27 18:34:12     -358.779243        0.818553
+FIRE:   28 18:34:12     -358.784765        0.626639
+FIRE:   29 18:34:12     -358.790630        0.573935
+FIRE:   30 18:34:12     -358.796625        0.688121
+FIRE:   31 18:34:12     -358.803593        0.695251
+FIRE:   32 18:34:12     -358.811405        0.577004
+FIRE:   33 18:34:12     -358.818621        0.418313
+FIRE:   34 18:34:13     -358.825082        0.388313
+FIRE:   35 18:34:13     -358.831875        0.439485
+FIRE:   36 18:34:13     -358.839665        0.301456
+FIRE:   37 18:34:13     -358.846623        0.361517
+FIRE:   38 18:34:13     -358.853528        0.305401
+FIRE:   39 18:34:13     -358.859093        0.277195
+FIRE:   40 18:34:13     -358.861654        0.252563
+FIRE:   41 18:34:13     -358.860588        0.280169
+FIRE:   42 18:34:13     -358.860973        0.220007
+FIRE:   43 18:34:13     -358.861380        0.150178
+FIRE:   44 18:34:13     -358.861579        0.154344
+FIRE:   45 18:34:13     -358.861779        0.186819
+FIRE:   46 18:34:13     -358.862226        0.173025
+FIRE:   47 18:34:13     -358.862830        0.126117
+FIRE:   48 18:34:13     -358.863320        0.128271
+FIRE:   49 18:34:13     -358.863720        0.174184
+FIRE:   50 18:34:13     -358.864324        0.163115
+FIRE:   51 18:34:13     -358.865098        0.088484
+     E_total = -358.865098 eV, Time = 1.92 s
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:13     -358.341918        0.766335
+FIRE:    1 18:34:13     -358.347689        0.532997
+FIRE:    2 18:34:13     -358.357146        0.690589
+FIRE:    3 18:34:13     -358.371762        0.700408
+FIRE:    4 18:34:13     -358.391580        0.488499
+FIRE:    5 18:34:14     -358.415123        0.680235
+FIRE:    6 18:34:14     -358.443963        0.606132
+FIRE:    7 18:34:14     -358.477165        0.599157
+FIRE:    8 18:34:14     -358.518311        0.640775
+FIRE:    9 18:34:14     -358.566811        0.509386
+FIRE:   10 18:34:14     -358.616322        0.378245
+FIRE:   11 18:34:14     -358.652468        0.433976
+FIRE:   12 18:34:14     -358.654695        0.772835
+FIRE:   13 18:34:14     -358.659328        0.368200
+FIRE:   14 18:34:14     -358.660966        0.556723
+FIRE:   15 18:34:14     -358.661526        0.518000
+FIRE:   16 18:34:14     -358.662479        0.452682
+FIRE:   17 18:34:14     -358.663596        0.386855
+FIRE:   18 18:34:14     -358.664745        0.354078
+FIRE:   19 18:34:14     -358.666006        0.363047
+FIRE:   20 18:34:14     -358.667594        0.385487
+FIRE:   21 18:34:14     -358.669672        0.396715
+FIRE:   22 18:34:14     -358.672527        0.397322
+FIRE:   23 18:34:14     -358.676139        0.411659
+FIRE:   24 18:34:14     -358.680558        0.456772
+FIRE:   25 18:34:14     -358.686316        0.500886
+FIRE:   26 18:34:14     -358.694310        0.509318
+FIRE:   27 18:34:14     -358.705185        0.510274
+FIRE:   28 18:34:14     -358.719583        0.548591
+FIRE:   29 18:34:14     -358.738899        0.554970
+FIRE:   30 18:34:14     -358.763539        0.495909
+FIRE:   31 18:34:14     -358.792815        0.615377
+FIRE:   32 18:34:14     -358.825559        0.581768
+FIRE:   33 18:34:14     -358.856328        0.480621
+FIRE:   34 18:34:14     -358.880659        0.567184
+FIRE:   35 18:34:14     -358.900552        0.416263
+FIRE:   36 18:34:15     -358.917484        0.487839
+FIRE:   37 18:34:15     -358.926999        0.608377
+FIRE:   38 18:34:15     -358.930121        0.392518
+FIRE:   39 18:34:15     -358.931702        0.386609
+FIRE:   40 18:34:15     -358.932246        0.357347
+FIRE:   41 18:34:15     -358.933110        0.321857
+FIRE:   42 18:34:15     -358.934020        0.314711
+FIRE:   43 18:34:15     -358.934878        0.342638
+FIRE:   44 18:34:15     -358.935817        0.372582
+FIRE:   45 18:34:15     -358.937024        0.374806
+FIRE:   46 18:34:15     -358.938522        0.340903
+FIRE:   47 18:34:15     -358.940319        0.274421
+FIRE:   48 18:34:15     -358.942155        0.211917
+FIRE:   49 18:34:15     -358.944004        0.220798
+FIRE:   50 18:34:15     -358.946139        0.207255
+FIRE:   51 18:34:15     -358.948334        0.142752
+FIRE:   52 18:34:15     -358.950097        0.228974
+FIRE:   53 18:34:15     -358.951869        0.188278
+FIRE:   54 18:34:15     -358.953330        0.197809
+FIRE:   55 18:34:15     -358.954765        0.203385
+FIRE:   56 18:34:15     -358.956484        0.220250
+FIRE:   57 18:34:15     -358.958793        0.180279
+FIRE:   58 18:34:15     -358.961386        0.219807
+FIRE:   59 18:34:15     -358.964304        0.159277
+FIRE:   60 18:34:15     -358.966899        0.126363
+FIRE:   61 18:34:15     -358.969041        0.170240
+FIRE:   62 18:34:15     -358.970934        0.340265
+FIRE:   63 18:34:15     -358.972169        0.115377
+FIRE:   64 18:34:15     -358.971929        0.281422
+FIRE:   65 18:34:15     -358.972301        0.225240
+FIRE:   66 18:34:15     -358.972757        0.133224
+FIRE:   67 18:34:16     -358.972977        0.103114
+FIRE:   68 18:34:16     -358.972969        0.173969
+FIRE:   69 18:34:16     -358.973006        0.165874
+FIRE:   70 18:34:16     -358.973074        0.150526
+FIRE:   71 18:34:16     -358.973161        0.129722
+FIRE:   72 18:34:16     -358.973253        0.106529
+FIRE:   73 18:34:16     -358.973337        0.087470
+     E_total = -358.973337 eV, Time = 2.66 s
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:16     -358.348150        0.853156
+FIRE:    1 18:34:16     -358.355234        0.592322
+FIRE:    2 18:34:16     -358.366802        0.770729
+FIRE:    3 18:34:16     -358.384867        0.794234
+FIRE:    4 18:34:16     -358.409748        0.565822
+FIRE:    5 18:34:16     -358.439470        0.769038
+FIRE:    6 18:34:16     -358.476021        0.708111
+FIRE:    7 18:34:16     -358.518674        0.666199
+FIRE:    8 18:34:16     -358.572675        0.765977
+FIRE:    9 18:34:16     -358.640948        0.596587
+FIRE:   10 18:34:16     -358.720958        0.611628
+FIRE:   11 18:34:16     -358.799640        0.646524
+FIRE:   12 18:34:16     -358.840357        0.593764
+FIRE:   13 18:34:16     -358.842970        0.233872
+FIRE:   14 18:34:16     -358.842788        0.288674
+FIRE:   15 18:34:16     -358.843029        0.251265
+FIRE:   16 18:34:17     -358.843385        0.183310
+FIRE:   17 18:34:17     -358.843676        0.103667
+FIRE:   18 18:34:17     -358.843787        0.118349
+FIRE:   19 18:34:17     -358.843795        0.116775
+FIRE:   20 18:34:17     -358.843811        0.113751
+FIRE:   21 18:34:17     -358.843834        0.109530
+FIRE:   22 18:34:17     -358.843863        0.104480
+FIRE:   23 18:34:17     -358.843897        0.099059
+     E_total = -358.843897 eV, Time = 1.01 s
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:17     -358.288637        0.859110
+FIRE:    1 18:34:17     -358.295298        0.564017
+FIRE:    2 18:34:17     -358.305299        0.762873
+FIRE:    3 18:34:17     -358.321123        0.788129
+FIRE:    4 18:34:17     -358.343189        0.537532
+FIRE:    5 18:34:17     -358.369146        0.756869
+FIRE:    6 18:34:17     -358.401625        0.701498
+FIRE:    7 18:34:17     -358.440166        0.649897
+FIRE:    8 18:34:17     -358.489944        0.766402
+FIRE:    9 18:34:17     -358.554583        0.614062
+FIRE:   10 18:34:17     -358.633022        0.657470
+FIRE:   11 18:34:17     -358.720361        0.750605
+FIRE:   12 18:34:17     -358.794430        0.541261
+FIRE:   13 18:34:17     -358.785941        1.311509
+FIRE:   14 18:34:17     -358.797624        0.523739
+FIRE:   15 18:34:17     -358.794850        0.956536
+FIRE:   16 18:34:18     -358.797157        0.790657
+FIRE:   17 18:34:18     -358.800023        0.506265
+FIRE:   18 18:34:18     -358.801523        0.233761
+FIRE:   19 18:34:18     -358.801362        0.506472
+FIRE:   20 18:34:18     -358.801491        0.491073
+FIRE:   21 18:34:18     -358.801730        0.460972
+FIRE:   22 18:34:18     -358.802050        0.417606
+FIRE:   23 18:34:18     -358.802410        0.363221
+FIRE:   24 18:34:18     -358.802772        0.300964
+FIRE:   25 18:34:18     -358.803104        0.235257
+FIRE:   26 18:34:18     -358.803396        0.195501
+FIRE:   27 18:34:18     -358.803683        0.248563
+FIRE:   28 18:34:18     -358.803997        0.291255
+FIRE:   29 18:34:18     -358.804396        0.314725
+FIRE:   30 18:34:18     -358.804941        0.310856
+FIRE:   31 18:34:18     -358.805652        0.273961
+FIRE:   32 18:34:18     -358.806472        0.203945
+FIRE:   33 18:34:18     -358.807283        0.144487
+FIRE:   34 18:34:18     -358.808030        0.205443
+FIRE:   35 18:34:18     -358.808815        0.216424
+FIRE:   36 18:34:18     -358.809697        0.154431
+FIRE:   37 18:34:18     -358.810451        0.087617
+     E_total = -358.810451 eV, Time = 1.46 s
+INFO:   -> Best offset: ofst_0.5_0.0   E_ads = -1.865 eV
+INFO: === Processing HO2 ===
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:18      -13.237067        3.094537
+FIRE:    1 18:34:18      -13.389779        1.871002
+FIRE:    2 18:34:19      -13.410265        1.812185
+FIRE:    3 18:34:19      -13.423410        1.435278
+FIRE:    4 18:34:19      -13.439376        0.780872
+FIRE:    5 18:34:19      -13.446166        0.119434
+FIRE:    6 18:34:19      -13.446190        0.118300
+FIRE:    7 18:34:19      -13.446238        0.116409
+FIRE:    8 18:34:19      -13.446307        0.113756
+FIRE:    9 18:34:19      -13.446393        0.110508
+FIRE:   10 18:34:19      -13.446492        0.106797
+FIRE:   11 18:34:19      -13.446600        0.102661
+FIRE:   12 18:34:19      -13.446714        0.097989
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:19     -362.772355        2.500783
+FIRE:    1 18:34:19     -362.861952        1.642116
+FIRE:    2 18:34:19     -362.935481        1.495239
+FIRE:    3 18:34:19     -362.987446        1.399095
+FIRE:    4 18:34:19     -363.035453        1.265788
+FIRE:    5 18:34:19     -363.083517        1.443238
+FIRE:    6 18:34:19     -363.135568        1.338791
+FIRE:    7 18:34:19     -363.181465        1.017402
+FIRE:    8 18:34:19     -363.206562        0.750156
+FIRE:    9 18:34:19     -363.208599        0.711887
+FIRE:   10 18:34:19     -363.212353        0.642699
+FIRE:   11 18:34:19     -363.217332        0.555768
+FIRE:   12 18:34:19     -363.223086        0.466830
+FIRE:   13 18:34:19     -363.229356        0.454012
+FIRE:   14 18:34:19     -363.236091        0.473365
+FIRE:   15 18:34:19     -363.243337        0.471244
+FIRE:   16 18:34:20     -363.251961        0.445889
+FIRE:   17 18:34:20     -363.262085        0.403672
+FIRE:   18 18:34:20     -363.273717        0.365957
+FIRE:   19 18:34:20     -363.286975        0.355939
+FIRE:   20 18:34:20     -363.302337        0.358198
+FIRE:   21 18:34:20     -363.320081        0.333464
+FIRE:   22 18:34:20     -363.338935        0.299434
+FIRE:   23 18:34:20     -363.356323        0.312093
+FIRE:   24 18:34:20     -363.370703        0.290102
+FIRE:   25 18:34:20     -363.381392        0.214403
+FIRE:   26 18:34:20     -363.388394        0.218037
+FIRE:   27 18:34:20     -363.390356        0.167787
+FIRE:   28 18:34:20     -363.390810        0.157254
+FIRE:   29 18:34:20     -363.391554        0.148526
+FIRE:   30 18:34:20     -363.392472        0.144082
+FIRE:   31 18:34:20     -363.393526        0.108457
+FIRE:   32 18:34:20     -363.394622        0.115317
+FIRE:   33 18:34:20     -363.395693        0.114799
+FIRE:   34 18:34:20     -363.396705        0.095615
+     E_total = -363.396705 eV, Time = 1.39 s
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:20     -362.930207        2.447201
+FIRE:    1 18:34:20     -363.009722        1.147698
+FIRE:    2 18:34:20     -363.029973        0.835149
+FIRE:    3 18:34:20     -363.032071        0.726015
+FIRE:    4 18:34:20     -363.035052        0.555907
+FIRE:    5 18:34:21     -363.037573        0.419746
+FIRE:    6 18:34:21     -363.039381        0.394929
+FIRE:    7 18:34:21     -363.041347        0.467528
+FIRE:    8 18:34:21     -363.044278        0.460444
+FIRE:    9 18:34:21     -363.048154        0.364246
+FIRE:   10 18:34:21     -363.052766        0.364847
+FIRE:   11 18:34:21     -363.057660        0.372989
+FIRE:   12 18:34:21     -363.063919        0.453492
+FIRE:   13 18:34:21     -363.073044        0.395068
+FIRE:   14 18:34:21     -363.083904        0.320710
+FIRE:   15 18:34:21     -363.096012        0.418634
+FIRE:   16 18:34:21     -363.112629        0.421746
+FIRE:   17 18:34:21     -363.133133        0.508154
+FIRE:   18 18:34:21     -363.159420        0.442093
+FIRE:   19 18:34:21     -363.190575        0.429597
+FIRE:   20 18:34:21     -363.229255        0.331123
+FIRE:   21 18:34:21     -363.271804        0.470395
+FIRE:   22 18:34:21     -363.309938        0.713375
+FIRE:   23 18:34:21     -363.343622        0.861802
+FIRE:   24 18:34:21     -363.327010        1.697373
+FIRE:   25 18:34:21     -363.365517        0.383513
+FIRE:   26 18:34:21     -363.339195        1.779652
+FIRE:   27 18:34:21     -363.353172        1.264398
+FIRE:   28 18:34:21     -363.366583        0.475894
+FIRE:   29 18:34:21     -363.367649        0.390031
+FIRE:   30 18:34:21     -363.367841        0.372103
+FIRE:   31 18:34:21     -363.368188        0.337433
+FIRE:   32 18:34:21     -363.368628        0.288610
+FIRE:   33 18:34:21     -363.369080        0.230303
+FIRE:   34 18:34:21     -363.369472        0.171341
+FIRE:   35 18:34:22     -363.369756        0.129846
+FIRE:   36 18:34:22     -363.369932        0.127889
+FIRE:   37 18:34:22     -363.370065        0.182099
+FIRE:   38 18:34:22     -363.370240        0.225490
+FIRE:   39 18:34:22     -363.370561        0.242968
+FIRE:   40 18:34:22     -363.371098        0.226107
+FIRE:   41 18:34:22     -363.371823        0.173398
+FIRE:   42 18:34:22     -363.372590        0.111589
+FIRE:   43 18:34:22     -363.373265        0.156786
+FIRE:   44 18:34:22     -363.373961        0.206780
+FIRE:   45 18:34:22     -363.374957        0.202154
+FIRE:   46 18:34:22     -363.376248        0.136369
+FIRE:   47 18:34:22     -363.377481        0.149977
+FIRE:   48 18:34:22     -363.378841        0.197060
+FIRE:   49 18:34:22     -363.380719        0.117754
+FIRE:   50 18:34:22     -363.382635        0.188264
+FIRE:   51 18:34:22     -363.385103        0.175531
+FIRE:   52 18:34:22     -363.388038        0.170951
+FIRE:   53 18:34:22     -363.391757        0.137717
+FIRE:   54 18:34:22     -363.396111        0.235919
+FIRE:   55 18:34:22     -363.401931        0.159107
+FIRE:   56 18:34:22     -363.409031        0.145501
+FIRE:   57 18:34:22     -363.417869        0.161583
+FIRE:   58 18:34:22     -363.428785        0.227777
+FIRE:   59 18:34:22     -363.437866        0.701737
+FIRE:   60 18:34:22     -363.377899        3.182764
+FIRE:   61 18:34:22     -363.424066        1.649340
+FIRE:   62 18:34:22     -363.442819        1.215036
+FIRE:   63 18:34:22     -363.460268        0.390689
+FIRE:   64 18:34:22     -363.454892        0.881172
+FIRE:   65 18:34:23     -363.456203        0.800929
+FIRE:   66 18:34:23     -363.458340        0.651606
+FIRE:   67 18:34:23     -363.460543        0.453079
+FIRE:   68 18:34:23     -363.462084        0.230415
+FIRE:   69 18:34:23     -363.462548        0.202591
+FIRE:   70 18:34:23     -363.462560        0.201646
+FIRE:   71 18:34:23     -363.462584        0.199796
+FIRE:   72 18:34:23     -363.462620        0.197127
+FIRE:   73 18:34:23     -363.462667        0.193764
+FIRE:   74 18:34:23     -363.462725        0.189874
+FIRE:   75 18:34:23     -363.462792        0.185654
+FIRE:   76 18:34:23     -363.462868        0.181320
+FIRE:   77 18:34:23     -363.462962        0.176654
+FIRE:   78 18:34:23     -363.463077        0.171940
+FIRE:   79 18:34:23     -363.463219        0.167558
+FIRE:   80 18:34:23     -363.463393        0.163922
+FIRE:   81 18:34:23     -363.463607        0.161347
+FIRE:   82 18:34:23     -363.463873        0.159950
+FIRE:   83 18:34:23     -363.464205        0.159667
+FIRE:   84 18:34:23     -363.464618        0.160504
+FIRE:   85 18:34:23     -363.465128        0.162845
+FIRE:   86 18:34:23     -363.465754        0.167332
+FIRE:   87 18:34:23     -363.466516        0.173782
+FIRE:   88 18:34:23     -363.467446        0.179836
+FIRE:   89 18:34:23     -363.468591        0.181611
+FIRE:   90 18:34:23     -363.470000        0.177290
+FIRE:   91 18:34:23     -363.471721        0.170483
+FIRE:   92 18:34:23     -363.473826        0.167089
+FIRE:   93 18:34:23     -363.476415        0.169426
+FIRE:   94 18:34:23     -363.479593        0.178664
+FIRE:   95 18:34:24     -363.483498        0.184830
+FIRE:   96 18:34:24     -363.488324        0.176631
+FIRE:   97 18:34:24     -363.494281        0.173006
+FIRE:   98 18:34:24     -363.501670        0.186767
+FIRE:   99 18:34:24     -363.510844        0.187301
+FIRE:  100 18:34:24     -363.522226        0.178322
+     E_total = -363.522226 eV, Time = 3.57 s
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:24     -362.908336        2.260960
+FIRE:    1 18:34:24     -362.978692        1.052893
+FIRE:    2 18:34:24     -362.997662        0.706682
+FIRE:    3 18:34:24     -362.999843        0.600896
+FIRE:    4 18:34:24     -363.003204        0.510915
+FIRE:    5 18:34:24     -363.006601        0.498930
+FIRE:    6 18:34:24     -363.009716        0.494050
+FIRE:    7 18:34:24     -363.013148        0.501086
+FIRE:    8 18:34:24     -363.017558        0.518494
+FIRE:    9 18:34:24     -363.022974        0.538744
+FIRE:   10 18:34:24     -363.029539        0.552997
+FIRE:   11 18:34:24     -363.037024        0.549352
+FIRE:   12 18:34:24     -363.046382        0.522563
+FIRE:   13 18:34:24     -363.058650        0.477523
+FIRE:   14 18:34:24     -363.072532        0.425169
+FIRE:   15 18:34:24     -363.087736        0.374422
+FIRE:   16 18:34:25     -363.106374        0.321983
+FIRE:   17 18:34:25     -363.126220        0.407469
+FIRE:   18 18:34:25     -363.147020        0.226792
+FIRE:   19 18:34:25     -363.163477        0.409039
+FIRE:   20 18:34:25     -363.174156        0.308408
+FIRE:   21 18:34:25     -363.175205        0.318988
+FIRE:   22 18:34:25     -363.176185        0.309316
+FIRE:   23 18:34:25     -363.177998        0.291763
+FIRE:   24 18:34:25     -363.180472        0.269797
+FIRE:   25 18:34:25     -363.183442        0.247710
+FIRE:   26 18:34:25     -363.186695        0.228356
+FIRE:   27 18:34:25     -363.190039        0.210617
+FIRE:   28 18:34:25     -363.193380        0.189922
+FIRE:   29 18:34:25     -363.196948        0.158944
+FIRE:   30 18:34:25     -363.200544        0.164434
+FIRE:   31 18:34:25     -363.204010        0.158520
+FIRE:   32 18:34:25     -363.207164        0.141383
+FIRE:   33 18:34:25     -363.210021        0.132113
+FIRE:   34 18:34:25     -363.212777        0.125552
+FIRE:   35 18:34:25     -363.215895        0.144402
+FIRE:   36 18:34:25     -363.219594        0.141514
+FIRE:   37 18:34:25     -363.223312        0.187009
+FIRE:   38 18:34:25     -363.225721        0.389222
+FIRE:   39 18:34:25     -363.227419        0.092939
+     E_total = -363.227419 eV, Time = 1.60 s
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:25     -362.895772        2.189469
+FIRE:    1 18:34:26     -362.960603        0.959345
+FIRE:    2 18:34:26     -362.972982        0.769739
+FIRE:    3 18:34:26     -362.975184        0.653280
+FIRE:    4 18:34:26     -362.978343        0.463624
+FIRE:    5 18:34:26     -362.981037        0.341444
+FIRE:    6 18:34:26     -362.982874        0.343644
+FIRE:    7 18:34:26     -362.984633        0.411027
+FIRE:    8 18:34:26     -362.987152        0.408800
+FIRE:    9 18:34:26     -362.990529        0.448732
+FIRE:   10 18:34:26     -362.994678        0.476194
+FIRE:   11 18:34:26     -362.999280        0.477887
+FIRE:   12 18:34:26     -363.005303        0.454782
+FIRE:   13 18:34:26     -363.014038        0.423438
+FIRE:   14 18:34:26     -363.024365        0.405406
+FIRE:   15 18:34:26     -363.035981        0.408238
+FIRE:   16 18:34:26     -363.052518        0.416652
+FIRE:   17 18:34:26     -363.073383        0.419866
+FIRE:   18 18:34:26     -363.099384        0.418319
+FIRE:   19 18:34:26     -363.128335        0.377226
+FIRE:   20 18:34:26     -363.156891        0.204414
+FIRE:   21 18:34:26     -363.171050        0.342821
+FIRE:   22 18:34:26     -363.171995        0.232771
+FIRE:   23 18:34:26     -363.172944        0.193674
+FIRE:   24 18:34:26     -363.173736        0.257839
+FIRE:   25 18:34:26     -363.174918        0.221623
+FIRE:   26 18:34:26     -363.176270        0.135397
+FIRE:   27 18:34:26     -363.177314        0.170850
+FIRE:   28 18:34:26     -363.178515        0.192647
+FIRE:   29 18:34:26     -363.180289        0.148362
+FIRE:   30 18:34:27     -363.181996        0.162523
+FIRE:   31 18:34:27     -363.184104        0.173003
+FIRE:   32 18:34:27     -363.186573        0.174835
+FIRE:   33 18:34:27     -363.189266        0.151955
+FIRE:   34 18:34:27     -363.191759        0.203284
+FIRE:   35 18:34:27     -363.194619        0.107242
+FIRE:   36 18:34:27     -363.197500        0.090109
+     E_total = -363.197500 eV, Time = 1.45 s
+INFO:   -> Best offset: ofst_0.5_0.0   E_ads = -1.200 eV
+INFO: === Processing O ===
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:27       -1.546910        0.000000
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:27     -353.324425        1.813154
+FIRE:    1 18:34:27     -353.356014        1.668007
+FIRE:    2 18:34:27     -353.408469        1.332750
+FIRE:    3 18:34:27     -353.458820        0.730573
+FIRE:    4 18:34:27     -353.474849        0.199382
+FIRE:    5 18:34:27     -353.474946        0.189872
+FIRE:    6 18:34:27     -353.475122        0.171397
+FIRE:    7 18:34:27     -353.475344        0.145018
+FIRE:    8 18:34:27     -353.475570        0.112274
+FIRE:    9 18:34:27     -353.475761        0.075253
+     E_total = -353.475761 eV, Time = 0.56 s
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:28     -352.980598        2.600002
+FIRE:    1 18:34:28     -353.048793        2.645747
+FIRE:    2 18:34:28     -353.189973        2.735617
+FIRE:    3 18:34:28     -353.412302        2.817764
+FIRE:    4 18:34:28     -353.712664        2.687123
+FIRE:    5 18:34:28     -354.037667        2.090497
+FIRE:    6 18:34:28     -354.275424        0.799439
+FIRE:    7 18:34:28     -354.219398        1.707247
+FIRE:    8 18:34:28     -354.226509        1.624526
+FIRE:    9 18:34:28     -354.239377        1.465929
+FIRE:   10 18:34:28     -354.255622        1.244145
+FIRE:   11 18:34:28     -354.272372        0.975860
+FIRE:   12 18:34:28     -354.286867        0.679437
+FIRE:   13 18:34:28     -354.296955        0.373031
+FIRE:   14 18:34:28     -354.301394        0.077034
+     E_total = -354.301394 eV, Time = 0.71 s
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:28     -352.937490        2.478015
+FIRE:    1 18:34:28     -352.999597        2.534393
+FIRE:    2 18:34:28     -353.129451        2.647005
+FIRE:    3 18:34:29     -353.338674        2.811070
+FIRE:    4 18:34:29     -353.639801        2.902650
+FIRE:    5 18:34:29     -354.011203        2.606611
+FIRE:    6 18:34:29     -354.385525        1.909303
+FIRE:    7 18:34:29     -354.579563        0.218274
+FIRE:    8 18:34:29     -354.350624        2.772206
+FIRE:    9 18:34:29     -354.373236        2.621038
+FIRE:   10 18:34:29     -354.413636        2.332825
+FIRE:   11 18:34:29     -354.463455        1.933391
+FIRE:   12 18:34:29     -354.512911        1.456402
+FIRE:   13 18:34:29     -354.553063        0.938085
+FIRE:   14 18:34:29     -354.577554        0.412873
+FIRE:   15 18:34:29     -354.583483        0.093153
+     E_total = -354.583483 eV, Time = 0.74 s
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:29     -352.855688        2.402826
+FIRE:    1 18:34:29     -352.914082        2.457218
+FIRE:    2 18:34:29     -353.036071        2.562348
+FIRE:    3 18:34:29     -353.232189        2.720900
+FIRE:    4 18:34:29     -353.516320        2.852516
+FIRE:    5 18:34:29     -353.878627        2.631116
+FIRE:    6 18:34:29     -354.256719        2.114273
+FIRE:    7 18:34:29     -354.501702        0.634061
+FIRE:    8 18:34:29     -354.347649        2.484453
+FIRE:    9 18:34:29     -354.365788        2.343045
+FIRE:   10 18:34:29     -354.398042        2.076141
+FIRE:   11 18:34:30     -354.437559        1.711833
+FIRE:   12 18:34:30     -354.476536        1.284545
+FIRE:   13 18:34:30     -354.508090        0.829353
+FIRE:   14 18:34:30     -354.527535        0.380345
+FIRE:   15 18:34:30     -354.532930        0.121364
+FIRE:   16 18:34:30     -354.532941        0.120620
+FIRE:   17 18:34:30     -354.532963        0.119142
+FIRE:   18 18:34:30     -354.532995        0.116944
+FIRE:   19 18:34:30     -354.533037        0.114051
+FIRE:   20 18:34:30     -354.533088        0.110498
+FIRE:   21 18:34:30     -354.533145        0.106326
+FIRE:   22 18:34:30     -354.533209        0.101588
+FIRE:   23 18:34:30     -354.533284        0.095762
+     E_total = -354.533284 eV, Time = 1.00 s
+INFO:   -> Best offset: ofst_0.33_0.33   E_ads = -4.161 eV
+INFO: === Processing O2 ===
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:30       -9.874253        1.702865
+FIRE:    1 18:34:30       -9.888072        0.787391
+FIRE:    2 18:34:30       -9.890668        0.530412
+FIRE:    3 18:34:30       -9.892702        0.083295
+INFO: === Processing H2O ===
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:30      -14.187955        0.792692
+FIRE:    1 18:34:30      -14.196356        0.122135
+FIRE:    2 18:34:31      -14.191478        0.608647
+FIRE:    3 18:34:31      -14.193257        0.494738
+FIRE:    4 18:34:31      -14.195533        0.285707
+FIRE:    5 18:34:31      -14.196630        0.018054
+INFO: === Processing H2 ===
+Using model under Academic Software License (ASL) license, see https://github.com/gabor1/ASL 
+ To use this model you accept the terms of the license.
+Using Materials Project MACE for MACECalculator with /home/1/uk05101/.cache/mace/MACEmatpespbeomatftmodel
+Using float64 for MACECalculator, which is slower but more accurate. Recommended for geometry optimization.
+INFO: CUDA version: 12.6, CUDA device: 0
+Using head default out of ['default']
+Using TorchDFTD3Calculator for D3 dispersion corrections
+      Step     Time          Energy          fmax
+FIRE:    0 18:34:31       -6.773384        0.327075
+FIRE:    1 18:34:31       -6.774768        0.097800
+INFO: Saved diagram → /gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/test/Pd-Ni_alloy/best/vasp/result/PdNi111/mace/ORR_free_energy_diagram.png
+INFO: ΔG (U=0) = [-0.875 -2.224 -0.866 -0.955]
+INFO: Limiting potential U_L = 0.866 V
+INFO: Overpotential η = 0.364 V
+INFO: Summary written → /gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/test/Pd-Ni_alloy/best/vasp/result/PdNi111/mace/ORR_summary.txt
+ORR overpotential: 0.364 V
+Reaction Free Energy Change at U=0V: [-0.8749719649384721, -2.2240033164286874, -0.8659710528398827, -0.9550536657928599]
+Reaction Free Energy Change at U=1.23V: [0.3550280350615279, -0.9940033164286876, 0.36402894716011724, 0.2749463342071401]
+Loading mpi version 2021.11
+INFO: Optimizing bulk structure...
