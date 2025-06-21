@@ -2,7 +2,6 @@ common:
   xc: RPBE
   pp: potpaw_PBE.64
   encut: 400
-  ismear: 0
   ibrion: 2
   nsw: 300
   ediff: 1.0e-5
@@ -12,7 +11,7 @@ common:
   lreal: Auto
   nelm: 100
   nelmin: 4
-  ncore: 20
+  ncore: 16
   lwave: false
   lcharg: false
   lorbit: 10
@@ -26,19 +25,21 @@ common:
 kinds:
   gas:
     kpts: [1, 1, 1] # YAMLではタプルではなくリストで記述
+    ismear: 0
     sigma: 0.05
     isif: 2
   slab:
     kpts: [4, 4, 1]
-    sigma: 0.1
+    ismear: 1
+    sigma: 0.2
     isif: 2
-    kpar: 4
+    kpar: 2
     ldipol: true
     idipol: 3
   bulk:
     kpts: [4, 4, 4]
-    sigma: 0.1
+    ismear: 1
+    sigma: 0.2
     isif: 3
-    kpar: 4
+    kpar: 2
     isym: 2
-    lreal: false

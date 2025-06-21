@@ -1,0 +1,34 @@
+Traceback (most recent call last):
+  File "/gs/fs/tga-ishikawalab/wakamiya/ORR_catalyst_generator/test/Pd-Ni_alloy/best/vasp/code/DFT_PdNi111.py", line 47, in <module>
+    result = calc_orr_overpotential(
+  File "/gs/fs/tga-ishikawalab/wakamiya/git_edit/orr_overpotential_calculator/src/orr_overpotential_calculator/calc_orr_overpotential.py", line 632, in calc_orr_overpotential
+    optimized_bulk, bulk_energy = optimize_bulk_structure(
+  File "/gs/fs/tga-ishikawalab/wakamiya/git_edit/orr_overpotential_calculator/src/orr_overpotential_calculator/calc_orr_energy.py", line 147, in optimize_bulk_structure
+    energy = optimized_bulk.get_potential_energy()
+  File "/gs/fs/tga-ishikawalab/wakamiya/python_virtual_env/orr_overpotential_calculator_env/lib64/python3.9/site-packages/ase/atoms.py", line 772, in get_potential_energy
+    energy = self._calc.get_potential_energy(self)
+  File "/gs/fs/tga-ishikawalab/wakamiya/python_virtual_env/orr_overpotential_calculator_env/lib64/python3.9/site-packages/ase/calculators/abc.py", line 26, in get_potential_energy
+    return self.get_property(name, atoms)
+  File "/gs/fs/tga-ishikawalab/wakamiya/python_virtual_env/orr_overpotential_calculator_env/lib64/python3.9/site-packages/ase/calculators/calculator.py", line 515, in get_property
+    self.calculate(atoms, [name], system_changes)
+  File "/gs/fs/tga-ishikawalab/wakamiya/python_virtual_env/orr_overpotential_calculator_env/lib64/python3.9/site-packages/ase/calculators/vasp/vasp.py", line 348, in calculate
+    self.update_atoms(atoms)
+  File "/gs/fs/tga-ishikawalab/wakamiya/python_virtual_env/orr_overpotential_calculator_env/lib64/python3.9/site-packages/ase/calculators/vasp/vasp.py", line 558, in update_atoms
+    atoms_sorted = read(self._indir('CONTCAR'))
+  File "/gs/fs/tga-ishikawalab/wakamiya/python_virtual_env/orr_overpotential_calculator_env/lib64/python3.9/site-packages/ase/io/formats.py", line 815, in read
+    return next(_iread(filename, slice(index, None), format, io,
+  File "/gs/fs/tga-ishikawalab/wakamiya/python_virtual_env/orr_overpotential_calculator_env/lib64/python3.9/site-packages/ase/parallel.py", line 305, in new_generator
+    for result in generator(*args, **kwargs):
+  File "/gs/fs/tga-ishikawalab/wakamiya/python_virtual_env/orr_overpotential_calculator_env/lib64/python3.9/site-packages/ase/io/formats.py", line 881, in _iread
+    for dct in io.read(fd, *args, **kwargs):
+  File "/gs/fs/tga-ishikawalab/wakamiya/python_virtual_env/orr_overpotential_calculator_env/lib64/python3.9/site-packages/ase/io/formats.py", line 637, in wrap_read_function
+    yield read(filename, **kwargs)
+  File "/gs/fs/tga-ishikawalab/wakamiya/python_virtual_env/orr_overpotential_calculator_env/lib64/python3.9/site-packages/ase/utils/__init__.py", line 599, in iofunc
+    obj = func(fd, *args, **kwargs)
+  File "/gs/fs/tga-ishikawalab/wakamiya/python_virtual_env/orr_overpotential_calculator_env/lib64/python3.9/site-packages/ase/io/vasp.py", line 155, in read_vasp
+    atoms = read_vasp_configuration(fd)
+  File "/gs/fs/tga-ishikawalab/wakamiya/python_virtual_env/orr_overpotential_calculator_env/lib64/python3.9/site-packages/ase/io/vasp.py", line 175, in read_vasp_configuration
+    scale = parse_poscar_scaling_factor(fd.readline())
+  File "/gs/fs/tga-ishikawalab/wakamiya/python_virtual_env/orr_overpotential_calculator_env/lib64/python3.9/site-packages/ase/io/vasp.py", line 48, in parse_poscar_scaling_factor
+    raise RuntimeError('The number of scaling factors must be 1 or 3.')
+RuntimeError: The number of scaling factors must be 1 or 3.
