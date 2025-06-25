@@ -19,4 +19,4 @@ ccvae_test/
 
 test/Pd-Ni_alloy/best/vasp/result/PdNi111/
 
-test/bayesian_optimization/result
+test/bayesian_optimization
