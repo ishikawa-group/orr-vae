@@ -1,2 +1,2 @@
-# ORR_GAN
+# orr-vae
 For data generation and paper writing
