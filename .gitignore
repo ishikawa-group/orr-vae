@@ -1,3 +1,8 @@
-/35
+# Ignore everything by default
+/*
 
-/venv
+# Allow the main paper and readme
+!.gitignore
+!README.md
+!/paper/
+!/paper/**
