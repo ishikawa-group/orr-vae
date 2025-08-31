@@ -1,5 +1,6 @@
 # Ignore everything by default
 /*
+/paper_draft/
 
 # Allow the main paper and readme
 !.gitignore
