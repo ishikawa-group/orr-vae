@@ -90,6 +90,8 @@ $$\begin{align}
 ## 2.4 Dataset Construction, Iterative Loop, and Analysis
 iter0〜iter5 の 6 イテレーションを実施し，1 iter あたり 128 構造（合計 768 構造）を生成・評価した。iter0 ではランダムに合金配置を生成し，NNPにより ORR 過電圧 η と合金形成エネルギー E_form を評価した。得られた（構造，η，E_form）を用いて条件付き VAE を学習し，次段では「低過電圧・低形成エネルギー（下位 30%）」に対応する条件を指定して新規構造を生成した。生成構造に対して再び NNPにより（η，E_form）を評価し，データ集合に追加したうえで学習を更新する，という「生成→評価→追加→再学習」のループを iter1 以降も繰り返した。これらの構造生成、管理はASEでpythonライブラリパッケージASEを用いて行われた。
 
+<img src="fig/workflow.svg" alt="VAE training and structure generation workflow" style="background-color: white; width: 80%;">
+
 ## 3. Results and Discussion
 
 ## 3.1 Accuracy of NNP
