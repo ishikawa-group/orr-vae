@@ -62,12 +62,12 @@ $$
 ### 2.3.1 Structure Representation
 表面構造は，fcc(111) の各4層をグリッドへ写像した(4, 8, 8)のテンソルで表現した。各層は二次元の行列で，要素ごとに空白・Ni・Pt の占有を離散的に符号化する。これにより，層間スタッキングと平面内の合金配置を同時に取り扱えるようにした。
 
-<img src="fig/structure_tensor.svg" alt="Structure tensor representation" style="background-color: white; width: 80%;">
+<img src="fig/structure_tensor.svg" alt="Structure tensor representation" style="background-color: white; width: 50%;">
 
 ### 2.3.2 VAE Architecture
 条件付き畳み込み VAE を用い，入力の構造テンソルに加えて，過電圧と合金形成エネルギーの二値ラベルを条件として与えた。エンコーダ／デコーダはいずれも畳み込みブロックを主体とするモデルで，潜在空間の次元は 32 とした。条件ラベルは全結合層からなるエンベディングを介してエンコーダ／デコーダへ注入した。デコーダーの出力は各層における元素占有のクラス確率を示す(12, 8, 8)であり、ソフトマックス関数を介して(4, 8, 8)へ復元する。
 
-<img src="fig/vae_simple_vertical.svg" alt="VAE Architecture" style="background-color: white; width: 80%;">
+<img src="fig/vae_simple_vertical.svg" alt="VAE Architecture" style="background-color: white; width: 50%;">
 
 ### 2.3.3 Training Process
 学習には iter0〜iter5 を統合したデータを用い，訓練:評価=9:1 に分割した。最適化は AdamW（学習率 2×10^{-4}，weight decay 1×10^{-4}），バッチサイズ 16，最大 200 エポックで行った。損失関数は，4 層それぞれの画素に対する 3 クラス（空白・Ni・Pt）の重み付き多クラス交差エントロピーと，潜在分布の KL ダイバージェンスを組み合わせた β‑VAE である（β=2.0）。モデルの出力は各層ごとに 3 チャネルのロジット（確率ではなく前処理値）を並べた 12 チャネルであり，ターゲットは各層の画素ごとに {0: 空白, 1: Ni, 2: Pt} のクラス ID を持つ。
@@ -91,7 +91,7 @@ $$\begin{align}
 ## 2.4 Dataset Construction, Iterative Loop, and Analysis
 iter0〜iter5 の 6 イテレーションを実施し，1 iter あたり 128 構造（合計 768 構造）を生成・評価した。iter0 ではランダムに合金配置を生成し，NNPにより ORR 過電圧 η と合金形成エネルギー E_form を評価した。得られた（構造，η，E_form）を用いて条件付き VAE を学習し，次段では「低過電圧・低形成エネルギー（下位 30%）」に対応する条件を指定して新規構造を生成した。生成構造に対して再び NNPにより（η，E_form）を評価し，データ集合に追加したうえで学習を更新する，という「生成→評価→追加→再学習」のループを iter1 以降も繰り返した。これらの構造生成、管理はASEでpythonライブラリパッケージASEを用いて行われた。
 
-<img src="fig/workflow.svg" alt="VAE training and structure generation workflow" style="background-color: white; width: 80%;">
+<img src="fig/workflow.svg" alt="VAE training and structure generation workflow" style="background-color: white; width: 50%;">
 
 ## 3. Results and Discussion
 
@@ -101,7 +101,7 @@ iter0〜iter5 の 6 イテレーションを実施し，1 iter あたり 128 構
 しかし、過電圧については NNP と DFT の値が近く、線形関係も維持されており、VAE のデータセット生成に NNP を用いる判断は妥当と結論づけた。
 
 Figure 1. Parity plots of adsorption energies (OH, O, OOH; eV) and overpotential (V) between DFT (x) and NNP (y).
-<img src="fig/adsorption_energy_overpotential.png" alt="Parity of adsorption energies and overpotential: DFT vs NNP" style="width: 90%; background-color: white;">
+<img src="fig/adsorption_energy_overpotential.png" alt="Parity of adsorption energies and overpotential: DFT vs NNP" style="width: 80%; background-color: white;">
 
 ここで、OH, O, OOH の吸着エネルギーは以下で定義する。
 
@@ -125,10 +125,10 @@ $$
 さらに、iter5時点の学習済みVAEのエンコーダから得た潜在平均（μ）をt‑SNEで2次元に射影すると（Fig. 3）、データ群はiterの進行に伴い潜在空間上で新たな領域へ広がり、初期データ（iter0）には含まれていなかった特性をもつ構造群が外挿的に獲得されていることが分かる。これは、条件付き生成により、活性（低過電圧）と安定性（より負の形成エネルギー）を同時に満たす構造クラスが初期の設計空間外に向けて順次拓かれていくことを示唆する。
 
 Figure 2. Combined distributions of alloy formation energy and overpotential (iter0–5).
-<img src="fig/violin_combined_iter0-5.png" alt="Combined violin: formation energy and overpotential" style="width: 80%; background-color: white;">
+<img src="fig/violin_combined_iter0-5.png" alt="Combined violin: formation energy and overpotential" style="width: 50%; background-color: white;">
 
 Figure 3. Data space visualization by iteration (VAE latent mean μ, t-SNE; iter0–5).
-<img src="fig/tsne_latent_space_iter0-5_mean.png" alt="t-SNE latent space (mean) iter0-5" style="width: 80%; background-color: white;">
+<img src="fig/tsne_latent_space_iter0-5_mean.png" alt="t-SNE latent space (mean) iter0-5" style="width: 50%; background-color: white;">
 
 ## 3.3 Evolution of Generated Data and Composition Ratios
 
@@ -140,12 +140,12 @@ Figure 3. Data space visualization by iteration (VAE latent mean μ, t-SNE; iter
 
 Figure 4. Overpotential vs. alloy formation energy（iter色） and the same colored by Ni fraction.
 
-<img src="fig/overpotential_vs_alloy_formation_iter0-5.png" alt="Scatter: overpotential vs alloy formation energy" style="width: 80%; background-color: white;">
+<img src="fig/overpotential_vs_alloy_formation_iter0-5.png" alt="Scatter: overpotential vs alloy formation energy" style="width: 50%; background-color: white;">
 
-<img src="fig/overpotential_vs_alloy_formation_ni_fraction_heatmap_iter0-5.png" alt="Heatmap: overpotential vs alloy formation with Ni fraction" style="width: 80%; background-color: white;">
+<img src="fig/overpotential_vs_alloy_formation_ni_fraction_heatmap_iter0-5.png" alt="Heatmap: overpotential vs alloy formation with Ni fraction" style="width: 50%; background-color: white;">
 
 Figure 5. Structure evolution across iterations (iter0–5).
-<img src="fig/structure_evolution_iter0-5.png" alt="Structure evolution across iterations" style="width: 80%; background-color: white;">
+<img src="fig/structure_evolution_iter0-5.png" alt="Structure evolution across iterations" style="width: 50%; background-color: white;">
 
 
 ## 3.4 Evolution of Catalytic Properties
@@ -155,12 +155,12 @@ Figure 5. Structure evolution across iterations (iter0–5).
 図6では、x軸に ΔG_OH、y軸に理論限界電位 U_L を取り、CHEおよびスケーリング関係から得られる2本の境界直線（強結合側: U_L = ΔG_OH、弱結合側: U_L = 1.72 − ΔG_OH）と理想水平線（U_L = 1.23 V）を示した。2直線の交点は ΔG_OH ≈ 0.86 eV であり、ここがボルケーノプロットの頂点（U_L 最大）に対応する。iterの進行とともに、データ点は頂点近傍へと集約する傾向を示し、活性が理論最適領域へ近づく様子が確認できる。すなわち、3.2節のη分布の低下に対応して、ボルケーノプロット上でも U_L が高い領域であるΔG_OH ≈ 0.86 eVへの移動が観測される。
 
 Figure 6. Volcano plot: ΔG_OH vs limiting potential (iter0–5).
-<img src="fig/volcano_dG_OH_vs_limiting_potential_iter0-5.png" alt="Volcano plot" style="width: 80%; background-color: white;">
+<img src="fig/volcano_dG_OH_vs_limiting_potential_iter0-5.png" alt="Volcano plot" style="width: 50%; background-color: white;">
 
 次に図7は、Ni 含有率（x_Ni）と合金形成エネルギー E_form（eV/atom、負ほど安定）の相図を iter 色で示す。iter の進行に伴い、分布はより負の E_form 側へ推移しつつ、x_Ni ≈ 0.4–0.6 の等量近傍にサンプルが集中する傾向が見られる。これは、活性が高い領域（図6の頂点近傍）と、熱力学的に安定な領域（より負の E_form）が、探索の反復によって同時に強化されていることを示唆する。先行研究で指摘される表面Pt・サブサーフェスNi（Pt‑skin/サブサーフェスNi）の層別組成モチーフとも整合的であり、本ワークフローが「活性×安定性」両面の設計指針を自動的に抽出していることを支持する。
 
 Figure 7. Phase diagram: Ni fraction vs formation energy colored by iter.
-  <img src="fig/phase_diagram_stability_analysis_iter0-5.png" alt="Phase diagram stability analysis" style="width: 80%; background-color: white;">
+  <img src="fig/phase_diagram_stability_analysis_iter0-5.png" alt="Phase diagram stability analysis" style="width: 50%; background-color: white;">
 
  
 ## 3.5 DFT Validation
@@ -168,10 +168,10 @@ Figure 7. Phase diagram: Ni fraction vs formation energy colored by iter.
 iter5で得られた生成構造の一例であるPt33Ni31（Ni31Pt33）についてNNPとDFTによるORR自由エネルギーダイアグラムを比較したところ、限界電位はNNP/DFTでそれぞれ0.713 Vおよび0.728 V、過電圧は0.517 Vおよび0.502 Vであり、両者は同じ律速段階（OH*→H2O）を示し数値差は≲0.02 Vと良好に一致している。吸着サイトについてはOHが両者ともontop、OOHが両者ともbridgeで一致し、OについてはNNPがhcp、DFTがontopとわずかな差異が見られた。
 
 Figure 8. ORR free energy diagram of Pt33Ni31 (NNP; fairchem).
-<img src="fig/ORR_free_energy_diagram_fairchem.png" alt="ORR free energy diagram (NNP; fairchem) for Pt33Ni31" style="width: 80%; background-color: white;">
+<img src="fig/ORR_free_energy_diagram_fairchem.png" alt="ORR free energy diagram (NNP; fairchem) for Pt33Ni31" style="width: 50%; background-color: white;">
 
 Figure 9. ORR free energy diagram of Pt33Ni31 (DFT; VASP).
-<img src="fig/ORR_free_energy_diagram_vasp.png" alt="ORR free energy diagram (DFT; VASP) for Pt33Ni31" style="width: 80%; background-color: white;">
+<img src="fig/ORR_free_energy_diagram_vasp.png" alt="ORR free energy diagram (DFT; VASP) for Pt33Ni31" style="width: 50%; background-color: white;">
 
  
 ## 4. Conclusions
