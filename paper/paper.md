@@ -101,6 +101,7 @@ iter0〜iter5 の 6 イテレーションを実施し，1 iter あたり 128 構
 しかし、過電圧については NNP と DFT の値が近く、線形関係も維持されており、VAE のデータセット生成に NNP を用いる判断は妥当と結論づけた。
 
 Figure 1. Parity plots of adsorption energies (OH, O, OOH; eV) and overpotential (V) between DFT (x) and NNP (y).
+
 <img src="fig/adsorption_energy_overpotential.png" alt="Parity of adsorption energies and overpotential: DFT vs NNP" style="width: 80%; background-color: white;">
 
 ここで、OH, O, OOH の吸着エネルギーは以下で定義する。
@@ -155,11 +156,13 @@ Figure 5. Structure evolution across iterations (iter0–5).
 図6では、x軸に ΔG_OH、y軸に理論限界電位 U_L を取り、CHEおよびスケーリング関係から得られる2本の境界直線（強結合側: U_L = ΔG_OH、弱結合側: U_L = 1.72 − ΔG_OH）と理想水平線（U_L = 1.23 V）を示した。2直線の交点は ΔG_OH ≈ 0.86 eV であり、ここがボルケーノプロットの頂点（U_L 最大）に対応する。iterの進行とともに、データ点は頂点近傍へと集約する傾向を示し、活性が理論最適領域へ近づく様子が確認できる。すなわち、3.2節のη分布の低下に対応して、ボルケーノプロット上でも U_L が高い領域であるΔG_OH ≈ 0.86 eVへの移動が観測される。
 
 Figure 6. Volcano plot: ΔG_OH vs limiting potential (iter0–5).
+
 <img src="fig/volcano_dG_OH_vs_limiting_potential_iter0-5.png" alt="Volcano plot" style="width: 50%; background-color: white;">
 
 次に図7は、Ni 含有率（x_Ni）と合金形成エネルギー E_form（eV/atom、負ほど安定）の相図を iter 色で示す。iter の進行に伴い、分布はより負の E_form 側へ推移しつつ、x_Ni ≈ 0.4–0.6 の等量近傍にサンプルが集中する傾向が見られる。これは、活性が高い領域（図6の頂点近傍）と、熱力学的に安定な領域（より負の E_form）が、探索の反復によって同時に強化されていることを示唆する。先行研究で指摘される表面Pt・サブサーフェスNi（Pt‑skin/サブサーフェスNi）の層別組成モチーフとも整合的であり、本ワークフローが「活性×安定性」両面の設計指針を自動的に抽出していることを支持する。
 
 Figure 7. Phase diagram: Ni fraction vs formation energy colored by iter.
+
   <img src="fig/phase_diagram_stability_analysis_iter0-5.png" alt="Phase diagram stability analysis" style="width: 50%; background-color: white;">
 
  
@@ -168,9 +171,11 @@ Figure 7. Phase diagram: Ni fraction vs formation energy colored by iter.
 iter5で得られた生成構造の一例であるPt33Ni31（Ni31Pt33）についてNNPとDFTによるORR自由エネルギーダイアグラムを比較したところ、限界電位はNNP/DFTでそれぞれ0.713 Vおよび0.728 V、過電圧は0.517 Vおよび0.502 Vであり、両者は同じ律速段階（OH*→H2O）を示し数値差は≲0.02 Vと良好に一致している。吸着サイトについてはOHが両者ともontop、OOHが両者ともbridgeで一致し、OについてはNNPがhcp、DFTがontopとわずかな差異が見られた。
 
 Figure 8. ORR free energy diagram of Pt33Ni31 (NNP; fairchem).
+
 <img src="fig/ORR_free_energy_diagram_fairchem.png" alt="ORR free energy diagram (NNP; fairchem) for Pt33Ni31" style="width: 50%; background-color: white;">
 
 Figure 9. ORR free energy diagram of Pt33Ni31 (DFT; VASP).
+
 <img src="fig/ORR_free_energy_diagram_vasp.png" alt="ORR free energy diagram (DFT; VASP) for Pt33Ni31" style="width: 50%; background-color: white;">
 
  
