@@ -47,15 +47,6 @@ $$U_L=\min_i\left[\frac{\Delta G_i(0)}{e}\right],\quad \eta=1.23-U_L\;\mathrm{[V
 
 自由エネルギーの評価は 2.1 節の CHE の枠組みに従い実施し、ZPE／エントロピーおよび溶媒の寄与は文献に基づく定数補正として O*、OOH*、OH* に適用した。なお、本研究の反復ループにおける η と E_form の評価は一貫して UMA（uma‑s‑1p1）で実施し、DFT は NNP の検証および代表構造の自由エネルギー解析に用いた。
 
-合金形成エネルギーは、以下のように定義した。
-
-$$
-E_{\mathrm{form}} = E_{\mathrm{bulk}}^{\mathrm{alloy}} - \sum_i N_i \; \frac{E_{\mathrm{bulk}}(i)}{N_{\mathrm{bulk}}(i)}.
-$$
-
-そして E_form（eV）を原子あたり（eV/atom）に正規化して算出し，純元素（Pt, Ni）のバルク参照エネルギーを個別に計算して用いた。
-
-
 ## 2.3 Variational Auto-Encoder
 
 ### 2.3.1 Structure Representation
@@ -97,7 +88,7 @@ iter0〜iter5 の 6 イテレーションを実施し，1 iter あたり 128 構
 ## 3.1 Accuracy of NNP
 本研究で用いたユニバーサル NNP（fairchem; UMA）の妥当性を、DFT 計算との直接比較で検証した。Figure 1 は、Pt–Ni 合金構造に対して求めた（i）ORR 過電圧 η（V）と（ii）合金形成エネルギー E_form（eV/atom）について、DFT（横軸）と NNP（縦軸）のパリティを示す。いずれもスピアマンの順位相関係数が高く、過電圧で ρ ≈ 0.985、形成エネルギーで ρ ≈ 0.982、絶対誤差はそれぞれ MAE ≈ 0.060 V、MAE ≈ 0.007 eV/atom であった。
 
-プロットはおおむね対角線上に分布し、特に η では広い値域（約 0.5–1.8 V）で一致が保たれている。E_form については NNP がわずかに不安定側（値が高い側）へ寄る傾向が見られるものの、系統差は数 meV/atom 程度であり、スクリーニング用途としては許容範囲である。したがって、本研究の反復的生成ワークフローでは、NNP による特性評価を一次スクリーニングに用いることが妥当である。
+プロットはおおむね対角線上に分布し、特に η では広い値域（約 0.5–1.8 V）で一致が保たれている。E_form については NNP がわずかに不安定側（値が高い側）へ寄る傾向が見られるものの、系統差は数 meV/atom 程度であり、スクリーニング用途としては許容範囲である。したがって、本研究の反復的生成ワークフローでは、NNP による特性評価が妥当であると判断した。
 
 Figure 1. Parity plots of overpotential (V) and alloy formation energy (eV/atom) between DFT (x) and NNP (y). 注記にはスピアマン ρ と MAE を併記した。
 
