@@ -89,41 +89,35 @@ $$\begin{align}
 学習後は条件 [1,1]（低過電圧・低形成エネルギー）を指定し、学習済みVAEのデコーダーからテンソルを出力した。テンソルは前述の変換の逆変換によって、新規の構造とした。この時、既存構造と一致する重複は除外した。
 
 ## 2.4 Dataset Construction, Iterative Loop, and Analysis
-iter0〜iter5 の 6 イテレーションを実施し，1 iter あたり 128 構造（合計 768 構造）を生成・評価した。iter0 ではランダムに合金配置を生成し，NNPにより ORR 過電圧 η と合金形成エネルギー E_form を評価した。得られた（構造，η，E_form）を用いて条件付き VAE を学習し，次段では「低過電圧・低形成エネルギー（下位 30%）」に対応する条件を指定して新規構造を生成した。生成構造に対して再び NNPにより（η，E_form）を評価し，データ集合に追加したうえで学習を更新する，という「生成→評価→追加→再学習」のループを iter1 以降も繰り返した。これらの構造生成、管理はASEでpythonライブラリパッケージASEを用いて行われた。
+iter0〜iter5 の 6 イテレーションを実施し，1 iter あたり 128 構造（合計 768 構造）を生成・評価した。iter0 ではランダムに合金配置を生成し，NNPにより ORR 過電圧 η と合金形成エネルギー E_form を評価した。得られた（構造，η，E_form）を用いて条件付き VAE を学習し，次段では「低過電圧・低形成エネルギー（下位 30%）」に対応する条件を指定して新規構造を生成した。生成構造に対して再び NNP により（η，E_form）を評価し，データ集合に追加したうえで学習を更新する，という「生成→評価→追加→再学習」のループを iter1 以降も繰り返した。構造の生成と管理には Python ライブラリ ASE を用いた。
 
 <img src="fig/workflow.svg" alt="VAE training and structure generation workflow" style="background-color: white; width: 50%;">
 
 ## 3. Results and Discussion
 
 ## 3.1 Accuracy of NNP
-本研究で用いる NNP（fairchem; UMA）の妥当性を、DFT計算と直接比較して検証した。図1は、iter0 と同様の手順で作成した ランダムな64 構造の Pt–Ni 合金について、OH/O/OOH の吸着エネルギー（eV）と過電圧 η（V）を DFT（横軸）と NNP（縦軸）で比較した図である。OH と O の吸着エネルギーは点が対角線上に良好に並び、相関（R）が高く、絶対値も概ね一致した。一方で OOH の吸着エネルギーには、数点の DFT 基準に対して系統的なずれが見られ、外れ値に相当するサンプルも存在した。
+本研究で用いたユニバーサルNNP（fairchem; UMA）の妥当性を、DFT計算との直接比較で検証した。図1は、iter0と同じ手順でランダムに作成した50個のPt–Ni合金構造に対して求めた（i）ORR 過電圧 η（V）と（ii）合金形成エネルギー E_form（eV/atom）について、DFT（横軸）と NNP（縦軸）のパリティを示す。いずれもスピアマンの順位相関係数が高く、過電圧で ρ ≈ 0.985、形成エネルギーで ρ ≈ 0.982 を示した。絶対誤差はそれぞれ MAE ≈ 0.060 V、MAE ≈ 0.007 eV/atom と小さく、NNP はDFTに対して良好な単調性と大小関係を有する。
 
-しかし、過電圧については NNP と DFT の値が近く、線形関係も維持されており、VAE のデータセット生成に NNP を用いる判断は妥当と結論づけた。
+プロットはおおむね対角線上に分布し、特にηでは広い値域（約0.5–1.8 V）で一致が保たれている。E_form については、およそ-0.03meV/atom未満のデータに対してNNPが僅かに過小評価する傾向が見られるが、系統差は0.01 meV/atom 程度であり、スクリーニング用途で実用上許容できる。したがって、本研究の反復的生成ワークフローでは、NNP による特性評価が可能であると判断した。
 
-Figure 1. Parity plots of adsorption energies (OH, O, OOH; eV) and overpotential (V) between DFT (x) and NNP (y).
+Figure 1. Parity plots of overpotential (V) and alloy formation energy (eV/atom) between DFT (x) and NNP (y). 注記にはスピアマン ρ と MAE を併記した。
 
-<img src="fig/adsorption_energy_overpotential.png" alt="Parity of adsorption energies and overpotential: DFT vs NNP" style="width: 80%; background-color: white;">
+<img src="fig/overpotential_and_formation.png" alt="Parity of overpotential and formation energy: DFT vs NNP" style="width: 80%; background-color: white;">
 
-ここで、OH, O, OOH の吸着エネルギーは以下で定義する。
-
-$$
-E_{\mathrm{ads}}(\mathrm{OH}^*) = E(\mathrm{OH}^*) - \Bigl[ E(\mathrm{*}) + E(\mathrm{H_2O}) - \tfrac{1}{2}E(\mathrm{H_2}) \Bigr],
-$$
+ここで、合金形成エネルギーは以下で定義する。
 
 $$
-E_{\mathrm{ads}}(\mathrm{O}^*) = E(\mathrm{O}^*) - \Bigl[ E(\mathrm{*}) + E(\mathrm{H_2O}) - E(\mathrm{H_2}) \Bigr],
+E_{\mathrm{form}} = E_{\mathrm{bulk}}^{\mathrm{alloy}} - \sum_i N_i \; \frac{E_{\mathrm{bulk}}(i)}{N_{\mathrm{bulk}}(i)}.
 $$
 
-$$
-E_{\mathrm{ads}}(\mathrm{OOH}^*) = E(\mathrm{OOH}^*) - \Bigl[ E(\mathrm{*}) + E(\mathrm{H_2O}) + \tfrac{1}{2}E(\mathrm{H_2}) \Bigr].
-$$
+E_form は原子数で割り（eV/atom）に正規化して算出した。純元素（Pt, Ni）のバルク参照エネルギーは、それぞれの 4×4×4 fcc 構造を同一ワークフローで構造最適化及びエネルギー計算を行なった。
 
 
 ## 3.2 Iterative Improvement and Latent-Space View
 
-本研究の反復的な生成・評価過程により、過電圧および合金形成エネルギーの分布は高性能側へ系統的に推移した。Fig. 2のバイオリンプロットから、iterの進行とともに過電圧分布が低電位側に、形成エネルギー分布がより負（熱力学的に安定）な側へ移動する傾向が確認できる。定量的には、iter0→iter5で過電圧の平均は1.126 Vから0.520 Vへ、合金形成エネルギーの平均は−0.027 eV/atomから−0.047 eV/atomへとそれぞれ低下した（詳細統計はSI参照）。
+本研究の反復的な生成・評価過程により、過電圧および合金形成エネルギーの分布は高性能側へ系統的に推移した。Figure 2 のバイオリンプロットから、iter の進行とともに過電圧分布が低電位側に、形成エネルギー分布がより負（熱力学的に安定）な側へ移動する傾向が確認できる。定量的には、iter0→iter5で過電圧の平均は 1.126 V から 0.520 V へ、合金形成エネルギーの平均は −0.027 eV/atom から −0.047 eV/atom へとそれぞれ低下した（詳細統計は SI 参照）。
 
-さらに、iter5時点の学習済みVAEのエンコーダから得た潜在平均（μ）をt‑SNEで2次元に射影すると（Fig. 3）、データ群はiterの進行に伴い潜在空間上で新たな領域へ広がり、初期データ（iter0）には含まれていなかった特性をもつ構造群が外挿的に獲得されていることが分かる。これは、条件付き生成により、活性（低過電圧）と安定性（より負の形成エネルギー）を同時に満たす構造クラスが初期の設計空間外に向けて順次拓かれていくことを示唆する。
+さらに、iter5 時点の学習済み VAE のエンコーダから得た潜在平均（μ）を t‑SNE で 2 次元に射影すると（Figure 3）、データ群は iter の進行に伴い潜在空間上で新たな領域へ広がり、初期データ（iter0）には含まれていなかった特性をもつ構造群が外挿的に獲得されていることが分かる。これは、条件付き生成により、活性（低過電圧）と安定性（より負の形成エネルギー）を同時に満たす構造クラスが初期の設計空間外に向けて順次拓かれていくことを示唆する。
 
 Figure 2. Combined distributions of alloy formation energy and overpotential (iter0–5).
 <img src="fig/violin_combined_iter0-5.png" alt="Combined violin: formation energy and overpotential" style="width: 50%; background-color: white;">
@@ -145,15 +139,17 @@ Figure 4. Overpotential vs. alloy formation energy（iter色） and the same col
 
 <img src="fig/overpotential_vs_alloy_formation_ni_fraction_heatmap_iter0-5.png" alt="Heatmap: overpotential vs alloy formation with Ni fraction" style="width: 50%; background-color: white;">
 
+
 Figure 5. Structure evolution across iterations (iter0–5).
+
 <img src="fig/structure_evolution_iter0-5.png" alt="Structure evolution across iterations" style="width: 50%; background-color: white;">
 
 
 ## 3.4 Evolution of Catalytic Properties
 
-各イテレーションで得られた触媒構造の特性が（i）活性の先行研究トレンドと矛盾せず、（ii）反復生成・評価により系統的に改善されていくことを、確認する。図6は ORR のCHEと線形スケーリング則に基づくボルケーノプロットに、各iterの構造を重ね合わせたものであり、図7は組成と安定性を対応付けた相図である。
+各イテレーションで得られた触媒構造の特性が（i）活性の先行研究トレンドと矛盾せず、（ii）反復生成・評価により系統的に改善されていくことを確認する。Figure 6 は ORR の CHE と線形スケーリング則に基づくボルケーノプロットに、各 iter の構造を重ね合わせたものであり、Figure 7 は組成と安定性を対応付けた相図である。
 
-図6では、x軸に ΔG_OH、y軸に理論限界電位 U_L を取り、CHEおよびスケーリング関係から得られる2本の境界直線（強結合側: U_L = ΔG_OH、弱結合側: U_L = 1.72 − ΔG_OH）と理想水平線（U_L = 1.23 V）を示した。2直線の交点は ΔG_OH ≈ 0.86 eV であり、ここがボルケーノプロットの頂点（U_L 最大）に対応する。iterの進行とともに、データ点は頂点近傍へと集約する傾向を示し、活性が理論最適領域へ近づく様子が確認できる。すなわち、3.2節のη分布の低下に対応して、ボルケーノプロット上でも U_L が高い領域であるΔG_OH ≈ 0.86 eVへの移動が観測される。
+Figure 6 では、x 軸に ΔG_OH、y 軸に理論限界電位 U_L を取り、CHE およびスケーリング関係から得られる 2 本の境界直線（強結合側: U_L = ΔG_OH、弱結合側: U_L = 1.72 − ΔG_OH）と理想水平線（U_L = 1.23 V）を示した。2 直線の交点は ΔG_OH ≈ 0.86 eV であり、ここがボルケーノプロットの頂点（U_L 最大）に対応する。iter の進行とともに、データ点は頂点近傍へと集約する傾向を示し、活性が理論最適領域へ近づく様子が確認できる。すなわち、3.2 節の η 分布の低下に対応して、ボルケーノプロット上でも U_L が高い領域である ΔG_OH ≈ 0.86 eV への移動が観測される。
 
 Figure 6. Volcano plot: ΔG_OH vs limiting potential (iter0–5).
 
@@ -168,16 +164,38 @@ Figure 7. Phase diagram: Ni fraction vs formation energy colored by iter.
  
 ## 3.5 DFT Validation
 
-iter5で得られた生成構造の一例であるPt33Ni31（Ni31Pt33）についてNNPとDFTによるORR自由エネルギーダイアグラムを比較したところ、限界電位はNNP/DFTでそれぞれ0.713 Vおよび0.728 V、過電圧は0.517 Vおよび0.502 Vであり、両者は同じ律速段階（OH*→H2O）を示し数値差は≲0.02 Vと良好に一致している。吸着サイトについてはOHが両者ともontop、OOHが両者ともbridgeで一致し、OについてはNNPがhcp、DFTがontopとわずかな差異が見られた。
+iter5で得られた生成構造の一つであるPt33Ni31（Ni31Pt33）について、DFTによる検証を行った。吸着構造については*OHと*OOHはNNPとDFTで得られた最安定配置が共に一致することが確認できたが、*OについてはNNPとDFTで差異が見られた。図8に、NNP/DFTの最安定構造（OH* / O* / OOH*）と対応する吸着反応エネルギーΔEをまとめて示す。一方で、ORR自由エネルギーダイアグラムを比較したところ、限界電位はNNP/DFTでそれぞれ0.713 Vおよび0.728 V、過電圧は0.517 Vおよび0.502 Vであり、両者は同じ律速段階（OH*→H2O）を示し数値差は≲0.02 Vと良好に一致していた。
 
-Figure 8. ORR free energy diagram of Pt33Ni31 (NNP; fairchem).
+また、NNPとDFTで計算された合金形成エネルギーはNNPが−0.0526 eV/atom、DFTが−0.0624 eV/atomであり、絶対差は約0.00979 eV/atom（≲0.01 eV/atom）であった。この傾向は、3.1節で示したNNPの形成エネルギーに関するDFT比較と整合的であり、NNPがDFTに対して系統的にわずかに過小評価する傾向にし違う。
 
-<img src="fig/ORR_free_energy_diagram_fairchem.png" alt="ORR free energy diagram (NNP; fairchem) for Pt33Ni31" style="width: 50%; background-color: white;">
+以上より、NNPで得られた構造に対してDFTで再評価した結果、NNPとDFTの限界電位、律速段階が良好に一致し、また、提案手法の定量的信頼性を支持した。
 
-Figure 9. ORR free energy diagram of Pt33Ni31 (DFT; VASP).
+Figure 8. Adsorption structures and energies (ΔE) for Pt33Ni31: NNP (top) vs DFT (bottom).
 
-<img src="fig/ORR_free_energy_diagram_vasp.png" alt="ORR free energy diagram (DFT; VASP) for Pt33Ni31" style="width: 50%; background-color: white;">
+<img src="fig/adsorption_matrix.png" alt="Adsorption structures and energies: NNP vs DFT (OH*, O*, OOH*)" style="width: 50%; background-color: white;">
 
+Figure 9. ORR free energy diagram of Pt33Ni31 (NNP; fairchem).
+
+<img src="fig/ORR_free_energy_diagram_NNP.png" alt="ORR free energy diagram (NNP; fairchem) for Pt33Ni31" style="width: 50%; background-color: white;">
+
+Figure 10. ORR free energy diagram of Pt33Ni31 (DFT; VASP).
+
+<img src="fig/ORR_free_energy_diagram_DFT.png" alt="ORR free energy diagram (DFT; VASP) for Pt33Ni31" style="width: 50%; background-color: white;">
+
+
+ここで、OH, O, OOH の吸着反応エネルギーは以下で定義する。
+
+$$
+E_{\mathrm{ads}}(\mathrm{OH}^*) = E(\mathrm{OH}^*) - \Bigl[ E(\mathrm{*}) + E(\mathrm{H_2O}) - \tfrac{1}{2}E(\mathrm{H_2}) \Bigr],
+$$
+
+$$
+E_{\mathrm{ads}}(\mathrm{O}^*) = E(\mathrm{O}^*) - \Bigl[ E(\mathrm{*}) + E(\mathrm{H_2O}) - E(\mathrm{H_2}) \Bigr],
+$$
+
+$$
+E_{\mathrm{ads}}(\mathrm{OOH}^*) = E(\mathrm{OOH}^*) - \Bigl[ E(\mathrm{*}) + E(\mathrm{H_2O}) + \tfrac{1}{2}E(\mathrm{H_2}) \Bigr].
+$$
  
 ## 4. Conclusions
 
