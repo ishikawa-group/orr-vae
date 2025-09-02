@@ -42,12 +42,12 @@ $$U_L=\min_i\left[\frac{\Delta G_i(0)}{e}\right],\quad \eta=1.23-U_L\;\mathrm{[V
 
 ## 2.2 NNP と DFT 計算
 
-データセット生成には、ニューラルネットワークポテンシャル（NNP）である UMA（Universal Models for Atoms）の uma‑s‑1p1 モデルを用いて構造最適化およびエネルギー計算を行った。uma‑s‑1p1 は、約 5 億件の DFT データにより事前学習された eSEN（equivariant Smooth Energy Network）に Mixture of Linear Experts（MoLE）を導入した、約 1.5 億パラメータの汎用 NNP である。HEA（高エントロピー合金）の形成エネルギー評価ベンチマークでは 24.9 meV/atom、OC20 データセットを用いた吸着エネルギー評価ベンチマークでは 68.8 meV の精度が報告されている。
+データセット生成には、ニューラルネットワークポテンシャル（NNP）である UMA（Universal Models for Atoms）の uma‑s‑1p1 モデルを用いて構造最適化およびエネルギー計算を行った。uma‑s‑1p1 は、約 5 億件の DFT データにより事前学習され、 eSEN（equivariant Smooth Energy Network）に Mixture of Linear Experts（MoLE）を導入した約 1.5 億パラメータの汎用 NNP である。uma‑s‑1p1 モデルは、HEA（高エントロピー合金）の形成エネルギーの評価テストでは MAE 24.9 meV/atom、OC20 データセットを用いた吸着エネルギーの評価テストでは MAE 68.8 meV の精度が報告されている。
 
 第一原理計算（DFT）は Vienna Ab initio Simulation Package（VASP）を用いたスピン分極計算で実施し、projector augmented-wave 法（PAW）と GGA‑RPBE 交換相関汎関数を採用した。波動関数は 450 eV の平面波カットオフで展開し、金属占有には Methfessel–Paxton スミアリング（幅 0.20 eV）を用いた。自己無撞着計算の収束判定は 1×10^{-5} eV とし、Brillouin ゾーンのサンプリングはバルク 2×2×2、(111) スラブ 2×2×1、気相分子（H2, H2O）は Γ 点とした。
 スラブモデルは fcc(111) 面からなる 4 層構造とし、下 2 層を固定、上 2 層と吸着種は全自由度で緩和した。z 方向には 15 Å の真空を設け、表面法線方向の双極子補正を適用した。構造最適化は最大残差力 0.05 eV/Å を閾値として収束させ、気相参照の H2 と H2O は 15 Å 立方セル中で最適化して用いた。吸着系では OOH、O、OH を ontop／bridge／fcc‑hollow／hcp‑hollow に初期配置して最安定サイトを採用した。また、セルサイズは真空層を付与する前に最適化した。
 
-なお、本研究の反復ループにおける η と E_form の評価は一貫して NNP（uma‑s‑1p1）で実施し、DFT は NNP の検証および代表構造の自由エネルギー解析に用いた。
+なお、本研究の反復ループにおける η と E_form の評価は一貫して NNP（uma‑s‑1p1）で実施し、DFT は NNP の検証および代表構造の解析に用いた。
 
 ## 2.3 Variational Auto-Encoder
 
@@ -124,7 +124,7 @@ Figure 3. Data space visualization by iteration (VAE latent mean μ, t-SNE; iter
 
 同時に、組成比の分布にも系統的変化が見られ、Pt–Ni 合金における Ni 含有量は iter の進行とともに等量近傍（x_Ni ≈ 0.5）を中心とする領域に濃縮する傾向を示した（Figure 4）。
 
-なお、構造の配置進化を俯瞰すると、iter0はランダムな構造配置が確認できるが、iterの進行に伴い最表面にPtが配され、その直下にNiが配置される構成（いわゆるPt‑skin/サブサーフェスNi）が徐々に顕在化する傾向が見られる。これは、活性（低過電圧）と安定性（より負の形成エネルギー）を同時に満たす設計指針として、表面・サブサーフェスの元素分配が重要であることを示唆する先行研究とも整合的である。
+なお、イテレーションごとの出力構造の推移を確認すると、iter0はランダムな構造配置が確認できるが、イテレーションの進行に伴い最表面(atomic position index 56 - 63)にPtが配され、その直下にNiが配置される構成（いわゆるPt‑skin/サブサーフェスNi）が徐々に顕在化する傾向が見られる。これは、活性（低過電圧）と安定性（より負の形成エネルギー）を同時に満たす設計指針として、表面・サブサーフェスの元素分配が重要であることを示唆する先行研究とも整合的である。
 
 Figure 4. Overpotential vs. alloy formation energy（iter 色） and the same colored by Ni fraction.
 
@@ -348,13 +348,23 @@ Shang, S. L.; Wang, Y.; Kim, D. E.; Zacherl, C. L.; Du, Y.; Liu, Z. K. Structura
 
 ## Supplementary Information
 - Distributions（補足）: iter別の単独分布を参照（本文は複合図）。
+  
   - Overpotential histogram (iter0–5)
-  <img src="fig/overpotential_histogram_iter0-5.png" alt="Histogram of overpotential" style="width: 70%; background-color: white;">
+  
+  <img src="fig/overpotential_histogram_iter0-5.png" alt="Histogram of overpotential" style="width: 50%; background-color: white;">
+
+
   - Alloy-formation histogram (iter0–5)
-  <img src="fig/alloy_formation_histogram_iter0-5.png" alt="Histogram of alloy formation energy" style="width: 70%; background-color: white;">
+  
+  <img src="fig/alloy_formation_histogram_iter0-5.png" alt="Histogram of alloy formation energy" style="width: 50%; background-color: white;">
 
 - Volcano variants（補助）: iter以外の色付け表現。
+  
   - Volcano（Ni heatmap）
-  <img src="fig/volcano_dG_OH_vs_limiting_potential_ni_heatmap_iter0-5.png" alt="Volcano Ni heatmap" style="width: 70%; background-color: white;">
+  
+  <img src="fig/volcano_dG_OH_vs_limiting_potential_ni_heatmap_iter0-5.png" alt="Volcano Ni heatmap" style="width: 50%; background-color: white;">
+
+
   - Volcano（Pt heatmap）
-  <img src="fig/volcano_dG_OH_vs_limiting_potential_pt_heatmap_iter0-5.png" alt="Volcano Pt heatmap" style="width: 70%; background-color: white;">
+  
+  <img src="fig/volcano_dG_OH_vs_limiting_potential_pt_heatmap_iter0-5.png" alt="Volcano Pt heatmap" style="width: 50%; background-color: white;">
