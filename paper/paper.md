@@ -1,5 +1,5 @@
 ---
-title: "Theoretical Generation of Catalysts for Oxygen Reduction Reaction with Machine Learning Potential and Variational Auto-Encoder"
+title: "Theoretical Generation of Alloy Catalysts for Oxygen Reduction Reaction with Machine Learning Potential and Variational Auto-Encoder"
 author: "Name"
 bibliography: [orr-vae.bib]
 csl: american-chemical-society.csl
@@ -7,17 +7,20 @@ csl: american-chemical-society.csl
 
 ## Abstract
 
-多元素合金触媒では高活性な原子組成と配列を効率的に探索することが重要である。本研究では汎用機械学習ポテンシャル（NNP）と条件付き変分オートエンコーダ（cVAE）を統合し、Pt–Ni 合金表面の酸素還元反応（ORR）を対象に、活性と安定性を同時に最適化する構造の反復的生成・評価ワークフローを構築した。cVAE は、計算水素電極（CHE）に基づく過電圧 η と合金形成エネルギー E_form を条件ラベルとして学習し、条件を指定して新規構造を生成する。各候補の評価は NNP により高速化され、iter0〜5 の 6 反復で各 128 構造（計 768 件）を生成・評価した。各 iter の進行に伴い、データセットの η 分布は低電位側へ系統的にシフトし、平均値は 1.126 から 0.520 V へ低下した。同時に E_form の平均値は −0.027 から −0.047 eV/atom へとより負の側に移動し、熱力学的安定性が向上した。生成構造の特徴として、Pt が最表面原子として存在する構造が多く見られ、活性と安定性の両立に向けた設計指針が示唆された。さらに ΔG_OH と制限電位 U_L の関係は ORR のボルケーノプロットと整合し、得られた活性傾向の物理的一貫性を支持した。本手法は、限られた初期データからでも、活性（低 η）と安定性（低 E_form）を満たす合金触媒構造を外挿的に提案できる枠組みであり、多元系触媒の計算スクリーニングを大幅に効率化しうることを示す。
+合金触媒では高活性な原子組成と配列を効率的に探索、最適化することが重要である。本研究ではユニバーサルニューラルネットワークポテンシャルと条件付き変分オートエンコーダを統合し、Pt–Ni 合金表面の酸素還元反応（ORR）を対象に、活性と安定性を同時に最適化する構造の反復的生成・評価ワークフローを構築した。cVAE は、計算水素電極（CHE）に基づく過電圧 η と合金形成エネルギー E_form を条件ラベルとして学習し、条件を指定して新規構造を生成する。各候補の評価は NNP により高速化され、合計6回のイテレーションで各 128 構造（計 768 件）を生成・評価した。イテレーションの進行に伴い、それぞれ生成されたデータセットの η 分布は低電位側にシフトし、平均値は 1.126 から 0.520 V へ低下した。同時に E_form の平均値は −0.027 から −0.047 eV/atom へと推移し、熱力学的安定性が向上した。生成構造の特徴として、Pt が最表面原子として存在する構造が多く見られ、活性と安定性の両立に向けた設計指針が示唆された。さらに ΔG_OH と制限電位 U_L の関係は ORR のボルケーノプロットと整合し、得られた活性傾向の物理化学的な一貫性を支持した。本手法は、限られた初期データからでも、活性と安定性を同時に満たす構造を提案できる枠組みであり、合金触媒の計算スクリーニングを大幅に効率化しうることを示す。
 
 ## 1. Introduction
 
-固体高分子形燃料電池（PEMFC）は、再生可能エネルギー由来の水素を活用できるクリーンな発電技術として注目されている。一方で、カソードにおける酸素還元反応（oxygen reduction reaction, ORR）の速度が実用化のボトルネックであり、高活性かつ安価な電極触媒の開発が喫緊の課題である。商用触媒としては白金（Pt）が中心であるが、希少性とコストの問題から、Ptに安価元素を合金化して性能と資源制約のバランスを取る戦略が広く検討されている。なかでもPt–Niは代表的な合金触媒であるものの、合金の組成・配列と活性・安定性の関係は、報告により最適比が異なるなど未だ統一的な理解に達していない。
+固体高分子形燃料電池（PEMFC）は、再生可能エネルギー由来の水素を活用できるクリーンな発電技術として注目されている。一方で、カソードにおける酸素還元反応（oxygen reduction reaction, ORR）の速度が実用化のボトルネックであり、高活性かつ安価な電極触媒の開発が課題である。商用触媒としては白金（Pt）が中心であるが、希少性とコストの問題から、Ptに安価元素を合金化して性能と資源制約のバランスを取る戦略が広く検討されている。なかでもPt–Niは代表的な合金触媒であるものの、合金の組成・配置と活性・安定性の関係は、報告により最適比が異なるなど未だ統一的な理解に達していない。
 
-こうした合金触媒の設計では、元素組成比と原子配列の組合せは膨大であり、第一原理計算（DFT）を用いた網羅的探索は計算資源の観点から現実的でない。記述子に基づくスクリーニングやDFTベースのマイクロキネティクスは、機構理解と活性予測に有効である一方、候補構造の評価コストがボトルネックとなる。
+こうした合金触媒の最適化に向けた材料設計では、元素組成比と原子配列の組合せは膨大であり、第一原理計算（DFT）を用いた候補パターンの網羅的探索は計算資源の観点から現実的でない。また、記述子ベースの機械学習によるスクリーニングは、重要な特徴量の決定と特性予測に有効であるが、モデルの学習には十分なデータ量の確保、そして新構造の探索には作成したモデルを用いた多数の推論が必要となり未知の化学データ空間からの構造生成は難しい。そこで、材料特性から構造への逆設計に向けて、生成モデルの利用が提案されており、未知の化学データ空間からの構造生成に対して有効なアプローチとして期待されている。
 
-近年、機械学習を活用した触媒設計が進展し、特に生成モデルは既存データに含まれない外挿的な構造候補の提案に有望であることが示されている。しかし、生成候補を都度DFTで評価するワークフローは、元素数・探索空間の拡大とともに急速に非効率化する。この課題に対し、第一原理データで事前学習したユニバーサルなニューラルネットワークポテンシャル（NNP）を用いると、DFTに近い精度を維持しながら計算を高速化でき、反復的な生成・評価ループの実用性が大きく向上する。
+特に、合金触媒設計において生成モデルを活用することで、既存データに含まれない外挿的な合金触媒構造候補の提案が可能であることが示されている。
+しかし、生成モデルよる提案構造を都度DFTで評価するワークフローは、データ数の拡大とともに急速に非効率化する。この課題に対し、第一原理計算データで事前学習したユニバーサルニューラルネットワークポテンシャル（NNP）を用いると、DFTに近い精度を維持しながら計算を高速化でき、反復的な生成・評価ループの実用性が大きく向上する。
 
-本研究は、Pt–Ni 合金表面の ORR を対象に、ユニバーサル NNP による高速評価と生成モデルによる外挿的探索を統合した反復的設計ワークフローを提案する。具体的には、計算水素電極（CHE）に基づく過電圧（η）と合金形成エネルギー（E_form）を同時に条件付けた条件付き変分オートエンコーダ（cVAE）で新規構造を生成し、NNPで迅速に評価・選別する工程を反復することで、活性（低η）と安定性（低E_form）を両立する表面配列と組成域を効率的に探索する。
+これらの触媒設計には生成モデルとしてGANが用いられているが、バルク材料の設計においてはGAN同様に一般的な生成モデルである変分オートエンコーダ(VAE)も利用されている。そして、VAEはGANに比べて、訓練が比較的容易で安定化しやすく、よく正則化された連続的な潜在空間を活用してサンプリングや補間により未観測候補を生成しやすく、さらに条件付き学習により高精度に所望クラス（ラベル）を直接指定して生成できることが報告されている。
+
+そこで本研究は、Pt–Ni 合金表面の ORR を対象に、ユニバーサル NNP による高速評価と生成モデルによる構造生成を統合した反復的な設計ワークフローを提案する。具体的には、計算水素電極（CHE）に基づく過電圧（η）と合金形成エネルギー（E_form）を同時に条件付けた条件付き変分オートエンコーダ（cVAE）で新規構造を生成し、NNPで迅速に評価する工程を反復することで、活性（低η）と安定性（低E_form）を両立したPt-Ni触媒を効率的に探索する。
 
 ## 2. Methods
 
@@ -34,7 +37,7 @@ csl: american-chemical-society.csl
 
 $$\Delta G_i(U)=\Delta G_i(0)-eU$$
 
-とし、U = 1.23 V（RHE 基準, pH = 0, T = 298.15 K）での平衡を基準に
+とし、U = 1.23 V（pH = 0, T = 298.15 K）での平衡を基準に
 
 $$U_L=\min_i\left[\frac{\Delta G_i(0)}{e}\right],\quad \eta=1.23-U_L\;\mathrm{[V]}$$
 
@@ -45,7 +48,8 @@ $$U_L=\min_i\left[\frac{\Delta G_i(0)}{e}\right],\quad \eta=1.23-U_L\;\mathrm{[V
 データセット生成には、ニューラルネットワークポテンシャル（NNP）である UMA（Universal Models for Atoms）の uma‑s‑1p1 モデルを用いて構造最適化およびエネルギー計算を行った。uma‑s‑1p1 は、約 5 億件の DFT データにより事前学習され、 eSEN（equivariant Smooth Energy Network）に Mixture of Linear Experts（MoLE）を導入した約 1.5 億パラメータの汎用 NNP である。uma‑s‑1p1 モデルは、HEA（高エントロピー合金）の形成エネルギーの評価テストでは MAE 24.9 meV/atom、OC20 データセットを用いた吸着エネルギーの評価テストでは MAE 68.8 meV の精度が報告されている。
 
 第一原理計算（DFT）は Vienna Ab initio Simulation Package（VASP）を用いたスピン分極計算で実施し、projector augmented-wave 法（PAW）と GGA‑RPBE 交換相関汎関数を採用した。波動関数は 450 eV の平面波カットオフで展開し、金属占有には Methfessel–Paxton スミアリング（幅 0.20 eV）を用いた。自己無撞着計算の収束判定は 1×10^{-5} eV とし、Brillouin ゾーンのサンプリングはバルク 2×2×2、(111) スラブ 2×2×1、気相分子（H2, H2O）は Γ 点とした。
-スラブモデルは fcc(111) 面からなる 4 層構造とし、下 2 層を固定、上 2 層と吸着種は全自由度で緩和した。z 方向には 15 Å の真空を設け、表面法線方向の双極子補正を適用した。構造最適化は最大残差力 0.05 eV/Å を閾値として収束させ、気相参照の H2 と H2O は 15 Å 立方セル中で最適化して用いた。吸着系では OOH、O、OH を ontop／bridge／fcc‑hollow／hcp‑hollow に初期配置して最安定サイトを採用した。また、セルサイズは真空層を付与する前に最適化した。
+
+スラブモデルは fcc(111) 面からなる 4 層の(4×4)の64原子構造であり、下 2 層を固定、上 2 層と吸着種は全自由度で緩和した。z 方向には 15 Å の真空を設け、表面法線方向の双極子補正を適用した。構造最適化は最大残差力 0.05 eV/Å を閾値として収束させ、気相参照の H2 と H2O は 15 Å 立方セル中で最適化して用いた。吸着系では OOH、O、OH を ontop／bridge／fcc‑hollow／hcp‑hollow に初期配置して最安定サイトを採用した。また、セルサイズは真空層を付与する前に最適化した。
 
 なお、本研究の反復ループにおける η と E_form の評価は一貫して NNP（uma‑s‑1p1）で実施し、DFT は NNP の検証および代表構造の解析に用いた。
 
@@ -90,7 +94,7 @@ iter0〜iter5 の 6 イテレーションを実施し，1 iter あたり 128 構
 ## 3.1 Accuracy of NNP
 本研究で用いたユニバーサル NNP（uma‑s‑1p1）のPt-Ni合金系への適応の妥当性を、DFT 計算との直接比較で検証した。Figure 1 は、Pt–Ni 合金構造に対して求めた（i）ORR 過電圧 η（V）と（ii）合金形成エネルギー E_form（eV/atom）について、DFT（横軸）と NNP（縦軸）のパリティを示す。いずれもスピアマンの順位相関係数が高く、過電圧で ρ ≈ 0.985、形成エネルギーで ρ ≈ 0.982、絶対誤差はそれぞれ MAE ≈ 0.060 V、MAE ≈ 0.007 eV/atom であった。
 
-プロットはおおむね対角線上に分布し、特に η では広い値域（約 0.5–1.8 V）で一致が保たれている。E_form については NNP がわずかに不安定側（値が高い側）へ過小評価する傾向が見られるものの、系統誤差は0.01 meV/atom 程度であり、スクリーニング用途としては許容範囲である。したがって、本研究の反復的生成ワークフローでは、NNP による特性評価が妥当であると判断した。
+プロットはおおむね対角線上に分布し、特に η では広い値域（約 0.5–1.8 V）で一致が保たれている。E_form については、-0.03 meV/atom未満の領域で NNP が不安定側へ過小評価する傾向が見られるものの、系統誤差は0.01 meV/atom 程度であり、スクリーニング用途としては許容範囲である。したがって、本研究の反復的生成ワークフローでは、NNP による特性評価が妥当であると判断した。
 
 ここで、合金形成エネルギーは以下で定義する。
 
@@ -148,7 +152,7 @@ Figure 6. Volcano plot: ΔG_OH vs limiting potential (iter0–5).
 
 <img src="fig/volcano_dG_OH_vs_limiting_potential_iter0-5.png" alt="Volcano plot" style="width: 50%; background-color: white;">
 
-次に Figure 7 は、Ni 含有率（x_Ni）と合金形成エネルギー E_form（eV/atom、負ほど安定）の相図を iter 色で示す。iter の進行に伴い、分布はより負の E_form 側へ推移しつつ、x_Ni ≈ 0.4–0.6 の等量近傍にサンプルが集中する傾向が見られる。これは、活性が高い領域（Figure 6 の頂点近傍）と、熱力学的に安定な領域（より負の E_form）が、探索の反復によって同時に強化されていることを示唆する。先行研究で指摘される表面 Pt・サブサーフェス Ni（Pt‑skin/サブサーフェス Ni）の層別組成モチーフとも整合的であり、本ワークフローが「活性と安定性」両面の設計指針を自動的に抽出していることを支持する。
+次に Figure 7 は、Ni 含有率（x_Ni）と合金形成エネルギー E_form（eV/atom、負ほど安定）の相図を iter 色で示す。iter の進行に伴い、分布はより負の E_form 側へ推移しつつ、x_Ni ≈ 0.4–0.6 の等量近傍にサンプルが集中する傾向が見られる。これは、活性が高い領域（Figure 6 の頂点近傍）と、熱力学的に安定な領域（より負の E_form）が、探索の反復によって同時に強化されていることを示唆する。
 
 Figure 7. Phase diagram: Ni fraction vs formation energy colored by iter.
 
@@ -242,7 +246,7 @@ $$
 - Zhuang, Y.; Iguchi, Y.; Li, T.; Kato, M.; Hutapea, Y. A.; Hayashi, A.; Watanabe, T.; Yagi, I. Platinum–Nickel Alloy Nanowire Electrocatalysts Transform into Pt-Skin Beads-on-Nanowires Keeping Oxygen Reduction Reaction Activity During Potential Cycling. ACS Catalysis (2024) 14(3), 1750–1758. DOI: 10.1021/acscatal.3c04709
   ［用途メモ：Pt-skin 形成と活性維持（耐久・構造進化）］
 
-##### Pt–Ni の組成・合成・活性例
+#### Pt–Ni の組成・合成・活性例
 
 - Carpenter, M. K.; Moylan, T. E.; Kukreja, R. S.; Atwan, M. H.; Tessema, M. M. Solvothermal Synthesis of Platinum Alloy Nanoparticles for Oxygen Reduction Electrocatalysis. Journal of the American Chemical Society (2012) 134(20), 8535–8542. DOI: 未記載
   ［用途メモ：Pt合金NPの合成とORR活性］
@@ -250,7 +254,13 @@ $$
 - Yang, H.; Coutanceau, C.; Léger, J.-M.; Alonso-Vante, N.; Lamy, C. Methanol tolerant oxygen reduction on carbon-supported Pt–Ni alloy nanoparticles. Journal of Electroanalytical Chemistry (2005) 576(2), 305–313. DOI: 10.1016/j.jelechem.2004.10.026
   ［用途メモ：Pt–Niの耐メタノール性・組成依存例］
 
-##### 合金触媒の組成比最適化／高エントロピー
+#### DFTの計算コスト
+- Shambhawi, S.; Mohan, O.; Choksi, T. S.; Lapkin, A. A. The design and optimization of heterogeneous catalysts using computational methods. Catalysis Science & Technology, Issue 3 (2024). DOI: https://doi.org/10.1039/D3CY01160G  
+  ［用途メモ：DFTの計算コストについて言及。網羅的な探索には計算負荷が高く実用的ではない］
+
+#### 記述子ベースのMLの先行研究
+
+#### 合金触媒の組成比最適化／高エントロピー
 
 - Batchelor, T. A. A.; Pedersen, J. K.; Winther, S. H.; Castelli, I. E.; Jacobsen, K. W.; Rossmeisl, J. High-Entropy Alloys as a Discovery Platform for Electrocatalysis. Joule (2019) 3(3), 834–845. DOI: 10.1016/j.joule.2018.12.015
   ［用途メモ：多元合金（HEA）プラットフォームの概念］
@@ -258,7 +268,13 @@ $$
 - Shamekhi, M.; Toghraei, A.; Guay, D.; Peslherbe, G. H. High-throughput screening and DFT characterization of bimetallic alloy catalysts for the nitrogen reduction reaction. Physical Chemistry Chemical Physics (2025) DOI: 10.1039/D5CP01094B
   ［用途メモ：ハイスループットDFTと二元合金スクリーニング（NRR例；スクリーニング手法の参照に）］
 
-### 生成AI／NNP（イントロ後半で使う想定）
+#### 生成AIレビュー
+
+- Park, H.; Li, Z.; Walsh, A. Has generative artificial intelligence solved inverse materials design? Matter (2024) 7(7), 2355–2367. DOI: 10.1016/j.matt.2024.05.017
+  ［用途メモ：MLスクリーニングと生成AIの比較（レビュー的観点）］
+
+- Hellman, A. A brief overview of deep generative models and how they can be used to discover new electrode materials. Current Opinion in Electrochemistry (2025) 49, 101629. DOI: 10.1016/j.coelec.2024.101629
+  ［用途メモ：生成AIによる材料の逆設計事例・手法の概観］
 
 #### 生成AIの利用（触媒探索）
 
@@ -288,6 +304,12 @@ $$
 - Barroso-Luque, L.; Shuaibi, M.; Fu, X.; et al. Open Materials 2024 (OMat24) Inorganic Materials Dataset and Models. arXiv (2024). DOI: 未記載
   ［用途メモ：材料一般の大規模データ（参考）］
 
+#### VAEの利用のメリット
+- Bajpai, R.; Shukla, A.; Kumar, J.; Tewari, A. A scalable crystal representation for reverse engineering of novel inorganic materials using deep generative models. Computational Materials Science (2023) 230, 112525. DOI: 10.1016/j.commatsci.2023.112525
+  ［用途メモ：バルク材料の逆設計へのVAEの利用］
+
+- Türk, H.; Landini, E.; Kunkel, C.; Margraf, J. T.; Reuter, K. Assessing Deep Generative Models in Chemical Composition Space. Chemistry of Materials (2022) 34(21), 9455–9467. DOI: 10.1021/acs.chemmater.2c01860
+  ［用途メモ：GANとVAEの簡単な比較＆バルクの逆設計］
 
 ### メソッドで使う文献
 
@@ -310,7 +332,7 @@ $$
 - Kresse, G.; Joubert, D. From ultrasoft pseudopotentials to the projector augmented-wave method. Physical Review B (1999) 59(3), 1758–1775. DOI: 未記載
   ［用途メモ：PAW法の原典］
 
-### VAE／実装基盤
+#### VAE／実装基盤
 
 - Kingma, D. P.; Welling, M. Auto-Encoding Variational Bayes. arXiv (2013/ICLR 2014). DOI: 10.48550/arXiv.1312.6114
   ［用途メモ：VAEの基本枠組み］
