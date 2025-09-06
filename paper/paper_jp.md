@@ -185,18 +185,18 @@ Figure 8. ORR free‑energy diagrams: NNP (left) and DFT (right).
 ここで、OH, O, OOH の吸着反応エネルギーは以下で定義する。
 
 $$
-E_{\mathrm{ads}}(\mathrm{OH}^{*}) = E(\mathrm{OH}^{*}) - \Bigl[ E(\mathrm{*}) + E(\mathrm{H_2O}) - \tfrac{1}{2}E(\mathrm{H_2}) \Bigr],
+E_{\mathrm{ads}}(\mathrm{OH}^{\ast}) = E(\mathrm{OH}^{\ast}) - \left[ E(\ast) + E(\mathrm{H_2O}) - \tfrac{1}{2}E(\mathrm{H_2}) \right]
 $$
 
 $$
-E_{\mathrm{ads}}(\mathrm{O}^{*}) = E(\mathrm{O}^{*}) - \Bigl[ E(\mathrm{*}) + E(\mathrm{H_2O}) - E(\mathrm{H_2}) \Bigr],
+E_{\mathrm{ads}}(\mathrm{O}^{\ast}) = E(\mathrm{O}^{\ast}) - \left[ E(\ast) + E(\mathrm{H_2O}) - E(\mathrm{H_2}) \right]
 $$
 
 $$
-E_{\mathrm{ads}}(\mathrm{OOH}^{*}) = E(\mathrm{OOH}^{*}) - \Bigl[ E(\mathrm{*}) + E(\mathrm{H_2O}) + \tfrac{1}{2}E(\mathrm{H_2}) \Bigr].
+E_{\mathrm{ads}}(\mathrm{OOH}^{\ast}) = E(\mathrm{OOH}^{\ast}) - \left[ E(\ast) + E(\mathrm{H_2O}) + \tfrac{1}{2}E(\mathrm{H_2}) \right]
 $$
 
- 
+
 ## 4. Conclusions
 
 本研究では、汎用ニューラルネットワークポテンシャル（NNP）と条件付き変分オートエンコーダ（cVAE）を統合し、Pt–Ni 合金表面の酸素還元反応（ORR）を対象に触媒活性と安定性を最適化しながら「生成→評価→再学習」を反復するワークフローを構築した。cVAE は計算水素電極（CHE）に基づく過電圧 η と合金形成エネルギー E_form を条件として学習し、NNP により各候補のエネルギー評価を高速化することで、iter0〜5（各128構造、計768件）の反復を通じて、η と E_form の分布がそれぞれ低電位側およびより負の側へ系統的に移動することを示した。さらに、ボルケーノプロットと相図の確認から、データ点がボルケーノ頂点近傍および安定域へ集約する傾向が確認され、既報の線形スケーリングに基づく活性トレンドと矛盾しない物理化学的一貫性が担保された。加えて、iter5 で得られた Pt33Ni31 に対する自由エネルギーダイアグラムの個別検証では、NNP と DFT の U_L・η・律速段階がよく一致し、提案手法の定量的信頼性を支持した。以上より、本ワークフローは、限られた初期データからでも、活性（低 η）と安定性（低 E_form）を同時に満たす合金表面構造を外挿的に提案しうる実用的・汎用的な計算スクリーニング基盤であることを示した。
