@@ -185,18 +185,17 @@ Figure 8. ORR free‑energy diagrams: NNP (left) and DFT (right).
 ここで、OH, O, OOH の吸着反応エネルギーは以下で定義する。
 
 $$
-E_{\mathrm{ads}}(\mathrm{OH}^*) = E(\mathrm{OH}^*) - \Bigl[ E(\mathrm{*}) + E(\mathrm{H_2O}) - \tfrac{1}{2}E(\mathrm{H_2}) \Bigr],
+E_{\mathrm{ads}}(\mathrm{OH}^{*}) = E(\mathrm{OH}^{*}) - \Bigl[ E(\mathrm{*}) + E(\mathrm{H_2O}) - \tfrac{1}{2}E(\mathrm{H_2}) \Bigr],
 $$
 
 $$
-E_{\mathrm{ads}}(\mathrm{O}^*) = E(\mathrm{O}^*) - \Bigl[ E(\mathrm{*}) + E(\mathrm{H_2O}) - E(\mathrm{H_2}) \Bigr],
+E_{\mathrm{ads}}(\mathrm{O}^{*}) = E(\mathrm{O}^{*}) - \Bigl[ E(\mathrm{*}) + E(\mathrm{H_2O}) - E(\mathrm{H_2}) \Bigr],
 $$
 
 $$
-E_{\mathrm{ads}}(\mathrm{OOH}^*) = E(\mathrm{OOH}^*) - \Bigl[ E(\mathrm{*}) + E(\mathrm{H_2O}) + \tfrac{1}{2}E(\mathrm{H_2}) \Bigr].
+E_{\mathrm{ads}}(\mathrm{OOH}^{*}) = E(\mathrm{OOH}^{*}) - \Bigl[ E(\mathrm{*}) + E(\mathrm{H_2O}) + \tfrac{1}{2}E(\mathrm{H_2}) \Bigr].
 $$
 
-ここで、$E(\mathrm{*})$ は吸着種を持たない清浄表面のエネルギー、$E(\cdot)$ は各系の最安定構造に対する全エネルギーを表す。
  
 ## 4. Conclusions
 
