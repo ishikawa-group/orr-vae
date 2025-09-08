@@ -7,9 +7,90 @@ csl: american-chemical-society.csl
 
 ## Abstract
 
-高活性な合金触媒の設計に向け原子組成と配置を効率的に探索、最適化することが重要である。本研究ではユニバーサルニューラルネットワークポテンシャルと条件付き変分オートエンコーダを統合し、Pt–Ni 合金表面における酸素還元反応（ORR）を対象に、活性と安定性を同時に最適化する構造の反復的な生成・評価ワークフローを構築した。cVAE は、計算水素電極（CHE）に基づく過電圧 η と合金形成エネルギー E_form を条件ラベルとして学習し、条件を指定して新規構造を生成する。各構造の評価は NNP により行われ、6 回のイテレーションで各 128 構造、計 768 件を生成・評価した。イテレーションの進行に伴い、それぞれ生成されたデータセットの η 分布は低電位側にシフトし、平均値は 1.126 から 0.520 V へ低下した。同時に E_form の平均値は −0.027 から −0.047 eV/atom へと推移し、安定性が向上を確認した。さらに、学習された VAE のエンコーダを用いて各イテレーションで得られたデータをマッピングすることで、初期データに含まれない潜在空間領域の構造を生成していること、そして初期データセットとは異なる構造特性のデータが生成されていることが確認された。本手法は、限られた初期データからでも、活性と安定性を同時に満たす構造を外挿的に提案できる枠組みであり、合金触媒の開発を大幅に効率化しうることを示す。
+本研究で、我々は、合金触媒の活性と安定性を同時に最適化する手法を開発した。条件付き変分オートエンコーダー(cVAE)とユニバーサルニューラルネットワークポテンシャルを用いて。  
+In this study, we have developed a method to 同時に optimize the activity and stability of alloy catalysts using a conditional variational autoencoder (cVAE) and universal neural network potential.
+
+この手法を、酸素還元反応（ORR）のためのPt–Ni 合金触媒の設計に適用した。  
+This method was applied to the design of Pt–Ni alloy catalysts for the oxygen reduction reaction (ORR).
+
+cVAE は、計算水素電極（CHE）に基づく過電圧 η と合金形成エネルギー E_form の両方を条件ラベルとして学習し、条件を指定して新規構造を生成した。  
+cVAE generated new structures by learning both overpotential (η) based on the computational hydrogen electrode (CHE) and alloy formation energy (E_form) as conditional labels.
+
+5 回のイテレーションで合計 768 件を生成・評価し、データセットの η 分布と E_form 分布がそれぞれ低電位側と安定側へシフトすることを確認した。  
+The distribution of η and E_form shifted toward lower potentials and more stable values by total 768 structures generated and evaluated over 5 iterations.
+
+さらに、学習された VAE のエンコーダを用いて各イテレーションで得られたデータを可視化することで、初期データセットに含まれないデータ領域の構造の生成、そして初期データセットとは異なる構造特性のデータの生成が確認された。  
+And visualizing data obtained in each iteration using the learned VAE encoder suggested that structures were generated in data spaces not included in the initial dataset, and that data with different structural properties from the initial dataset were generated.
+
+本手法は、合金触媒の効率的な最適化を可能にする。活性と安定性を同時に満たす構造を外挿的に提案することで。限られた初期データからでも。
+This method is able to efficiently optimize alloy catalysts by extrapolatively generating structures that satisfy both activity and stability from limited initial data.
+
+---
+
+本研究では、ユニバーサルニューラルネットワークポテンシャルと条件付き変分オートエンコーダを統合し、Pt–Ni 合金表面における酸素還元反応（ORR）を対象に、活性と安定性を同時に最適化する構造の反復的な生成・評価ワークフローを構築した。cVAE は、計算水素電極（CHE）に基づく過電圧 η と合金形成エネルギー E_form を条件ラベルとして学習し、条件を指定して新規構造を生成する。各構造の評価は NNP により行われ、6 回のイテレーションで各 128 構造、計 768 件を生成・評価した。イテレーションの進行に伴い、それぞれ生成されたデータセットの η 分布は低電位側にシフトし、平均値は 1.126 から 0.520 V へ低下した。同時に E_form の平均値は −0.027 から −0.047 eV/atom へと推移し、安定性が向上を確認した。さらに、学習された VAE のエンコーダを用いて各イテレーションで得られたデータをマッピングすることで、初期データに含まれない潜在空間領域の構造を生成していること、そして初期データセットとは異なる構造特性のデータが生成されていることが確認された。本手法は、限られた初期データからでも、活性と安定性を同時に満たす構造を外挿的に提案できる枠組みであり、合金触媒の開発を大幅に効率化しうることを示す。
 
 ## 1. Introduction
+固体高分子形燃料電池（PEMFC）は、再生可能エネルギー由来の水素を活用できるクリーンな発電技術として注目されている。  
+Proton exchange membrane fuel cells (PEMFCs) are known as a clean power generation technology that can use hydrogen from renewable energy sources.
+
+一方で、カソードにおける酸素還元反応（oxygen reduction reaction, ORR）の速度が実際の応用を制限しており、高活性な電極触媒の開発が課題である。  
+However, the rate of the oxygen reduction reaction (ORR) at the cathode limits practical application, and the development of highly active electrode catalysts is a challenge.
+
+現状は商用触媒としては白金（Pt）が中心であるが、希少性とコストの問題から、性能と資源制約のバランスを取るために Pt に安価な元素を合金化することが有効である。  
+Currently, platinum (Pt) is the main commercial catalyst, but due to cost and rarity, alloying Pt with inexpensive elements is an effective for balancing performance and resource constraints.
+
+なかでも Pt–Ni は代表的なORR合金触媒の一つであり広く研究されている。  
+Especially, Pt–Ni is one of the representative ORR alloy catalysts that has been widely studied.
+
+しかし、活性と安定性の向上に向けた最適な組成・配置については報告間で差があり、いまだ統一した理解に達していない。  
+However, there are differences between reports about the optimal composition and arrangement for improving activity and stability, and it is not yet fully understood.
+
+こうした合金触媒の最適化に向けた触媒設計では、第一原理計算（DFT）のような計算手法を用いたスクリーニングが有効である。  
+Such catalyst design for the optimization of alloy catalysts is effective using screening with computational methods like a density functional theory (DFT) calculations.
+
+しかし、元素組成比と原子配置の組合せは膨大であり、候補パターンの網羅的探索は計算資源の観点から現実的でない。  
+but the combinations of element composition ratios and atomic arrangements are huge, and 網羅的 exploration of 候補 patterns is not realistic from the perspective of computational resources.
+
+また、記述子ベースの機械学習によるスクリーニングは、重要な特徴量の決定と特性予測に有効である。  
+Also, descriptor based machine learning screening is effective for determining important features and predicting properties.
+
+しかし、モデルの学習には十分なデータ量が必要であり、そして新構造の探索には学習済みモデルを用いた多数の推論が必要となり未知の化学データ空間からの構造生成は難しい。
+But model training requires a sufficient amount of data, and exploring new structures needs a lot of inferences using the trained model, it is difficult to generate structures from unknown chemical data spaces.
+
+そこで、材料特性から構造への逆設計に向けて、生成モデルの利用が提案されており、そして未知の化学データ空間からの構造生成に対して有効なアプローチとして期待されている。
+therefore, the use of generative models has been proposed for inverse design from material properties to structures, and is expected to be an effective approach for generating structures from unknown chemical data spaces.
+
+特に、合金触媒設計において生成モデルを活用することで、初期データセットに含まれない外挿的な合金触媒構造候補の提案が可能であることが示されている。  
+In particular, using generative models for alloy catalyst design has shown to enable the proposal of extrapolative 候補 of alloy catalyst structure not included in initial data sets.
+
+しかし、生成モデルによる提案構造を都度 DFT で評価するワークフローは、データ数の拡大とともに急速に非効率化する。
+But the workflow of evaluating proposed structures from generative models by DFT calculations each time becomes rapidly inefficient with increasing amount of data.
+
+この課題に対し、第一原理計算データで学習されたユニバーサルニューラルネットワークポテンシャル（NNP）を用いると、DFT に近い精度を維持しながら生成・評価の反復の高速化が可能となる。
+To solve this problem, using a universal neural network potential (NNP) trained by first-principles calculation data can accelerate the iteration of generation and evaluation while maintaining accuracy close to DFT.
+
+これらの触媒設計研究には生成モデルとしてGANが用いられているが、バルク材料の設計においてはGAN同様に一般的な生成モデルである変分オートエンコーダ(VAE)も利用されている。  
+These studies have used generative adversarial networks (GANs) as generative models, although variational autoencoders (VAEs), which are also general generative models, have been used for the design of bulk materials.
+
+そして、VAEはGANに比べて、訓練が比較的容易で安定化しやすく、正則化された連続的な潜在空間を活用してサンプリングや補間により未観測データ空間から候補を生成しやすい。  
+Furthermore, VAEs are relatively easy to train and stabilize compared to GANs, 
+
+さらに条件付き学習により高精度に指定したラベル(クラス)データ生成できることが報告されている。  
+Additionally, it has been reported that conditional learning allows for high-precision generation of specified label (class) data.
+
+そこで本研究は、ORRのためのPt–Ni 合金触媒の最適化に向けて、ユニバーサル NNP による高速評価とVAEによる構造生成を統合したワークフローを提案する。  
+Thus, this study proposes a workflow that integrates fast evaluation using a universal NNP and structure generation using VAE for the optimization of Pt–Ni alloy catalysts for ORR.
+
+具体的には、計算水素電極（CHE）に基づくORR過電圧と合金形成エネルギーを同時に条件付けた条件付き変分オートエンコーダ（cVAE）で新規構造を生成する。  
+Specifically, new structures are generated using a conditional variational autoencoder (cVAE) conditioned by ORR overpotential based on the computational hydrogen electrode (CHE) and alloy formation energy. 
+
+生成された構造はNNP で評価する。  
+The generated structures are evaluated using NNP.
+
+この工程を反復して繰り返すことで、活性と安定性を両立した Pt–Ni 触媒を効率的に探索する。  
+By repeating this process, we efficiently explore Pt–Ni catalysts that have high activity and stability.
+
+---
 
 固体高分子形燃料電池（PEMFC）は、再生可能エネルギー由来の水素を活用できるクリーンな発電技術として注目されている。一方で、カソードにおける酸素還元反応（oxygen reduction reaction, ORR）の速度が実用化のボトルネックであり、高活性な電極触媒の開発が課題である。商用触媒としては白金（Pt）が中心であるが、希少性とコストの問題から、Pt に安価な元素を合金化して性能と資源制約のバランスを取る戦略が広く検討されている。なかでも Pt–Ni は代表的な合金触媒であるものの、合金の組成・配置と活性・安定性の関係は、報告により最適比が異なるなど未だ統一的な理解に達していない。
 
@@ -124,30 +205,7 @@ Figure 3. Overpotential vs. alloy formation energy (iter0–5).
 
 <img src="fig/overpotential_vs_alloy_formation_iter0-5.png" alt="Scatter: overpotential vs alloy formation energy" style="width: 50%; background-color: white;">
 
-## 3.3 Latent-Space Visualization and Property-Colored Distributions
-
-データの分布特性を解析するために、イテレーション 5 で学習した cVAE のエンコーダを用い、各構造（iter0–5）を32 次元の潜在変数 z の事後平均（μ）に圧縮したのちに、t‑SNE で 2 次元に可視化した。Figure 4（上）はイテレーションごとに色分けした結果である。初期データ（iter0）は図の左側の領域に主に分布するのに対し、iter1 以降は点群が中央〜右側へと大きく広がっている。これは、イテレーションの過程で iter0 には存在しなかったデータ空間の領域にまで、構造探索・生成が拡張したことを示している。
-
-さらに、合金触媒の構造が潜在座標にどう反映されるかを確かめるため、各点を「最表面層の Pt 原子数が下層と比べてどれだけ多いか」を表す指標で色付けした。指標は次式で定義した：
-
-$$
-\mathrm{Surface\ Pt\ excess}
-\;=\;
-\frac{1}{3}\sum_{k=2}^{4}\bigl[\,N_{\mathrm{Pt}}^{(\mathrm{top})}-N_{\mathrm{Pt}}^{(k)}\,\bigr],
-$$
-
-ここで $N_{\mathrm{Pt}}^{(\ell)}$ は層 $\ell$ に含まれる Pt 原子数である。結果として、iter0 では 0 近傍の点がほとんどで、表面と下層の Pt 数が概ね同程度である。一方、iter1 以降では正の値（赤）をとる点が顕著に増え、最表面の Pt が下層（2〜4 層の平均）より優位に多い、いわゆるPtスキンの構造が選択的に生成されていることが分かる。これは 3.2 節で示した過電圧分布の改善（低 η 側へのシフト）とも整合的である。
-
-以上より、反復的な構造生成と評価により、初期データには存在しなかった潜在空間の領域までデータが拡張されること、同時に、Ptスキン構造の顕在化という物理化学的に意味のある特徴の発生が潜在空間のマッピングと対応していることが確認された。
-
-Figure 4. 上: t‑SNE colored by iteration (VAE latent mean μ; iter0–5). 下: t‑SNE colored by Surface Pt excess (count).
-
-<img src="fig/tsne_latent_space_iter0-5_mean.png" alt="t-SNE latent space (mean) iter0-5" style="width: 50%; background-color: white;">
-
-<img src="fig/tsne_latent_space_pt_layer_diff_iter0-5_mean.png" alt="t-SNE latent space (mean) iter0-5" style="width: 50%; background-color: white;">
-
-
-## 3.4 Evolution of Catalytic Properties
+## 3.3 Evolution of Catalytic Properties
 
 各イテレーションで得られた触媒構造の特性が、触媒活性の先行研究トレンドと矛盾せず、イテレーションにより系統的に改善されていくことを確認する。Figure 5 は ORR の CHE と線形スケーリング則に基づくボルケーノプロットに、各イテレーションの構造を重ね合わせたものであり、Figure 6 は組成比と合金形成エネルギーを対応付けた相図である。
 
@@ -164,7 +222,7 @@ Figure 6. Phase diagram: Ni fraction vs formation energy colored by iter.
   <img src="fig/phase_diagram_stability_analysis_iter0-5.png" alt="Phase diagram stability analysis" style="width: 50%; background-color: white;">
 
  
-## 3.5 DFT Validation
+## 3.4 DFT Validation
 
 最終的にイテレーション 5 で得られた構造のうち、η < 0.60 V かつ E_form < −0.05 eV/atom を満たす 16 構造を抽出し、DFT による再評価を行った。全体傾向として、過電圧は NNP と DFT で良好に一致し、平均絶対誤差は MAE ≈ 0.018 V であった。一方、合金形成エネルギーは 3.1 節で述べた通り、NNP が DFT に比べて0.01 eV/atom 程度の過小評価する傾向が引き続き確認された。
 しかし、全体としてDFTで検証された16点のデータは、NNPによって評価された高活性かつ高安定性の傾向を維持しており、本ワークフローによって最終的に得られた構造の有用性が確認された。
@@ -196,9 +254,55 @@ $$
 E_{\mathrm{ads}}(\mathrm{OOH}^{\ast}) = E(\mathrm{OOH}^{\ast}) - \left[ E(\ast) + E(\mathrm{H_2O}) + \tfrac{1}{2}E(\mathrm{H_2}) \right]
 $$
 
+## 3.5 Latent-Space Visualization and Property-Colored Distributions
+
+データの分布特性を解析するために、イテレーション 5 で学習した cVAE のエンコーダを用い、各構造（iter0–5）を32 次元の潜在変数 z の事後平均（μ）に圧縮したのちに、t‑SNE で 2 次元に可視化した。Figure 4（上）はイテレーションごとに色分けした結果である。初期データ（iter0）は図の左側の領域に主に分布するのに対し、iter1 以降は点群が中央〜右側へと大きく広がっている。これは、イテレーションの過程で iter0 には存在しなかったデータ空間の領域にまで、構造探索・生成が拡張したことを示している。
+
+さらに、合金触媒の構造が潜在座標にどう反映されるかを確かめるため、各点を「最表面層の Pt 原子数が下層と比べてどれだけ多いか」を表す指標で色付けした。指標は次式で定義した：
+
+$$
+\mathrm{Surface\ Pt\ excess}
+\;=\;
+\frac{1}{3}\sum_{k=2}^{4}\bigl[\,N_{\mathrm{Pt}}^{(\mathrm{top})}-N_{\mathrm{Pt}}^{(k)}\,\bigr],
+$$
+
+ここで $N_{\mathrm{Pt}}^{(\ell)}$ は層 $\ell$ に含まれる Pt 原子数である。結果として、iter0 では 0 近傍の点がほとんどで、表面と下層の Pt 数が概ね同程度である。一方、iter1 以降では正の値（赤）をとる点が顕著に増え、最表面の Pt が下層（2〜4 層の平均）より優位に多い、いわゆるPtスキンの構造が選択的に生成されていることが分かる。これは 3.2 節で示した過電圧分布の改善（低 η 側へのシフト）とも整合的である。
+
+以上より、反復的な構造生成と評価により、初期データには存在しなかった潜在空間の領域までデータが拡張されること、同時に、Ptスキン構造の顕在化という物理化学的に意味のある特徴の発生が潜在空間のマッピングと対応していることが確認された。
+
+Figure 4. 上: t‑SNE colored by iteration (VAE latent mean μ; iter0–5). 下: t‑SNE colored by Surface Pt excess (count).
+
+<img src="fig/tsne_latent_space_iter0-5_mean.png" alt="t-SNE latent space (mean) iter0-5" style="width: 50%; background-color: white;">
+
+<img src="fig/tsne_latent_space_pt_layer_diff_iter0-5_mean.png" alt="t-SNE latent space (mean) iter0-5" style="width: 50%; background-color: white;">
 
 ## 4. Conclusions
 
+我々は、汎用ニューラルネットワークポテンシャル（NNP）と条件付き変分オートエンコーダ（cVAE）を統合し、触媒活性と安定性を同時に最適化するための構造生成、評価の手法を開発した。  
+We developed a method for structure generation and evaluation that integrates a universal neural network potential (NNP) and a conditional variational autoencoder (cVAE) to 同時に optimize catalytic activity and stability.
+
+Pt–Ni 合金表面の酸素還元反応（ORR）を対象に、cVAE は計算水素電極（CHE）に基づく過電圧と合金形成エネルギーを条件ラベルとして学習し、NNP により生成された構造の評価を高速化した。  
+For the oxygen reduction reaction (ORR) on the Pt–Ni alloy surface, the cVAE was trained with conditional labels based on the computational hydrogen electrode (CHE) overpotential and alloy formation energy, and the NNP accelerated the evaluation of the generated structures.
+
+NNPによって得られた過電圧と合金形成エネルギーの値は、DFT計算による検証により、データの大小関係を高い精度で保持していることが確認された。  
+The values of overpotential and alloy formation energy obtained by NNP were confirmed by DFT calculations to maintain the order of size relationships with high accuracy.
+
+合計5回の反復を通じて、η と E_form の分布がそれぞれ低電位側およびより負の値へ統計的に移動することを示した。  
+The distribution of η and E_form shifted toward lower potentials and more stable values by total 768 structures generated and evaluated over 5 iterations.
+
+各イテレーションで得られたデータは、データ点が既報のボルケーノプロットの頂点近傍および相図の安定域へ集約する傾向が確認され、物理化学的特性に即した妥当性が確認された。  
+The data obtained in each iteration showed 
+
+また、学習済みの cVAE のエンコーダを用いて、各構造を２次元にマッピングした結果、イテレーションの進行に伴い、初期データには存在しなかったデータ空間へデータが拡張されることが確認された。  
+Also, using the encoder of the trained cVAE, each structure was mapped to two dimensions, and it was confirmed that the data expanded into a data space that did not exist in the initial data by iterations progressed.
+
+そして、最表面にPtが多く存在する構造の顕在化という触媒構造として意味のある特徴が確認された。  
+And  
+
+以上より、本ワークフローは、限られた初期データからでも、活性と安定性を同時に満たす合金表面構造を外挿的に提案しうる汎用的な計算スクリーニング手法であることを示した。
+This workflow demonstrates a general computational screening method that can extrapolate alloy surface structures satisfying both activity and stability from limited initial data.
+
+---
 本研究では、汎用ニューラルネットワークポテンシャル（NNP）と条件付き変分オートエンコーダ（cVAE）を統合し、Pt–Ni 合金表面の酸素還元反応（ORR）を対象に触媒活性と安定性を最適化しながら「生成→評価→再学習」を反復するワークフローを構築した。cVAE は計算水素電極（CHE）に基づく過電圧 η と合金形成エネルギー E_form を条件として学習し、NNP により各候補のエネルギー評価を高速化することで、iter0〜5（各128構造、計768件）の反復を通じて、η と E_form の分布がそれぞれ低電位側およびより負の側へ系統的に移動することを示した。さらに、ボルケーノプロットと相図の確認から、データ点がボルケーノ頂点近傍および安定域へ集約する傾向が確認され、既報の線形スケーリングに基づく活性トレンドと矛盾しない物理化学的一貫性が担保された。加えて、iter5 で得られた Pt33Ni31 に対する自由エネルギーダイアグラムの個別検証では、NNP と DFT の U_L・η・律速段階がよく一致し、提案手法の定量的信頼性を支持した。以上より、本ワークフローは、限られた初期データからでも、活性（低 η）と安定性（低 E_form）を同時に満たす合金表面構造を外挿的に提案しうる実用的・汎用的な計算スクリーニング基盤であることを示した。
 
 ## Data and Code Availability
