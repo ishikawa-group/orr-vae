@@ -165,7 +165,7 @@ uma‑s‑1p1 は、約 5 億件の DFT データにより事前学習され、 
 uma-s-1p1 is pre-trained by about 500M DFT calculation data and includes Mixture of Linear Experts (MoLE) into the equivariant Smooth Energy Network (eSEN).
 
 uma‑s‑1p1 モデルは、HEA（高エントロピー合金）の形成エネルギーの評価テストでは MAE 24.9 meV/atom、OC20 データセットを用いた吸着エネルギーの評価テストでは MAE 68.8 meV の精度が報告されている。  
-And that is reported 
+And that is reported accuracy of MAE 24.9 meV/atom for the evaluation test of formation energy of high-entropy alloys (HEAs) and MAE 68.8 meV for the evaluation test of adsorption energy using the OC20 dataset.
 
 全てのスピン分極DFT計算は Vienna Ab initio Simulation Package（VASP 6.5.1）で、GGA‑RPBE 交換相関汎関数とprojector augmented-wave 法（PAW）を使った。  
 All spin-polarized DFT calculations were performed using the Vienna Ab initio Simulation Package (VASP 6.5.1) with the GGA-RPBE exchange-correlation functional and the projector augmented-wave (PAW) method.
@@ -227,7 +227,7 @@ Thus we can treat layer stacking and in-plane alloy arrangements.
 We used conditional convolutional VAE, providing the (4, 8, 8) structure tensor with binary labels of overpotential and alloy formation energy.
 
 条件ラベルは、イテレーションごとに、全データの過電圧と合金形成エネルギーの上位30%に「1」を設定し残りのデータに「0」を設定した。  
-The conditional label was set 
+The conditional label was set to "1" for the top 30% of overpotential and alloy formation energy in all data for each iteration, and "0" for the other data.
 
 つまり、データセットには、(1, 1), (1, 0), (0, 1), (0, 0) の4つの条件ラベルを持つデータが含まれる。    
 Then datasets have four conditional labels, (1, 1), (1, 0), (0, 1), and (0, 0).
@@ -367,7 +367,7 @@ Figure 2 のバイオリンプロットから、iter の進行とともに過電
 Violin plots in Figure 2 show that the overpotential distribution shifts toward the high-activity side, and the formation energy distribution moves toward a more stable side with iteration progresses, 
 
 定量的には、iter0→iter5 で過電圧の平均は 1.126 V から 0.520 V へ、合金形成エネルギーの平均は −0.027 eV/atom から −0.047 eV/atom へとそれぞれ低下した。  
-
+The mean of overpotential decreased from 1.126 V to 0.520 V, and the mean of alloy formation energy decreased from -0.027 eV/atom to -0.047 eV/atom.
 
 分布の変化をプロットで確認すると（Figure 3）、過電圧の低下とともに合金形成エネルギーもより安定な領域へ移動した。
 And Figure 3 shows the change in distribution, and the alloy formation energy also moves to a more stable region as the overpotential decreases.
@@ -391,13 +391,32 @@ Figure 3. Overpotential vs. alloy formation energy (iter0–5).
 
 ## 3.3 Evolution of Catalytic Properties
 
-各イテレーションで得られた触媒構造の特性が、触媒活性の先行研究トレンドと矛盾せず、イテレーションにより系統的に改善されていくことを確認する。
+各イテレーションで得られた触媒構造の特性が、触媒活性の先行研究トレンドと矛盾せず、イテレーションにより系統的に改善されていくことを確認する。  
 
 Figure 5 は ORR の CHE と線形スケーリング則に基づくボルケーノプロットに、各イテレーションの構造を重ね合わせたものである。    
 Figure 5 shows volcano plots based on the CHE and linear scaling relations for the ORR, with the structures generated from each iteration. 
 
 Figure 6 は組成比と合金形成エネルギーでプロットされた相図である。  
 Figure 6 shows a phase diagram drawn by the composition ratio and the alloy formation energy.
+
+Figure 5 では、x 軸に ΔG_OH、y 軸に理論限界電位 U_L を取り、CHE およびスケーリング関係から得られる 2 本の境界直線と理想水平線（U_L = 1.23 V）を示した。  
+Figure 5 shows the x-axis as ΔG_OH and the y-axis as the limiting potential U_L, with two boundary lines obtained from CHE and scaling relations and an ideal line (U_L = 1.23 V).
+
+2 直線の交点は ΔG_OH ≈ 0.86 eV であり、ここがボルケーノプロットの頂点（U_L 最大）に対応する。
+The cross point is located at ΔG_OH ≈ 0.86 eV, which corresponds to the top of the volcano plot (U_L maximum).
+
+反復の進行とともに、データ点は頂点近傍へと集約する傾向を示し、活性が理論最適領域へ近づく様子が確認できる。  
+We can confirm that the data points shift to the top as the iterations progress, and the activity approaches the theoretically optimal area. 
+
+
+次に Figure 6 は、Ni 含有率（x_Ni）と合金形成エネルギー E_form（eV/atom、負ほど安定）の相図を示す。  
+And figure 6 shows a phase diagram plotted with the Ni concentration and the alloy formation energy.
+
+iter の進行に伴い、分布はより負の E_form 側へ推移しつつ、x_Ni ≈ 0.4–0.6 の等量近傍にサンプルが集中する傾向が見られる。  
+The distribution tends to shift towards the more negative E_form side, with samples concentrating around region of x_Ni ≈ 0.5.
+
+これらの結果から、活性が高い領域（Figure 5 の頂点近傍）と、熱力学的に安定な領域（より負の E_form）が、探索の反復によって同時に改善されていることを示唆する。  
+These results indicate that the high-activity region (near the vertex of Figure 5) and the thermodynamically stable region (more negative E_form) are improved by the iterative exploration.
 
 ---
 
@@ -480,7 +499,7 @@ Figure 4 shows the results colored by iteration.
 初期データ（iter0）は図の左側の領域に主に分布するのに対し、iter1 以降は分布が中央〜右側へと大きく広がっている。  
 The initial data (iter0) is mainly distributed in the left area of the figure, while iter1 and later iterations show that the distribution spreads widely to the center and right side.
 
-これは、イテレーションの過程で iter0 には存在しなかったデータ空間の領域にまで、構造探索・生成が拡張したことを示している。
+これは、イテレーションの過程で iter0 には存在しなかったデータ空間の領域にまで、構造探索・生成が拡張したことを示している。  
 This indicates that the structural exploration and generation have expanded into areas of the data space that did not exist in iter0.
 
 さらに、合金触媒の構造が潜在座標にどう反映されるかを確かめるため、各点を「最表面層の Pt 原子数が下層と比べてどれだけ多いか」を表す指標で色付けした。  
