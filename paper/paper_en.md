@@ -31,52 +31,65 @@ This method is able to efficiently optimize alloy catalysts by extrapolatively g
 
 ## 1. Introduction
 固体高分子形燃料電池（PEMFC）は、再生可能エネルギー由来の水素を活用できるクリーンな発電技術として注目されている。  
-Proton exchange membrane fuel cells (PEMFCs) are known as a clean power generation technology that can use hydrogen from renewable energy sources.
+Proton exchange membrane fuel cells (PEMFCs) are known as a clean power generation technology that can use hydrogen from renewable energy sources.  
+[@debeElectrocatalystApproachesChallenges2012]
 
 一方で、カソードにおける酸素還元反応（oxygen reduction reaction, ORR）の速度が実際の応用を制限しており、高活性な電極触媒の開発が課題である。  
-However, the rate of the oxygen reduction reaction (ORR) at the cathode limits practical application, and the development of highly active electrode catalysts is a challenge.
+However, the rate of the oxygen reduction reaction (ORR) at the cathode limits practical application, and the development of highly active electrode catalysts is a challenge.  
+[@gittlemanMaterialsResearchDevelopment2019][@cullenNewRoadsChallenges2021]
 
 現状は商用触媒としては白金（Pt）が中心であるが、希少性とコストの問題から、性能と資源制約のバランスを取るために Pt に安価な元素を合金化することが有効である。  
-Currently, platinum (Pt) is the main commercial catalyst, but due to cost and rarity, alloying Pt with inexpensive elements is an effective for balancing performance and resource constraints.
+Currently, platinum (Pt) is the main commercial catalyst, but due to cost and rarity, alloying Pt with inexpensive elements is an effective for balancing performance and resource constraints.  
+[@huangAdvancedPlatinumBasedOxygen2021][@greeleyAlloysPlatinumEarly2009][@zhangRecentAdvancesPtbased2021]
 
 なかでも Pt–Ni は代表的なORR合金触媒の一つであり広く研究されている。  
-Especially, Pt–Ni is one of the representative ORR alloy catalysts that has been widely studied.
+Especially, Pt–Ni is one of the representative ORR alloy catalysts that has been widely studied.  
+[@wangFundamentalComprehensionRecent2021][@tianEngineeringBunchedPtNi2019][@stamenkovicImprovedOxygenReduction2007]
 
 しかし、活性と安定性の向上に向けた最適な組成・配置については報告間で差があり、いまだ統一した理解に達していない。  
-However, there are differences between reports about the optimal composition and arrangement for improving activity and stability, and it is not yet fully understood.
+However, there are differences between reports about the optimal composition and arrangement for improving activity and stability, and it is not yet fully understood.  
+[@yangMethanolTolerantOxygen2005][@carpenterSolvothermalSynthesisPlatinum2012][@xiaUnveilingCompositionDependentCatalytic2024]
 
-こうした合金触媒の最適化に向けた触媒設計では、第一原理計算（DFT）のような計算手法を用いたスクリーニングが有効である。  
-Such catalyst design for the optimization of alloy catalysts is effective using screening with computational methods like a density functional theory (DFT) calculations.
+こうした合金触媒の最適化に向けた触媒設計では、密度汎函数法（DFT）のような計算手法を用いたスクリーニングが有効である。  
+Such catalyst design for the optimization of alloy catalysts is effective using screening with computational methods like a density functional theory (DFT) calculations.  
 
-しかし、元素組成比と原子配置の組合せは膨大であり、候補パターンの網羅的探索は計算資源の観点から現実的でない。  
-but the combinations of element composition ratios and atomic arrangements are huge, and 網羅的 exploration of 候補 patterns is not realistic from the perspective of computational resources.
+しかし、元素組成比と原子配置の組合せは膨大であり、DFT計算を用いた候補パターンの網羅的探索は計算資源の観点から現実的でない。  
+but the combinations of element composition ratios and atomic arrangements are huge, and 網羅的 exploration of 候補 patterns is not realistic from the perspective of computational resources using DFT calculations.  
+[@shambhawiDesignOptimizationHeterogeneous2024]
 
 また、記述子ベースの機械学習によるスクリーニングは、重要な特徴量の決定と特性予測に有効である。  
-Also, descriptor based machine learning screening is effective for determining important features and predicting properties.
+Also, descriptor based machine learning screening is effective for determining important features and predicting properties.  
+[@shamekhiHighthroughputScreeningDFT2025][@hartMachineLearningAlloys2021][@sharmaMachineLearningGuidedDiscovery2025][@yinMachinelearningacceleratedDesignHighperformance2024][@lucchettiRevolutionizingORRCatalyst2024]
 
-しかし、モデルの学習には十分なデータ量が必要であり、そして新構造の探索には学習済みモデルを用いた多数の推論が必要となり未知の化学データ空間からの構造生成は難しい。
-But model training requires a sufficient amount of data, and exploring new structures needs a lot of inferences using the trained model, it is difficult to generate structures from unknown chemical data spaces.
+
+しかし、モデルの学習にはタスク毎に十分なデータ量が必要であり、そして新構造の探索には学習済みモデルを用いた多数の推論が必要である。
+But model training requires a sufficient amount of data for each task, and exploring new structures needs a lot of inferences using the trained model.
 
 そこで、材料特性から構造への逆設計に向けて、生成モデルの利用が提案されており、そして未知の化学データ空間からの構造生成に対して有効なアプローチとして期待されている。
-therefore, the use of generative models has been proposed for inverse design from material properties to structures, and is expected to be an effective approach for generating structures from unknown chemical data spaces.
+therefore, the use of generative models has been proposed for inverse design from material properties to structures, and is expected to be an effective approach for generating structures from unknown chemical data spaces.  
+[@hellmanBriefOverviewDeep2025][@parkHasGenerativeArtificial2024]
 
 特に、合金触媒設計において生成モデルを活用することで、初期データセットに含まれない外挿的な合金触媒構造候補の提案が可能であることが示されている。  
-In particular, using generative models for alloy catalyst design has shown to enable the proposal of extrapolative 候補 of alloy catalyst structure not included in initial data sets.
+In particular, using generative models for alloy catalyst design has shown to enable the proposal of extrapolative 候補 of alloy catalyst structure not included in initial data sets.  
+[@ishikawaHeterogeneousCatalystDesign2022]
 
 しかし、生成モデルによる提案構造を都度 DFT で評価するワークフローは、データ数の拡大とともに急速に非効率化する。  
 But the workflow of evaluating proposed structures from generative models by DFT calculations each time becomes rapidly inefficient with increasing amount of data.
 
 この課題に対し、第一原理計算データで学習されたユニバーサルニューラルネットワークポテンシャル（NNP）を用いると、DFT に近い精度を維持しながら生成・評価の反復の高速化が可能となる。  
-To solve this problem, using a universal neural network potential (NNP) trained by first-principles calculation data can accelerate the iteration of generation and evaluation while maintaining accuracy close to DFT.
+To solve this problem, using a universal neural network potential (NNP) trained by first-principles calculation data can accelerate the iteration of generation and evaluation while maintaining accuracy close to DFT.  
+[@hisamaTheoreticalCatalystScreening2024]
 
 これらの触媒設計研究には生成モデルとしてGANが用いられているが、バルク材料の設計においてはGAN同様に一般的な生成モデルである変分オートエンコーダ(VAE)も利用されている。  
-These studies have used generative adversarial networks (GANs) as generative models, although variational autoencoders (VAEs), which are also general generative models, have been used for the design of bulk materials.
+These studies have used generative adversarial networks (GANs) as generative models, although variational autoencoders (VAEs), which are also general generative models, have been used for the design of bulk materials.  
 
 そして、VAEはGANに比べて、訓練が比較的容易で安定化しやすく、正則化された連続的な潜在空間を活用してサンプリングや補間により未観測データ空間から候補を生成しやすい。  
-Furthermore, VAEs are relatively easy to train and stabilize compared to GANs, 
+Furthermore, VAEs are relatively easy to train and stabilize compared to GANs, and they can easily generate candidates from unobserved data spaces 
+[@bajpaiScalableCrystalRepresentation2023]
 
 さらに条件付き学習により高精度に指定したラベル(クラス)データ生成できることが報告されている。  
-Additionally, it has been reported that conditional learning allows for high-precision generation of specified label (class) data.
+Additionally, it has been reported that conditional learning allows for high-precision generation of specified label (class) data.  
+[@turkAssessingDeepGenerative2022]
 
 そこで本研究は、ORRのためのPt–Ni 合金触媒の最適化に向けて、ユニバーサル NNP による高速評価とVAEによる構造生成を統合したワークフローを提案する。  
 Thus, this study proposes a workflow that integrates fast evaluation using a universal NNP and structure generation using VAE for the optimization of Pt–Ni alloy catalysts for ORR.
@@ -105,10 +118,62 @@ By repeating this process, we efficiently explore Pt–Ni catalysts that have hi
 
 ## 2. Methods
 
-## 2.1 Oxygen Reduction Reaction
+## 2.1 NNP と DFT 計算
+データセット生成には、ユニバーサルNNPである UMA（Universal Models for Atoms）の uma‑s‑1p1 モデルを用いて構造最適化およびエネルギー計算を行った。  
+We used the uma-s-1p1 model as a universal neural network potential (NNP) for structure optimization and energy calculations.  
+[@woodUMAFamilyUniversal2025]
+
+uma‑s‑1p1 は、約 5 億件の DFT データにより事前学習され、 eSEN（equivariant Smooth Energy Network）に Mixture of Linear Experts（MoLE）を導入した約 1.5 億パラメータの汎用 NNP である。  
+uma-s-1p1 is pre-trained by about 500M DFT calculation data and includes Mixture of Linear Experts (MoLE) into the equivariant Smooth Energy Network (eSEN).
+
+uma‑s‑1p1 モデルは、HEA（高エントロピー合金）の形成エネルギーの評価テストでは MAE 24.9 meV/atom、OC20 データセットを用いた吸着エネルギーの評価テストでは MAE 68.8 meV の精度が報告されている。  
+And that is reported accuracy of MAE 24.9 meV/atom for the evaluation test of formation energy of high-entropy alloys (HEAs) and MAE 68.8 meV for the evaluation test of adsorption energy using the OC20 dataset.
+
+全てのスピン分極DFT計算は Vienna Ab initio Simulation Package（VASP 6.5.1）で、GGA‑RPBE 交換相関汎関数とprojector augmented-wave 法（PAW）を使った。  
+All spin-polarized DFT calculations were performed using the Vienna Ab initio Simulation Package (VASP 6.5.1) with the GGA-RPBE exchange-correlation functional and the projector augmented-wave (PAW) method.  
+[@kresseEfficientIterativeSchemes1996][@kresseUltrasoftPseudopotentialsProjector1999]
+
+価電子は 450 eV の平面波カットオフで展開し、スメアリングには 幅 0.20 eV の Methfessel–Paxton スミアリングを適応した。  
+The valence electrons were expanded with a plane-wave cutoff of 450 eV, and a Methfessel–Paxton smearing of width 0.20 eV was applied.
+
+自己無撞着計算の収束判定は 1×10^{-5} eV とし、Brillouin ゾーンのサンプリングはMonkhorst–Pack gridsによるバルク 2×2×2、スラブ 2×2×1、気相分子は Γ 点とした。  
+The convergence threshold for self-consistent calculations was set to 1×10^{-5} eV, and the Brillouin zone sampling was performed using Monkhorst–Pack grids with a bulk 2×2×2, slab 2×2×1, and the Γ point for gas-phase molecules.
+
+それぞれスラブは fcc(111) 面からなる 4 層の(4×4)の64原子構造であり、下 2 層を固定、上 2 層と吸着種は全自由度で緩和した。  
+Each slab consists of (4×4) 4-layer structures made from fcc(111) and the bottom 2 layers fixed and the top 2 layers and adsorbates relaxed with full degrees of freedom.
+
+z 方向には 15 Å の真空を設けた。そしてDFT計算時は双極子補正を適用した。  
+z-axis is applied with a vacuum of 15 Å, and a dipole correction was applied for DFT calculations.
+
+気相参照の H2 と H2O は 15 Å 立方セル中で最適化して用いた。   
+And the gas-phase references H2 and H2O were optimized in a 15 Å cubic cell.
+
+NNPとDFTによる構造最適化は最大残差力 0.05 eV/Å を閾値として収束させた。  
+The convergence threshold for structure optimization with NNP and DFT calculations was set to 0.05 eV/Å.
+
+吸着系では OOH、O、OH を ontop／bridge／fcc‑hollow／hcp‑hollow に初期配置して最安定サイトを採用した。  
+For adsorption systems, OOH, O, and OH were initially placed on ontop/bridge/fcc-hollow/hcp-hollow sites searched for the most stable sites.
+
+また、スラブは真空層を付与する前にセルサイズを最適化した。  
+Cell size was optimized before applying the vacuum layer to slab.
+
+なお、本研究の反復ループにおける η と E_form の評価は一貫して NNP（uma‑s‑1p1）で実施し、DFT は NNP の検証および代表構造の解析に用いた。  
+Also we consistently used NNP (uma-s-1p1) for the evaluation of η and E_form in the iterative loop, while DFT was used for the validation of NNP and the analysis of represent structures.
+
+---
+データセット生成には、ユニバーサルNNPである UMA（Universal Models for Atoms）の uma‑s‑1p1 モデルを用いて構造最適化およびエネルギー計算を行った。uma‑s‑1p1 は、約 5 億件の DFT データにより事前学習され、 eSEN（equivariant Smooth Energy Network）に Mixture of Linear Experts（MoLE）を導入した約 1.5 億パラメータの汎用 NNP である。uma‑s‑1p1 モデルは、HEA（高エントロピー合金）の形成エネルギーの評価テストでは MAE 24.9 meV/atom、OC20 データセットを用いた吸着エネルギーの評価テストでは MAE 68.8 meV の精度が報告されている。
+
+第一原理計算（DFT）は Vienna Ab initio Simulation Package（VASP）を用いたスピン分極計算で実施し、projector augmented-wave 法（PAW）と GGA‑RPBE 交換相関汎関数を採用した。波動関数は 450 eV の平面波カットオフで展開し、金属占有には 幅 0.20 eV の Methfessel–Paxton スミアリングを用いた。自己無撞着計算の収束判定は 1×10^{-5} eV とし、Brillouin ゾーンのサンプリングはMonkhorst–Pack gridsによるバルク 2×2×2、(111) スラブ 2×2×1、気相分子（H2, H2O）は Γ 点とした。
+
+スラブモデルは fcc(111) 面からなる 4 層の(4×4)の64原子構造であり、下 2 層を固定、上 2 層と吸着種は全自由度で緩和した。z 方向には 15 Å の真空を設け、表面法線方向の双極子補正を適用した。構造最適化は最大残差力 0.05 eV/Å を閾値として収束させ、気相参照の H2 と H2O は 15 Å 立方セル中で最適化して用いた。吸着系では OOH、O、OH を ontop／bridge／fcc‑hollow／hcp‑hollow に初期配置して最安定サイトを採用した。また、セルサイズは真空層を付与する前に最適化した。
+
+なお、本研究の反復ループにおける η と E_form の評価は一貫して NNP（uma‑s‑1p1）で実施し、DFT は NNP の検証および代表構造の解析に用いた。
+
+## 2.2 Oxygen Reduction Reaction
 
 本研究では、J. K. Nørskov らの計算水素電極（Computational Hydrogen Electrode, CHE）に基づき、理論限界電位 U_L と過電圧 η により ORR 活性を評価した。  
-In this study, we evaluated the ORR activity based on the theoretical limiting potential U_L and overpotential η using the computational hydrogen electrode (CHE) proposed by J. K. Nørskov et al. 
+In this study, we evaluated the ORR activity based on the theoretical limiting potential U_L and overpotential η using the computational hydrogen electrode (CHE) proposed by J. K. Nørskov et al.   
+[@norskovOriginOverpotentialOxygen2004]
 
 酸性条件下の 4 電子反応機構を仮定し、素過程は次の 4 反応で表す。  
 We used a four-electron reaction mechanism under acidic conditions, represented by the following four reactions:
@@ -130,13 +195,15 @@ $$U_L=\min_i\left[\frac{\Delta G_i(0)}{e}\right],\quad \eta=1.23-U_L\;\mathrm{[V
 
 
 ここで ΔG_i(0) は DFT で得られるエネルギーに、文献値に基づくゼロ点振動（ZPE）と振動エントロピー（TS, T = 298.15 K）を加えて構成した。  
-Then ΔG_i(0) is calculated by adding zero-point energy (ZPE) and vibrational entropy (TS, T = 298.15 K) based on literature values to DFT calculated energies.
+Then ΔG_i(0) is calculated by adding zero-point energy (ZPE) and vibrational entropy (TS, T = 298.15 K) based on literature values to DFT calculated energies.  
+[@norskovOriginOverpotentialOxygen2004]
 
 気相 O2 エネルギー計算は、既知の誤差を避けるため、O2 を明示的に参照せず、H2 と H2O のエネルギーおよび水生成の自由エネルギー変化である2.46 eV を用いて計算した。  
 And we calculated the gas-phase O2 energy using the energy of H2, H2O and the free energy change for water formation that is 2.46 eV to avoid known errors.
 
 文献に基づき、溶媒効果は定数補正として導入し、O*・OOH*・OH* に対してそれぞれ 0.00、0.28、0.57 eV を加えた。  
-Also, we introduced solvent effects as constant corrections based on literature values, adding 0.00, 0.28, and 0.57 eV to O*, OOH*, and OH*.
+Also, we introduced solvent effects as constant corrections based on literature values, adding 0.00, 0.28, and 0.57 eV to O*, OOH*, and OH*.  
+[@zhangSolvationEffectsDFT2019][@heImportanceSolvationAccurate2017]
 
 ---
 
@@ -157,58 +224,18 @@ $$U_L=\min_i\left[\frac{\Delta G_i(0)}{e}\right],\quad \eta=1.23-U_L\;\mathrm{[V
 
 として過電圧を求めた。ここで ΔG_i(0) は DFT 全エネルギーに、文献値に基づくゼロ点振動（ZPE）と有限温度の振動エントロピー（TS, T = 298.15 K）を加えて構成した。気相 O2 エネルギーの既知の誤差を避けるため、O2 を明示的に参照せず、H2 と H2O のエネルギーおよび水生成の自由エネルギーを用いて計算した（H2O → 1/2 O2 + H2 を 2.46 eV とした）。文献に基づき、溶媒効果は定数補正として導入し、O*・OOH*・OH* に対してそれぞれ 0.00、0.28、0.57 eV を加えた。
 
-## 2.2 NNP と DFT 計算
-データセット生成には、ユニバーサルNNPである UMA（Universal Models for Atoms）の uma‑s‑1p1 モデルを用いて構造最適化およびエネルギー計算を行った。  
-We used the uma-s-1p1 model as a universal neural network potential (NNP) for structure optimization and energy calculations.
+## 2.3 合金形成エネルギー
+合金形成エネルギーは以下で定義する。
 
-uma‑s‑1p1 は、約 5 億件の DFT データにより事前学習され、 eSEN（equivariant Smooth Energy Network）に Mixture of Linear Experts（MoLE）を導入した約 1.5 億パラメータの汎用 NNP である。  
-uma-s-1p1 is pre-trained by about 500M DFT calculation data and includes Mixture of Linear Experts (MoLE) into the equivariant Smooth Energy Network (eSEN).
+$$
+E_{\mathrm{form}} = E_{\mathrm{bulk}}^{\mathrm{alloy}} - \sum_i N_i \; \frac{E_{\mathrm{bulk}}(i)}{N_{\mathrm{bulk}}(i)}.
+$$
 
-uma‑s‑1p1 モデルは、HEA（高エントロピー合金）の形成エネルギーの評価テストでは MAE 24.9 meV/atom、OC20 データセットを用いた吸着エネルギーの評価テストでは MAE 68.8 meV の精度が報告されている。  
-And that is reported accuracy of MAE 24.9 meV/atom for the evaluation test of formation energy of high-entropy alloys (HEAs) and MAE 68.8 meV for the evaluation test of adsorption energy using the OC20 dataset.
+E_form は原子数で割り（eV/atom）に正規化して算出した。純元素（Pt, Ni）のバルク参照エネルギーは、それぞれの 4×4×4 fcc 構造を構造最適化及びエネルギー計算を行なった。
 
-全てのスピン分極DFT計算は Vienna Ab initio Simulation Package（VASP 6.5.1）で、GGA‑RPBE 交換相関汎関数とprojector augmented-wave 法（PAW）を使った。  
-All spin-polarized DFT calculations were performed using the Vienna Ab initio Simulation Package (VASP 6.5.1) with the GGA-RPBE exchange-correlation functional and the projector augmented-wave (PAW) method.
+## 2.4 Variational Auto-Encoder
 
-価電子は 450 eV の平面波カットオフで展開し、スメアリングには 幅 0.20 eV の Methfessel–Paxton スミアリングを適応した。  
-The valence electrons were expanded with a plane-wave cutoff of 450 eV, and a Methfessel–Paxton smearing of width 0.20 eV was applied.
-
-自己無撞着計算の収束判定は 1×10^{-5} eV とし、Brillouin ゾーンのサンプリングはMonkhorst–Pack gridsによるバルク 2×2×2、スラブ 2×2×1、気相分子は Γ 点とした。  
-The convergence threshold for self-consistent calculations was set to 1×10^{-5} eV, and the Brillouin zone sampling was performed using Monkhorst–Pack grids with a bulk 2×2×2, slab 2×2×1, and the Γ point for gas-phase molecules.
-
-それぞれスラブは fcc(111) 面からなる 4 層の(4×4)の64原子構造であり、下 2 層を固定、上 2 層と吸着種は全自由度で緩和した。  
-Each slab consists of (4×4) 4-layer structures made from fcc(111) and the bottom 2 layers fixed and the top 2 layers and adsorbates relaxed with full degrees of freedom.
-
-z 方向には 15 Å の真空を設け、双極子補正を適用した。  
-z-axis is applied with a vacuum of 15 Å and a dipole correction.
-
-気相参照の H2 と H2O は 15 Å 立方セル中で最適化して用いた。   
-And the gas-phase references H2 and H2O were optimized in a 15 Å cubic cell.
-
-構造最適化は最大残差力 0.05 eV/Å を閾値として収束させた。  
-The convergence threshold for structure optimization was set to 0.05 eV/Å.
-
-吸着系では OOH、O、OH を ontop／bridge／fcc‑hollow／hcp‑hollow に初期配置して最安定サイトを採用した。  
-For adsorption systems, OOH, O, and OH were initially placed on ontop/bridge/fcc-hollow/hcp-hollow sites searched for the most stable sites.
-
-また、スラブは真空層を付与する前にセルサイズを最適化した。  
-Cell size was optimized before applying the vacuum layer to slab.
-
-なお、本研究の反復ループにおける η と E_form の評価は一貫して NNP（uma‑s‑1p1）で実施し、DFT は NNP の検証および代表構造の解析に用いた。  
-Also we consistently used NNP (uma-s-1p1) for the evaluation of η and E_form in the iterative loop, while DFT was used for the validation of NNP and the analysis of represent structures.
-
----
-データセット生成には、ユニバーサルNNPである UMA（Universal Models for Atoms）の uma‑s‑1p1 モデルを用いて構造最適化およびエネルギー計算を行った。uma‑s‑1p1 は、約 5 億件の DFT データにより事前学習され、 eSEN（equivariant Smooth Energy Network）に Mixture of Linear Experts（MoLE）を導入した約 1.5 億パラメータの汎用 NNP である。uma‑s‑1p1 モデルは、HEA（高エントロピー合金）の形成エネルギーの評価テストでは MAE 24.9 meV/atom、OC20 データセットを用いた吸着エネルギーの評価テストでは MAE 68.8 meV の精度が報告されている。
-
-第一原理計算（DFT）は Vienna Ab initio Simulation Package（VASP）を用いたスピン分極計算で実施し、projector augmented-wave 法（PAW）と GGA‑RPBE 交換相関汎関数を採用した。波動関数は 450 eV の平面波カットオフで展開し、金属占有には 幅 0.20 eV の Methfessel–Paxton スミアリングを用いた。自己無撞着計算の収束判定は 1×10^{-5} eV とし、Brillouin ゾーンのサンプリングはMonkhorst–Pack gridsによるバルク 2×2×2、(111) スラブ 2×2×1、気相分子（H2, H2O）は Γ 点とした。
-
-スラブモデルは fcc(111) 面からなる 4 層の(4×4)の64原子構造であり、下 2 層を固定、上 2 層と吸着種は全自由度で緩和した。z 方向には 15 Å の真空を設け、表面法線方向の双極子補正を適用した。構造最適化は最大残差力 0.05 eV/Å を閾値として収束させ、気相参照の H2 と H2O は 15 Å 立方セル中で最適化して用いた。吸着系では OOH、O、OH を ontop／bridge／fcc‑hollow／hcp‑hollow に初期配置して最安定サイトを採用した。また、セルサイズは真空層を付与する前に最適化した。
-
-なお、本研究の反復ループにおける η と E_form の評価は一貫して NNP（uma‑s‑1p1）で実施し、DFT は NNP の検証および代表構造の解析に用いた。
-
-## 2.3 Variational Auto-Encoder
-
-### 2.3.1 Structure Representation
+### 2.4.1 Structure Representation
 触媒構造は，fcc(111) の各4層をグリッドへ写像した(4, 8, 8)のテンソルで表現した。  
 Catalyst structures were represented as a (4, 8, 8) tensor mapping each of the four layers of the fcc(111) surface to a grid.
 
@@ -219,12 +246,17 @@ Each layer was converted into a two-dimensional matrix encoded the occupancy of 
 これにより，層間スタッキングと平面内の合金配置を同時に取り扱えるようにした。  
 Thus we can treat layer stacking and in-plane alloy arrangements.
 
-
 <img src="fig/structure_tensor_2.svg" alt="Structure tensor representation" style="background-color: white; width: 50%;">
 
-### 2.3.2 VAE Architecture
-条件付き畳み込み VAE を用い，入力の(4, 8, 8)の構造テンソルに加えて，2値に変換された過電圧と合金形成エネルギーを条件ラベルとして与えた。  
-We used conditional convolutional VAE, providing the (4, 8, 8) structure tensor with binary labels of overpotential and alloy formation energy.
+Figure 1. Structure representation of the catalyst slab as a (4, 8, 8) tensor map each fcc(111) layer to a 2D grid.
+
+### 2.4.2 VAE Architecture
+触媒構造の学習と生成には、条件付き VAE を用いた。
+We used conditional VAE for learning and generating catalyst structures.  
+[@kingmaAutoEncodingVariationalBayes2022][@kingmaSemiSupervisedLearningDeep2014]
+
+入力の(4, 8, 8)の構造テンソルに加えて，2値に変換された過電圧と合金形成エネルギーを条件ラベルとして与えた。  
+And we provided the (4, 8, 8) structure tensor with binary labels of overpotential and alloy formation energy.
 
 条件ラベルは、イテレーションごとに、全データの過電圧と合金形成エネルギーの上位30%に「1」を設定し残りのデータに「0」を設定した。  
 The conditional label was set to "1" for the top 30% of overpotential and alloy formation energy in all data for each iteration, and "0" for the other data.
@@ -244,10 +276,11 @@ The shape of decoder output is to (12, 8, 8) for 4 layers and 3 classes.
 構造生成時には softmax 関数により (4, 8, 8) のクラスラベルへ復元する。  
 During structure generation, it is reshaped to (4, 8, 8) class labels using the softmax function.
 
-
 <img src="fig/vae_simple_2.svg" alt="VAE Architecture" style="background-color: white; width: 50%;">
 
-### 2.3.3 Training Process
+Figure 2. Conditional convolutional VAE architecture: label embeddings are combined into encoder and decoder; the decoder outputs logits of shape (12, 8, 8) corresponding to 4 layers × 3 classes.
+
+### 2.4.3 Training Process
 学習には実施したイテレーションまでの統合されたデータを用い，訓練:評価=9:1 に分割した。  
 The VAE training is conducted using the integrated data until the iteration performed, and was divided into training and evaluation sets in a 9:1 ratio.
 
@@ -260,7 +293,7 @@ And batch size was 16, and training was performed for 200 epochs.
 損失関数は，4 層それぞれの画素に対する 3 クラス（空白・Ni・Pt）の重み付き多クラス交差エントロピーと潜在分布の KL ダイバージェンスを組み合わせた。  
 The loss function combined the weighted multi-class cross-entropy for the 3 classes (blank, Ni, Pt) for each pixel in the 4 layers with the KL divergence of the latent distribution.
 
-読みやすさのため，出力ロジットの softmax により得られるクラス確率を
+出力ロジットの softmax により得られるクラス確率を
 
 $$p_{bz h w, c} \,=\, \mathrm{softmax}(\hat x_{bzchw})_c$$
 
@@ -278,8 +311,12 @@ $$\begin{align}
 
 ここで、B はバッチサイズ、z は層（4）、H=W=8 は各層の画素サイズ。D は潜在次元（32）。$\hat x_{bzchw}$ は出力ロジット，$p_{bz h w, c}$ はクラス $c\in\{0,1,2\}$ の予測確率，$x_{bzhw}$ は正解クラス ID。$w=(w_0,w_1,w_2)=(0.1,1.0,1.0)$ はクラス重み（空白(0)の学習を抑制させるため低重み）。
 
+また、正則化に向けて、KL ダイバージェンスに重み β=2.0 をかけた。
+Also, we use β-VAE technique and multiply the KL divergence by a weight of β=2.0 for regularization.  
+[@higginsVVAELEARNINGBASIC2017]
 
-### 2.3.4 Structure Generation
+
+### 2.4.4 Structure Generation
 学習後は条件 [1,1]（低過電圧・低形成エネルギー）を指定し、学習済みVAEのデコーダーからテンソルを出力した。  
 After VAE training, we selected the condition [1,1] (low overpotential and low formation energy) and output the tensor from the trained VAE decoder.
 
@@ -289,7 +326,7 @@ The new catalyst structure was generated by applying the inverse structure repre
 この時、既存構造と一致する重複は除外した。  
 This time, we removed same structure compare with existing structures.
 
-## 2.4 Iterative Loop
+## 2.5 Iterative Loop
 本研究では、iter0〜iter5 の 合計 6 イテレーションを実施し，1 iter あたり 128 構造（合計 768 構造）を生成・評価した。  
 In this study, we conducted a total 6 iterations, generating and evaluating 128 structures each iteration.
 
@@ -309,9 +346,12 @@ VAEの学習にはPython ライブラリ Pytorch を用いた。
 For VAE training, we used the Python library Pytorch.
 
 構造の生成と管理には Python ライブラリ ASE を用いた。  
-And for structure generation and management, we used the Python library ASE.
+And for structure generation and management, we used the Python library ASE.  
+[@hjorthlarsenAtomicSimulationEnvironment2017]
 
 <img src="fig/workflow.svg" alt="VAE training and structure generation workflow" style="background-color: white; width: 50%;">
+
+Figure 3. Iterative workflow integrating structure generation with cVAE and property evaluation with NNP.
 
 ## 3. Results and Discussion
 
@@ -320,8 +360,8 @@ And for structure generation and management, we used the Python library ASE.
 ユニバーサル NNP（uma‑s‑1p1）のPt-Ni合金系への利用の妥当性を、DFT 計算との比較で検証した。  
 We checked using universal NNP (uma‑s‑1p1) for the Pt-Ni alloy system by comparing it with DFT calculations.
 
-Figure 1 は、Pt–Ni 合金構造に対して求めた（i）ORR 過電圧 η（V）と（ii）合金形成エネルギー E_form（eV/atom）について、DFT（横軸）と NNP（縦軸）のプロットを示す。  
-Figure 1 shows plots of (i) ORR overpotential η (V) and (ii) alloy formation energy E_form (eV/atom) for the Pt-Ni alloy structure, with DFT on the x-axis and NNP on the y-axis.
+Figure 4 は、Pt–Ni 合金構造に対して求めた（i）ORR 過電圧 η（V）と（ii）合金形成エネルギー E_form（eV/atom）について、DFT（横軸）と NNP（縦軸）のプロットを示す。  
+Figure 4 shows plots of (i) ORR overpotential η (V) and (ii) alloy formation energy E_form (eV/atom) for the Pt–Ni alloy structure, with DFT on the x-axis and NNP on the y-axis.
 
 いずれも高いスピアマンの順位相関係数を示し、過電圧で ρ ≈ 0.985、形成エネルギーで ρ ≈ 0.982であった。データ間の大小関係が維持されていることが確認できる。  
 Each plot shows a high Spearman rank correlation coefficient with ρ ≈ 0.985 for overpotential and ρ ≈ 0.982 for formation energy. That confirms the maintain of the order relation between the data.
@@ -340,7 +380,7 @@ Therefore, we judged that the property evaluation by NNP is valid in this study'
 
 ---
 
-本研究で用いたユニバーサル NNP（uma‑s‑1p1）のPt-Ni合金系への適応の妥当性を、DFT 計算との直接比較で検証した。Figure 1 は、Pt–Ni 合金構造に対して求めた（i）ORR 過電圧 η（V）と（ii）合金形成エネルギー E_form（eV/atom）について、DFT（横軸）と NNP（縦軸）のプロットを示す。いずれもスピアマンの順位相関係数が高く、過電圧で ρ ≈ 0.985、形成エネルギーで ρ ≈ 0.982であり、データ間の大小関係が維持されていることが確認できる。また、絶対誤差はそれぞれ MAE ≈ 0.060 V、MAE ≈ 0.007 eV/atom であった。
+本研究で用いたユニバーサル NNP（uma‑s‑1p1）のPt–Ni合金系への適応の妥当性を、DFT 計算との直接比較で検証した。Figure 4 は、Pt–Ni 合金構造に対して求めた（i）ORR 過電圧 η（V）と（ii）合金形成エネルギー E_form（eV/atom）について、DFT（横軸）と NNP（縦軸）のプロットを示す。いずれもスピアマンの順位相関係数が高く、過電圧で ρ ≈ 0.985、形成エネルギーで ρ ≈ 0.982であり、データ間の大小関係が維持されていることが確認できる。また、絶対誤差はそれぞれ MAE ≈ 0.060 V、MAE ≈ 0.007 eV/atom であった。
 
 プロットはおおむね対角線上に分布し、特に η では広い値域（約 0.5–1.8 V）で一致が保たれている。E_form については、−0.03 eV/atom 未満の領域で NNP が不安定側へ過小評価する傾向が見られるものの、系統誤差は 0.01 eV/atom 程度であり、スクリーニング用途としては許容範囲である。したがって、本研究のイテレーション型生成ワークフローでは、NNP による特性評価が妥当であると判断した。
 
@@ -350,10 +390,10 @@ $$
 E_{\mathrm{form}} = E_{\mathrm{bulk}}^{\mathrm{alloy}} - \sum_i N_i \; \frac{E_{\mathrm{bulk}}(i)}{N_{\mathrm{bulk}}(i)}.
 $$
 
-E_form は原子数で割り（eV/atom）に正規化して算出した。純元素（Pt, Ni）のバルク参照エネルギーは、それぞれの 4×4×4 fcc 構造を同一ワークフローで構造最適化及びエネルギー計算を行なった。
+E_form は原子数で割り（eV/atom）に正規化して算出した。純元素（Pt, Ni）のバルク参照エネルギーは、それぞれの 4×4×4 fcc 構造を構造最適化及びエネルギー計算を行なった。
 
 
-Figure 1. Parity plots of overpotential (V) and alloy formation energy (eV/atom) between DFT (x) and NNP (y). 注記にはスピアマン ρ と MAE を併記した。
+Figure 4. Parity plot of overpotential (V) and alloy formation energy (eV/atom) between DFT (x) and NNP (y).
 
 <img src="fig/overpotential_and_formation.png" alt="Parity of overpotential and formation energy: DFT vs NNP" style="width: 80%; background-color: white;">
 
@@ -363,29 +403,29 @@ Figure 1. Parity plots of overpotential (V) and alloy formation energy (eV/atom)
 合計5回の反復による生成・評価過程により、過電圧および合金形成エネルギーの分布は高性能側へに推移することが確認できた。  
 We confirmed that the distributions of overpotential and alloy formation energy shifted toward the high-performance side with a total of 5 iterations of the generation and evaluation process.
 
-Figure 2 のバイオリンプロットから、iter の進行とともに過電圧分布が高活性側に、形成エネルギー分布がより安定な方へ移動する傾向が確認できる。  
-Violin plots in Figure 2 show that the overpotential distribution shifts toward the high-activity side, and the formation energy distribution moves toward a more stable side with iteration progresses, 
+Figure 5 のバイオリンプロットから、iter の進行とともに過電圧分布が高活性側に、形成エネルギー分布がより安定な方へ移動する傾向が確認できる。  
+Violin plots in Figure 5 show that the overpotential distribution shifts toward the high-activity side, and the formation energy distribution moves toward a more stable side with iteration progresses, 
 
 定量的には、iter0→iter5 で過電圧の平均は 1.126 V から 0.520 V へ、合金形成エネルギーの平均は −0.027 eV/atom から −0.047 eV/atom へとそれぞれ低下した。  
 The mean of overpotential decreased from 1.126 V to 0.520 V, and the mean of alloy formation energy decreased from -0.027 eV/atom to -0.047 eV/atom.
 
-分布の変化をプロットで確認すると（Figure 3）、過電圧の低下とともに合金形成エネルギーもより安定な領域へ移動した。
-And Figure 3 shows the change in distribution, and the alloy formation energy also moves to a more stable region as the overpotential decreases.
+分布の変化をプロットで確認すると（Figure 6）、過電圧の低下とともに合金形成エネルギーもより安定な領域へ移動した。
+And Figure 6 shows the change in distribution, and the alloy formation energy also moves to a more stable region as the overpotential decreases.
 
 つまり、活性と安定性の両立に向けて均一なデータが生成されていく様子が確認できる。  
 Then we can confirm that data is generated toward the coexistence of activity and stability.
 
 --- 
 
-イテレーションによる生成・評価過程により、過電圧および合金形成エネルギーの分布は高性能側へ系統的に推移した。Figure 2 のバイオリンプロットから、iter の進行とともに過電圧分布が高活性側に、形成エネルギー分布がより安定な方へ移動する傾向が確認できる。定量的には、iter0→iter5 で過電圧の平均は 1.126 V から 0.520 V へ、合金形成エネルギーの平均は −0.027 eV/atom から −0.047 eV/atom へとそれぞれ低下した。
+イテレーションによる生成・評価過程により、過電圧および合金形成エネルギーの分布は高性能側へ系統的に推移した。Figure 5 のバイオリンプロットから、iter の進行とともに過電圧分布が高活性側に、形成エネルギー分布がより安定な方へ移動する傾向が確認できる。定量的には、iter0→iter5 で過電圧の平均は 1.126 V から 0.520 V へ、合金形成エネルギーの平均は −0.027 eV/atom から −0.047 eV/atom へとそれぞれ低下した。
 
-分布の同時変化を二次元上で俯瞰すると（Figure 3）、過電圧の低下とともに合金形成エネルギーもより負の領域へ移動し、活性と安定性の両立に向けて均一なデータが生成されていく様子が確認できる。
+分布の同時変化を二次元上で俯瞰すると（Figure 6）、過電圧の低下とともに合金形成エネルギーもより負の領域へ移動し、活性と安定性の両立に向けて均一なデータが生成されていく様子が確認できる。
 
-Figure 2. Combined distributions of alloy formation energy and overpotential (iter0–5).
+Figure 5. Distributions of overpotential and alloy formation energy (iter0–5).
 
 <img src="fig/violin_combined_iter0-5.png" alt="Combined violin: formation energy and overpotential" style="width: 50%; background-color: white;">
 
-Figure 3. Overpotential vs. alloy formation energy (iter0–5).
+Figure 6. Overpotential vs alloy formation energy (iter0–5).
 
 <img src="fig/overpotential_vs_alloy_formation_iter0-5.png" alt="Scatter: overpotential vs alloy formation energy" style="width: 50%; background-color: white;">
 
@@ -393,14 +433,15 @@ Figure 3. Overpotential vs. alloy formation energy (iter0–5).
 
 各イテレーションで得られた触媒構造の特性が、触媒活性の先行研究トレンドと矛盾せず、イテレーションにより系統的に改善されていくことを確認する。  
 
-Figure 5 は ORR の CHE と線形スケーリング則に基づくボルケーノプロットに、各イテレーションの構造を重ね合わせたものである。    
-Figure 5 shows volcano plots based on the CHE and linear scaling relations for the ORR, with the structures generated from each iteration. 
+Figure 7 は ORR の CHE と線形スケーリング則に基づくボルケーノプロットに、各イテレーションの構造を重ね合わせたものである。    
+Figure 7 shows volcano plots based on the CHE and linear scaling relations for the ORR, with the structures generated from each iteration.   
+[@kulkarniUnderstandingCatalyticActivity2018]
 
-Figure 6 は組成比と合金形成エネルギーでプロットされた相図である。  
-Figure 6 shows a phase diagram drawn by the composition ratio and the alloy formation energy.
+Figure 8 は組成比と合金形成エネルギーでプロットされた相図である。  
+Figure 8 shows a phase diagram drawn by the composition ratio and the alloy formation energy.
 
-Figure 5 では、x 軸に ΔG_OH、y 軸に理論限界電位 U_L を取り、CHE およびスケーリング関係から得られる 2 本の境界直線と理想水平線（U_L = 1.23 V）を示した。  
-Figure 5 shows the x-axis as ΔG_OH and the y-axis as the limiting potential U_L, with two boundary lines obtained from CHE and scaling relations and an ideal line (U_L = 1.23 V).
+Figure 7 では、x 軸に ΔG_OH、y 軸に理論限界電位 U_L を取り、CHE およびスケーリング関係から得られる 2 本の境界直線と理想水平線（U_L = 1.23 V）を示した。  
+Figure 7 shows the x-axis as ΔG_OH and the y-axis as the limiting potential U_L, with two boundary lines obtained from CHE and scaling relations and an ideal line (U_L = 1.23 V).
 
 2 直線の交点は ΔG_OH ≈ 0.86 eV であり、ここがボルケーノプロットの頂点（U_L 最大）に対応する。
 The cross point is located at ΔG_OH ≈ 0.86 eV, which corresponds to the top of the volcano plot (U_L maximum).
@@ -409,28 +450,28 @@ The cross point is located at ΔG_OH ≈ 0.86 eV, which corresponds to the top o
 We can confirm that the data points shift to the top as the iterations progress, and the activity approaches the theoretically optimal area. 
 
 
-次に Figure 6 は、Ni 含有率（x_Ni）と合金形成エネルギー E_form（eV/atom、負ほど安定）の相図を示す。  
-And figure 6 shows a phase diagram plotted with the Ni concentration and the alloy formation energy.
+次に Figure 8 は、Ni 含有率（x_Ni）と合金形成エネルギー E_form（eV/atom、負ほど安定）の相図を示す。  
+And Figure 8 shows a phase diagram plotted with the Ni concentration and the alloy formation energy.
 
-iter の進行に伴い、分布はより負の E_form 側へ推移しつつ、x_Ni ≈ 0.4–0.6 の等量近傍にサンプルが集中する傾向が見られる。  
+iter の進行に伴い、分布はより負の E_form 側へ推移しつつ、x_Ni ≈ 0.5 の等量近傍にサンプルが集中する傾向が見られる。  
 The distribution tends to shift towards the more negative E_form side, with samples concentrating around region of x_Ni ≈ 0.5.
 
-これらの結果から、活性が高い領域（Figure 5 の頂点近傍）と、熱力学的に安定な領域（より負の E_form）が、探索の反復によって同時に改善されていることを示唆する。  
-These results indicate that the high-activity region (near the vertex of Figure 5) and the thermodynamically stable region (more negative E_form) are improved by the iterative exploration.
+これらの結果から、活性が高い領域（Figure 7 の頂点近傍）と、熱力学的に安定な領域（より負の E_form）が、探索の反復によって同時に改善されていることを示唆する。  
+These results indicate that the high-activity region (near the vertex of Figure 7) and the thermodynamically stable region (more negative E_form) are improved by the iterative exploration.
 
 ---
 
-各イテレーションで得られた触媒構造の特性が、触媒活性の先行研究トレンドと矛盾せず、イテレーションにより系統的に改善されていくことを確認する。Figure 5 は ORR の CHE と線形スケーリング則に基づくボルケーノプロットに、各イテレーションの構造を重ね合わせたものであり、Figure 6 は組成比と合金形成エネルギーを対応付けた相図である。
+各イテレーションで得られた触媒構造の特性が、触媒活性の先行研究トレンドと矛盾せず、イテレーションにより系統的に改善されていくことを確認する。Figure 7 は ORR の CHE と線形スケーリング則に基づくボルケーノプロットに、各イテレーションの構造を重ね合わせたものであり、Figure 8 は組成比と合金形成エネルギーを対応付けた相図である。
 
-Figure 5 では、x 軸に ΔG_OH、y 軸に理論限界電位 U_L を取り、CHE およびスケーリング関係から得られる 2 本の境界直線（強結合側: U_L = ΔG_OH、弱結合側: U_L = 1.72 − ΔG_OH）と理想水平線（U_L = 1.23 V）を示した。2 直線の交点は ΔG_OH ≈ 0.86 eV であり、ここがボルケーノプロットの頂点（U_L 最大）に対応する。反復の進行とともに、データ点は頂点近傍へと集約する傾向を示し、活性が理論最適領域へ近づく様子が確認できる。すなわち、3.2 節の η 分布の低下に対応して、ボルケーノプロット上でも U_L が高い領域である ΔG_OH ≈ 0.86 eV への移動が観測される。
+Figure 7 では、x 軸に ΔG_OH、y 軸に理論限界電位 U_L を取り、CHE およびスケーリング関係から得られる 2 本の境界直線（強結合側: U_L = ΔG_OH、弱結合側: U_L = 1.72 − ΔG_OH）と理想水平線（U_L = 1.23 V）を示した。2 直線の交点は ΔG_OH ≈ 0.86 eV であり、ここがボルケーノプロットの頂点（U_L 最大）に対応する。反復の進行とともに、データ点は頂点近傍へと集約する傾向を示し、活性が理論最適領域へ近づく様子が確認できる。すなわち、3.2 節の η 分布の低下に対応して、ボルケーノプロット上でも U_L が高い領域である ΔG_OH ≈ 0.86 eV への移動が観測される。
 
-Figure 5. Volcano plot: ΔG_OH vs limiting potential (iter0–5).
+Figure 7. Volcano plot: ΔG_OH vs limiting potential (iter0–5). [@kulkarniUnderstandingCatalyticActivity2018]
 
 <img src="fig/volcano_dG_OH_vs_limiting_potential_iter0-5.png" alt="Volcano plot" style="width: 50%; background-color: white;">
 
-次に Figure 6 は、Ni 含有率（x_Ni）と合金形成エネルギー E_form（eV/atom、負ほど安定）の相図を示す。iter の進行に伴い、分布はより負の E_form 側へ推移しつつ、x_Ni ≈ 0.4–0.6 の等量近傍にサンプルが集中する傾向が見られる。これは、活性が高い領域（Figure 5 の頂点近傍）と、熱力学的に安定な領域（より負の E_form）が、探索の反復によって同時に改善されていることを示唆する。
+次に Figure 8 は、Ni 含有率（x_Ni）と合金形成エネルギー E_form（eV/atom、負ほど安定）の相図を示す。iter の進行に伴い、分布はより負の E_form 側へ推移しつつ、x_Ni ≈ 0.4–0.6 の等量近傍にサンプルが集中する傾向が見られる。これは、活性が高い領域（Figure 7 の頂点近傍）と、熱力学的に安定な領域（より負の E_form）が、探索の反復によって同時に改善されていることを示唆する。
 
-Figure 6. Phase diagram: Ni fraction vs formation energy colored by iter.
+Figure 8. Phase diagram: Ni fraction vs formation energy colored by iter.
 
   <img src="fig/phase_diagram_stability_analysis_iter0-5.png" alt="Phase diagram stability analysis" style="width: 50%; background-color: white;">
 
@@ -446,14 +487,14 @@ The trend of overpotential was well matched between NNP and DFT, with a mean abs
 一方、合金形成エネルギーは 3.1 節で述べた通り、NNP が DFT に比べて0.01 eV/atom 程度の過小評価する傾向が引き続き確認された。  
 While the alloy formation energy is underestimated by NNP compared to DFT by about 0.01 eV/atom.
 
-また、Figure 7 は、イテレーション 5 で得られた高活性・高安定構造のうちの1つである Pt35Ni29 について、OH*／O*／OOH* の3つの吸着種に対する NNP と DFT の最安定配置および吸着反応エネルギーを可視化・比較したものである。  
+また、Figure 10 は、イテレーション 5 で得られた高活性・高安定構造のうちの1つである Pt35Ni29 について、OH*／O*／OOH* の3つの吸着種に対する NNP と DFT の最安定配置および吸着反応エネルギーを可視化・比較したものである。  
 Also we checked Pt35Ni29 which is one of the high-activity and high-stability structures obtained in iteration 5 and visualized and compared the most stable site and adsorption reaction energies for the 3 adsorbates OH*, O*, and OOH* using NNP and DFT.
 
 ３つの吸着種すべてで最安定サイトは一致していることが確認できる。  
 The 3 adsorbates all have the same most stable site.
 
-さらに Figure 8 の NNP と DFT による ORR 自由エネルギーダイアグラムを比較すると、限界電位 U_Lの値は0.731Vと0.756Vで誤差は0.025Vであり、また律速段階が両者で一致していることが確認できる。  
-Furthermore, comparing the ORR free energy diagrams from NNP and DFT in Figure 8, the limiting potential U_L values are 0.731 V and 0.756 V, an error of 0.025 V, and the rate determining steps are  consistent.
+さらに Figure 11 の NNP と DFT による ORR 自由エネルギーダイアグラムを比較すると、限界電位 U_Lの値は0.731Vと0.756Vで誤差は0.025Vであり、また律速段階が両者で一致していることが確認できる。  
+Furthermore, comparing the ORR free energy diagrams from NNP and DFT in Figure 11, the limiting potential U_L values are 0.731 V and 0.756 V, an error of 0.025 V, and the rate determining steps are consistent.
 
 ---
 
@@ -461,15 +502,17 @@ Furthermore, comparing the ORR free energy diagrams from NNP and DFT in Figure 8
 全体傾向として、過電圧は NNP と DFT で良好に一致し、平均絶対誤差は MAE ≈ 0.018 V であった。一方、合金形成エネルギーは 3.1 節で述べた通り、NNP が DFT に比べて0.01 eV/atom 程度の過小評価する傾向が引き続き確認された。  
 しかし、全体としてDFTで検証された16点のデータは、NNPによって評価された高活性かつ高安定性の傾向を維持しており、本ワークフローによって最終的に得られた構造の有用性が確認された。
 
+Figure 9. Parity and property plots for DFT vs NNP: (a) overpotential, (b) alloy formation energy, and (c) overpotential vs formation energy.
+
 <img src="fig/scatter_overpotential_DFTx_NNPy.png" alt="Parity: overpotential (DFT vs NNP)" style="width: 31%; background-color: white;"> <img src="fig/scatter_formation_energy_DFTx_NNPy.png" alt="Parity: formation energy (DFT vs NNP)" style="width: 31%; background-color: white;"> <img src="fig/overpotential_vs_formation_energy_DFT_NNP.png" alt="Overpotential vs formation energy: DFT (red) and NNP (green)" style="width: 31%; background-color: white;">
 
-また、Figure 7 は、イテレーション 5 で得られた高活性・高安定構造のうちの1つである Pt35Ni29 について、OH*／O*／OOH* の3つの吸着種に対する NNP と DFT の最安定配置および吸着反応エネルギーを可視化・比較したものである。３つの吸着種すべてで最安定サイトは一致していることが確認できる。さらに Figure 8 の NNP と DFT による ORR 自由エネルギーダイアグラムを比較すると、限界電位 U_Lの値は0.731Vと0.756Vで誤差は0.025Vであり、また律速段階が両者で一致していることが確認できる。
+また、Figure 10 は、イテレーション 5 で得られた高活性・高安定構造のうちの1つである Pt35Ni29 について、OH*／O*／OOH* の3つの吸着種に対する NNP と DFT の最安定配置および吸着反応エネルギーを可視化・比較したものである。３つの吸着種すべてで最安定サイトは一致していることが確認できる。さらに Figure 11 の NNP と DFT による ORR 自由エネルギーダイアグラムを比較すると、限界電位 U_Lの値は0.731Vと0.756Vで誤差は0.025Vであり、また律速段階が両者で一致していることが確認できる。
 
-Figure 7. Adsorption structures and energies (ΔE): NNP (top) vs DFT (bottom).
+Figure 10. Adsorption structures and adsorption reaction energies.
 
 <img src="fig/adsorption_matrix.png" alt="Adsorption structures and energies: NNP vs DFT (OH*, O*, OOH*)" style="width: 50%; background-color: white;">
 
-Figure 8. ORR free‑energy diagrams: NNP (left) and DFT (right).
+Figure 11. ORR free‑energy diagrams.
 
 <img src="fig/ORR_free_energy_diagram_NNP.png" alt="ORR free energy diagram (NNP)" style="width: 46%; background-color: white;"> <img src="fig/ORR_free_energy_diagram_DFT.png" alt="ORR free energy diagram (DFT)" style="width: 46%; background-color: white;">
 
@@ -493,8 +536,8 @@ $$
 データ分布の特性を解析するために、イテレーション 5 で学習した cVAE のエンコーダを用い、各構造（iter0–5）を32 次元の潜在変数 z の事後平均（μ）に次元削減したのちに、t‑SNE で 2 次元に可視化した。  
 We visualized all data points to 2D space using t-SNE to analyze the data distribution characteristics, after reducing the dimensionality to the 32-dimensional post mean (μ) of latent space (z) learned cVAE iteration 5.
 
-Figure 4（上）はイテレーションごとに色分けした結果である。  
-Figure 4 shows the results colored by iteration.
+Figure 12（上）はイテレーションごとに色分けした結果である。  
+Figure 12 shows the results colored by iteration.
 
 初期データ（iter0）は図の左側の領域に主に分布するのに対し、iter1 以降は分布が中央〜右側へと大きく広がっている。  
 The initial data (iter0) is mainly distributed in the left area of the figure, while iter1 and later iterations show that the distribution spreads widely to the center and right side.
@@ -512,7 +555,8 @@ As a result, most points are close to 0 in iter0, so the number of Pt atoms in t
 While, in iter1 and later iterations, the number of points with positive values (red) increases significantly, and the top layer has significantly more Pt atoms than the lower layers (average of layers 2-4).
 
 いわゆるPtスキンに近いの構造が選択的に生成されていることが分かる。  
-that suggests that structures close to the so-called Pt-skin are selectively generated.
+that suggests that structures close to the so-called Pt-skin are selectively generated.  
+[@shinDensityFunctionalTheory2021][@kumedaInterfacialStructurePtNi2017][@limRoleTransitionMetals2023]
 
 これは 3.2 節で示した過電圧分布の改善（低 η 側へのシフト）とも整合的である。
 And this is consist with the improvement of the overpotential distribution shown in Section 3.2 (shift to the low η side).
@@ -525,7 +569,7 @@ And it was confirmed that the feature as a catalytic structure is appearing in t
 
 ---
 
-データの分布特性を解析するために、イテレーション 5 で学習した cVAE のエンコーダを用い、各構造（iter0–5）を32 次元の潜在変数 z の事後平均（μ）に圧縮したのちに、t‑SNE で 2 次元に可視化した。Figure 4（上）はイテレーションごとに色分けした結果である。初期データ（iter0）は図の左側の領域に主に分布するのに対し、iter1 以降は点群が中央〜右側へと大きく広がっている。これは、イテレーションの過程で iter0 には存在しなかったデータ空間の領域にまで、構造探索・生成が拡張したことを示している。
+データの分布特性を解析するために、イテレーション 5 で学習した cVAE のエンコーダを用い、各構造（iter0–5）を32 次元の潜在変数 z の事後平均（μ）に圧縮したのちに、t‑SNE で 2 次元に可視化した。Figure 12（上）はイテレーションごとに色分けした結果である。初期データ（iter0）は図の左側の領域に主に分布するのに対し、iter1 以降は点群が中央〜右側へと大きく広がっている。これは、イテレーションの過程で iter0 には存在しなかったデータ空間の領域にまで、構造探索・生成が拡張したことを示している。
 
 さらに、合金触媒の構造が潜在座標にどう反映されるかを確かめるため、各点を「最表面層の Pt 原子数が下層と比べてどれだけ多いか」を表す指標で色付けした。指標は次式で定義した：
 
@@ -539,7 +583,7 @@ $$
 
 以上より、反復的な構造生成と評価により、初期データには存在しなかった潜在空間の領域までデータが拡張されること、同時に、Ptスキン構造の顕在化という物理化学的に意味のある特徴の発生が潜在空間のマッピングと対応していることが確認された。
 
-Figure 4. 上: t‑SNE colored by iteration (VAE latent mean μ; iter0–5). 下: t‑SNE colored by Surface Pt excess (count).
+Figure 12. Latent-space visualization by t‑SNE (top: colored by iteration; bottom: colored by surface Pt excess).
 
 <img src="fig/tsne_latent_space_iter0-5_mean.png" alt="t-SNE latent space (mean) iter0-5" style="width: 50%; background-color: white;">
 
