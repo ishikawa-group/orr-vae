@@ -44,9 +44,13 @@ Currently, platinum (Pt) is the main commercial catalyst, but due to cost and ra
 
 なかでも Pt–Ni は代表的なORR合金触媒の一つであり広く研究されている。  
 Especially, Pt–Ni is one of the representative ORR alloy catalysts that has been widely studied.  
-[@wangFundamentalComprehensionRecent2021][@tianEngineeringBunchedPtNi2019][@stamenkovicImprovedOxygenReduction2007]
+[@wangFundamentalComprehensionRecent2021][@tianEngineeringBunchedPtNi2019]
 
-しかし、活性と安定性の向上に向けた最適な組成・配置については報告間で差があり、いまだ統一した理解に達していない。  
+そして、Pt-Ni合金では、最表面にPtの含有量が高いPtスキン構造を形成すると、dバンド中心が最適化されることで触媒活性が向上することが知られている。  
+And it is known that the Pt-skin structure which has a high Pt content on the catalyst surface is effective for improving the catalytic activity of Pt-Ni to optimize the d-band center.  
+[@stamenkovicImprovedOxygenReduction2007][@shinDensityFunctionalTheory2021][@kumedaInterfacialStructurePtNi2017][@limRoleTransitionMetals2023]
+
+しかし、活性と安定性の両立に向けた最適な組成・配置については報告間で差があり、いまだ統一した理解に達していない。  
 However, there are differences between reports about the optimal composition and arrangement for improving activity and stability, and it is not yet fully understood.  
 [@yangMethanolTolerantOxygen2005][@carpenterSolvothermalSynthesisPlatinum2012][@xiaUnveilingCompositionDependentCatalytic2024]
 
@@ -83,8 +87,15 @@ To solve this problem, using a universal neural network potential (NNP) trained 
 これらの触媒設計研究には生成モデルとしてGANが用いられているが、バルク材料の設計においてはGAN同様に一般的な生成モデルである変分オートエンコーダ(VAE)も利用されている。  
 These studies have used generative adversarial networks (GANs) as generative models, although variational autoencoders (VAEs), which are also general generative models, have been used for the design of bulk materials.  
 
-そして、VAEはGANに比べて、訓練が比較的容易で安定化しやすく、正則化された連続的な潜在空間を活用してサンプリングや補間により未観測データ空間から候補を生成しやすい。  
-Furthermore, VAEs are relatively easy to train and stabilize compared to GANs, and they can easily generate candidates from unobserved data spaces 
+一般的なGANは、訓練データ数が少ない場合に訓練が安定しない場合がある。  
+The typical Generative adversarial networks (GANs) can sometimes be unstable during training when the amount of training data is small.  
+[@liComprehensiveSurveyDataEfficient2022][@zhaoDifferentiableAugmentationDataEfficient2020][@karrasTrainingGenerativeAdversarial2020]
+
+これは、計算や実験的に十分なデータ数が用意できない場合には、利用が制限される可能性があることを示唆する。  
+This suggests that GAN use may be limited when a sufficient amount of data cannot be prepared computationally or experimentally.  
+
+一方で、VAEはGANに比べて、訓練が比較的容易で安定化しやすく、正則化された連続的な潜在空間を持つのでサンプリングや補間により未観測データ空間から候補を生成しやすい。  
+While, VAEs are relatively easy to train and stabilize compared to GANs, and they can easily generate candidates from unobserved data spaces because they have a regularized continuous latent space.
 [@bajpaiScalableCrystalRepresentation2023]
 
 さらに条件付き学習により高精度に指定したラベル(クラス)データ生成できることが報告されている。  
@@ -253,7 +264,7 @@ Figure 1. Structure representation of the catalyst slab as a (4, 8, 8) tensor ma
 ### 2.4.2 VAE Architecture
 触媒構造の学習と生成には、条件付き VAE を用いた。
 We used conditional VAE for learning and generating catalyst structures.  
-[@kingmaAutoEncodingVariationalBayes2022][@kingmaSemiSupervisedLearningDeep2014]
+[@kingmaAutoEncodingVariationalBayes2022][@kingmaSemiSupervisedLearningDeep2014][@sohnLearningStructuredOutput2015]
 
 入力の(4, 8, 8)の構造テンソルに加えて，2値に変換された過電圧と合金形成エネルギーを条件ラベルとして与えた。  
 And we provided the (4, 8, 8) structure tensor with binary labels of overpotential and alloy formation energy.
@@ -556,7 +567,7 @@ While, in iter1 and later iterations, the number of points with positive values 
 
 いわゆるPtスキンに近いの構造が選択的に生成されていることが分かる。  
 that suggests that structures close to the so-called Pt-skin are selectively generated.  
-[@shinDensityFunctionalTheory2021][@kumedaInterfacialStructurePtNi2017][@limRoleTransitionMetals2023]
+[@stamenkovicImprovedOxygenReduction2007][@shinDensityFunctionalTheory2021][@kumedaInterfacialStructurePtNi2017][@limRoleTransitionMetals2023]
 
 これは 3.2 節で示した過電圧分布の改善（低 η 側へのシフト）とも整合的である。
 And this is consist with the improvement of the overpotential distribution shown in Section 3.2 (shift to the low η side).
