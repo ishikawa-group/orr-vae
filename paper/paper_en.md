@@ -73,8 +73,8 @@ But model training requires a sufficient amount of data for each task, and explo
 therefore, the use of generative models has been proposed for inverse design from material properties to structures, and is expected to be an effective approach for generating structures from unknown chemical data spaces.  
 [@hellmanBriefOverviewDeep2025][@parkHasGenerativeArtificial2024]
 
-特に、合金触媒設計において生成モデルを活用することで、初期データセットに含まれない外挿的な合金触媒構造候補の提案が可能であることが示されている。  
-In particular, using generative models for alloy catalyst design has shown to enable the proposal of extrapolative 候補 of alloy catalyst structure not included in initial data sets.  
+特に、合金触媒設計において、生成モデルによる構造生成とDFT計算による評価の反復プロセスにより、初期データセットに含まれない外挿的な合金触媒構造候補の提案が可能であることが示されている。  
+In particular, the iterative process of structure generation by generative models and evaluation by DFT calculations has shown to enable the proposal of extrapolative candidates of alloy catalyst structure not included in initial data sets for alloy catalyst design.  
 [@ishikawaHeterogeneousCatalystDesign2022]
 
 しかし、生成モデルによる提案構造を都度 DFT で評価するワークフローは、データ数の拡大とともに急速に非効率化する。  
