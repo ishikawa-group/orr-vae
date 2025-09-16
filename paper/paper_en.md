@@ -1,5 +1,5 @@
 ---
-title: "Theoretical Generation of Alloy Catalysts for Oxygen Reduction Reaction with Machine Learning Potential and Variational Auto-Encoder"
+title: "Theoretical Generation of Alloy Catalysts for Oxygen Reduction Reaction with Machine Learning Potential and Variational Auto-Encoder" 
 author: "Name"
 bibliography: [orr-vae.bib]
 csl: american-chemical-society.csl
@@ -825,3 +825,13 @@ Shang, S. L.; Wang, Y.; Kim, D. E.; Zacherl, C. L.; Du, Y.; Liu, Z. K. Structura
   - Volcano（Pt heatmap）
   
   <img src="fig/volcano_dG_OH_vs_limiting_potential_pt_heatmap_iter0-5.png" alt="Volcano Pt heatmap" style="width: 50%; background-color: white;">
+
+- Latent-space interpolation snapshots。
+  
+  - Structure lineup (t-SNE interpolation)
+  
+  <img src="fig/tsne_latent_space_iter_mean_LERP_LERP.png" alt="Latent interpolation structure lineup" style="width: 90%; background-color: white;">
+  
+  - Start/end highlight on t-SNE map
+  
+  <img src="fig/tsne_latent_space_iter_mean_LERP_LERP_arrow.png" alt="t-SNE interpolation endpoints" style="width: 70%; background-color: white;">
