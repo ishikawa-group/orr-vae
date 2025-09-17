@@ -138,10 +138,10 @@ We used a four-electron reaction mechanism under acidic conditions, represented 
 4. OH* + H+ + e− → H2O + *
 
 
-$$\Delta G_i(U)=\Delta G_i(0)-eU$$
+$$\Delta G_i(U)=\Delta G_i(0)+eU$$
 
 
-$$U_L=\min_i\left[\frac{\Delta G_i(0)}{e}\right],\quad \eta=1.23-U_L\;\mathrm{[V]}$$
+$$U_L=-\max_i\left[\frac{\Delta G_i(0)}{e}\right],\quad \eta=1.23-U_L\;\mathrm{[V]}$$
 
 
 
@@ -150,7 +150,7 @@ Then ΔG_i(0) is calculated by adding zero-point energy (ZPE) and vibrational en
 
 And we calculated the gas-phase O2 energy using the energy of H2, H2O and the free energy change for water formation that is 2.46 eV to avoid known errors.
 
-Also, we introduced solvent effects as constant corrections based on literature values, adding 0.00, 0.28, and 0.57 eV to O*, OOH*, and OH*.  
+Also, we introduced solvent effects as constant corrections based on literature values, applying 0.00, 0.28, and 0.57 eV to O*, OOH*, and OH*.  
 [@zhangSolvationEffectsDFT2019][@heImportanceSolvationAccurate2017]
 
 ---
