@@ -75,11 +75,28 @@ While, VAEs are relatively easy to train and stabilize compared to GANs, and the
 Additionally, it has been reported that conditional learning allows for high-precision generation of specified label (class) data.  
 [@turkAssessingDeepGenerative2022]
 
+また、事前学習されたcrystal diffusion variational autoencoder (CDVAE) の潜在空間をbird swarm algorithmによって最適化することで、既存のスケーリング則に基づき目的の活性記述子である吸着エネルギーを持つ合金を探索し、新規のCO2RR触媒を設計した例も報告されている。  
+Also, by optimizing the latent space of a pre-trained crystal diffusion variational autoencoder (CDVAE) using the bird swarm algorithm, new CO2RR catalysts were designed by exploring alloys with desired adsorption energies based on existing scaling relations.  
+[@ksongInverseDesignPromising2025]
+
+しかし、触媒設計においては、活性だけでなく材料の安定性や耐久性などの複数の指標も重要であり、これらを同時に最適化することが求められる。  
+But in catalyst design, multiple metrics such as not only activity but also material stability and durability are important, and it is required to optimize them simultaneously.  
+[@sharmaMachineLearningGuidedDiscovery2025][@lucchettiRevolutionizingORRCatalyst2024]
+
+また、より普遍的な触媒設計手法に向けて、スケーリング則が報告されていない系や成立しない系の存在を想定し単一の吸着エネルギーによる評価ではなく、反応ステップの速度論的もしくは熱力学的な解析によって触媒活性を評価することが望ましい。  
+And for more general catalyst design methods, it is needed to evaluate catalytic activity not by a single adsorption energy but by kinetic or thermodynamic analysis of reaction steps, assuming the existence of systems where scaling relations are not reported or do not hold.
+
+
 Thus, this study proposes a workflow that integrates fast evaluation using a universal NNP and structure generation using VAE for the optimization of Pt–Ni alloy catalysts for ORR.
 
-Specifically, new structures are generated using a conditional variational autoencoder (cVAE) conditioned by ORR overpotential based on the computational hydrogen electrode (CHE) and alloy formation energy. 
+Specifically, new structures are generated using a conditional variational autoencoder (cVAE) conditioned by ORR overpotential and alloy formation energy.
 
-The generated structures are evaluated using NNP.
+cVAEは、複数の物性を条件ラベルとすることで多目的な化学化合物の最適化および生成に利用されおり、また追加で潜在空間の最適化等を行う必要がない。  
+The cVAE has been used for multi-objective optimization and generation of chemical compounds with multiple properties as conditional labels, and there is no need for additional optimization of the latent space.
+[@leeMGCVAEMultiObjectiveInverse2022][@limMolecularGenerativeModel2018][@jooGenerativeModelProposing2020]
+
+
+The generated structures are evaluated by thermodynamic analysis based on the computational hydrogen electrode (CHE) using NNP.
 
 By repeating this process, we efficiently explore Pt–Ni catalysts that have high activity and stability.
 
