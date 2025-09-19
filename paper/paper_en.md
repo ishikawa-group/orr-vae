@@ -379,7 +379,7 @@ Figure 8. Phase diagram: Ni fraction vs formation energy colored by iter.
  
 ## 3.4 DFT Validation
 
-We check the 16 structures obtained in iteration 5 that satisfy η < 0.60 V and E_form < −0.05 eV/atom by DFT evaluation.
+We check the 24 structures obtained in iteration 5 that satisfy η < 0.60 V and E_form < −0.05 eV/atom by DFT evaluation.
 
 The trend of overpotential was well matched between NNP and DFT, with a mean absolute error of MAE ≈ 0.018 V.
 
