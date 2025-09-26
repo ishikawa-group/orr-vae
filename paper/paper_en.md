@@ -464,7 +464,7 @@ The overpotential and formation energy values obtained by the NNP were confirmed
 
 The distributions of η and E_form shifted toward lower overpotentials and more negative formation energies by generating and evaluating 768 structures over six iterations.
 
-Data obtained in each iteration approached the area of the reported volcano peak and the thermodynamically stable regions of the Ni–Pt phase diagram, confirming the physicochemical plausibility of the generated structures.
+Data obtained in each iteration approached the area of the reported volcano peak and the thermodynamically stable regions of the Ni–Pt phase diagram, confirming the physical and chemical plausibility of the generated structures.
 
 Using the encoder of the trained cVAE, each structure was mapped to two dimensions, and the data expanded into regions of latent space absent in the initial dataset as iterations progressed.
 
