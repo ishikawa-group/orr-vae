@@ -496,6 +496,7 @@ We retained these samples in the distribution plots for completeness, but they d
 The joint distribution in Figure 00c further shows that, as iterations proceed, lower η is associated with more negative Eform.
 
 <img src="fig/Pt-Ni_Pt-Ti_Pt-Sc/overpotential_vs_alloy_formation_iter0-5.png" alt="Overpotential versus formation energy for Pt–X alloys (Figure 00c)" style="width: 50%;">
+<img src="fig/Pt-Ni_Pt-Ti_Pt-Sc/overpotential_vs_alloy_formation_iter0-5_zoom.png" alt="Overpotential versus formation energy for Pt–X alloys (Figure 00c)" style="width: 50%;">
 
 To quantify practically useful structures, we defined high activity as η ≤ 0.60 V and high stability as Eform ≤ −0.20 eV/atom.   
 
