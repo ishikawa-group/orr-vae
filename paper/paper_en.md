@@ -456,6 +456,119 @@ Figure 12. Latent-space visualization by t‑SNE (top: colored by iteration; bot
 
 <img src="fig/tsne_latent_space_pt_layer_diff_iter0-5_mean.png" alt="t-SNE latent space (mean) iter0-5" style="width: 50%; background-color: white;">
 
+
+## 3.6 Extending the Training Dataset to Multiple Pt–X Alloy Systems
+
+To evaluate the generality of our workflow beyond Pt–Ni, we extended the training–generation–evaluation loop to include two alloy systems, Pt–Ti and Pt–Sc, whose alloy-formation energetics are expected to differ from those of Pt–Ni. [@greeleyAlloysPlatinumEarly2009]
+
+We evaluated the ORR overpotential (η) and the alloy formation energy Eform using the same setup as in the previous sections. 
+
+We defined Eform per atom relative to the most stable bulk references: fcc-Pt, hcp-Ti, and hcp-Sc. 
+
+The cVAE architecture remained unchanged, and hyperparameters were selected by grid search; for this multi-alloy study we used a latent dimensionality of D = 16. 
+
+All other training settings—optimizer, batch size, number of epochs, and loss terms—were identical to the previous sections. 
+
+In the loss function, we set the class weight for the blank class to 0.05.
+
+As iter0, we generated 256 randomly sampled slabs across three alloy families: 86 Pt–Ni, 85 Pt–Ti, and 85 Pt–Sc, using the same 4×4 fcc(111) four-layer slab model. 
+
+For each subsequent iteration, we generated and evaluated 256 structures following the identical workflow, and repeated the loop through iter5. 
+
+Figure 00a and 00b summarize the evolution of the η and Eform distributions. 
+
+From iter0 to iter5, the dataset means improved from η = 2.737 V to 1.799 V and from Eform = −0.383 to −0.603 eV/atom, indicating a concerted shift toward higher activity and greater thermodynamic stability.
+
+<img src="fig/Pt-Ni_Pt-Ti_Pt-Sc/violin_overpotential_iter0-5.png" alt="Overpotential distribution across iterations (Figure 00a)" style="width: 50%;">
+
+<img src="fig/Pt-Ni_Pt-Ti_Pt-Sc/violin_alloy_formation_iter0-5.png" alt="Formation energy distribution across iterations (Figure 00b)" style="width: 50%;">
+
+We note that some iterations show long positive tails in η. 
+
+Some Pt–Ti and Pt–Sc structures lose the fcc registry during geometry optimization of the clean and adsorbed slabs. 
+
+This occurs because fcc is not the thermodynamically stable phase for Ti and Sc. 
+
+The resulting reconstructions lead to unreliable ORR energy evaluations and inflate η for those outliers. 
+
+We retained these samples in the distribution plots for completeness, but they do not affect the monotonic increase in the number of high-performance candidates. 
+
+The joint distribution in Figure 00c further shows that, as iterations proceed, lower η is associated with more negative Eform.
+
+<img src="fig/Pt-Ni_Pt-Ti_Pt-Sc/overpotential_vs_alloy_formation_iter0-5.png" alt="Overpotential versus formation energy for Pt–X alloys (Figure 00c)" style="width: 50%;">
+
+To quantify practically useful structures, we defined high activity as η ≤ 0.60 V and high stability as Eform ≤ −0.20 eV/atom.   
+
+Under these thresholds, the number of samples meeting both criteria increased from 8 of 256, 3.12%, at iter0 to 70 of 256, 27.34%, at iter5 (Figure 00d).   
+
+Thus, this cVAE workflow systematically enriches the dataset with alloys that are both active and stable.
+
+<img src="fig/Pt-Ni_Pt-Ti_Pt-Sc/eligible_count_bar_iter0-5_eta0.60_eform-0.20.png" alt="Count of high-performance structures per iteration (Figure 00d)" style="width: 50%;">
+
+We also observed a composition-selection effect.   
+
+By iter5, Pt–Sc accounted for 207 of 256 structures, about 81%, and compositions clustered near Pt48Sc16 within the 64-atom slab, close to the Pt3Sc stoichiometry.   
+
+Figure 00e shows the shift in generated structures over iterations, and Figure 00f shows the formation-energy phase diagram projected onto the Sc fraction, with a high density of data points near xSc ≈ 0.25, consistent with the enrichment near Pt3Sc.   
+
+In contrast, as described above, when we applied the workflow to Pt–Ni alone, the generated composition concentrated near equiatomic ratios (i.e., Pt1Ni1).   
+
+These trends indicate that the workflow adapts the preferred stoichiometry to the alloy family while maintaining a bias toward low η and low Eform, supporting applicability to Pt–X systems beyond Pt–Ni.
+
+<img src="fig/Pt-Ni_Pt-Ti_Pt-Sc/structure_evolution_iter0-5.png" alt="Iteration-wise structure evolution across Pt–X alloys (Figure 00e)" style="width: 50%;">
+
+<img src="fig/Pt-Ni_Pt-Ti_Pt-Sc/phase_diagram_stability_sc_fraction_iter0-5.png" alt="Stability landscape projected on Sc fraction (Figure 00f)" style="width: 50%;">
+
+
+---
+Pt–Ni 以外で本ワークフローの汎用性を評価するため、合金形成エネルギーが Pt–Ni と異なると予想される Pt–Ti と Pt–Sc の 2 つのを含む合金系に対して、学習・生成・評価ループを拡張した。
+
+前節と同じ設定を用い、ORR 過電位 (η) と合金形成エネルギー Eform を評価した。
+
+Eform は最も安定なバルク参照である fcc-Pt、hcp-Ti、hcp-Sc に対する 1 原子あたりの値として定義した。
+
+cVAE のアーキテクチャは変更せず、ハイパーパラメータはグリッドサーチで決定し、多合金系の検討では潜在次元 D = 16 を用いた。
+
+その他の学習設定（オプティマイザ、バッチサイズ、エポック数、損失項）は前節までと同一である。
+
+損失関数では、空白クラスのクラス重みを 0.05 に設定した。
+
+iter0 では、同じ 4×4 fcc(111) 4 層スラブモデルを用いて、Pt–Ni 86 個、Pt–Ti 85 個、Pt–Sc 85 個の計 256 個のスラブをランダムに生成した。
+
+以降の各イテレーションでも同じワークフローで 256 個の構造を生成・評価し、iter5 まで反復した。
+
+図 00a と図 00b に η と Eform の分布の推移をまとめた。
+
+iter0 から iter5 にかけて、η の平均値は 2.737 V から 1.799 V へ、Eform の平均値は −0.383 から −0.603 eV/atom へと改善し、高活性化と熱力学的安定化が同時に進んだことを示している。
+
+一部のイテレーションでは、η の分布に長い正の裾が現れる点に注意が必要である。
+
+クリーンおよび吸着スラブの幾何最適化の過程で、Pt–Ti と Pt–Sc の一部の構造は fcc 配列を保持できなくなる。
+
+これは、Pt–Ti と Pt–Sc にとって fcc が熱力学的に最安定な相ではないためである。
+
+その結果生じる再構成は ORR のエネルギー評価を不確かにし、外れ値における η を大きくする。
+
+完全性を保つためにこれらのサンプルも分布図に残したが、高性能候補数の単調な増加傾向は変わらない。
+
+図 00c の同時分布は、イテレーションが進むにつれて低い η とより負の Eform が相関することを示している。
+
+実用的に有用な構造を定量化するため、η ≤ 0.60 V を高活性、Eform ≤ −0.20 eV/atom を高安定性と定義した。
+
+これらの閾値の下で両方の条件を満たすサンプル数は、iter0 の 256 中 8 個（3.12%）から iter5 の 256 中 70 個（27.34%）へと増加した（図 00d）。
+
+したがって、本 cVAE ワークフローは活性と安定性を兼ね備えた合金を体系的にデータセットへ増やしている。
+
+さらに、組成選択の効果も観測された。
+
+iter5 では、256 構造中 207 構造、約 81% が Pt–Sc となり、64 原子スラブ内の組成は Pt3Sc 化学量論に近い Pt48Sc16 付近へ集中した。
+
+図 00e は生成構造のイテレーションに伴う変化を可視化し、図 00f は Sc 分率に投影した形成エネルギーの相図を示しており、xSc ≈ 0.25 付近にデータが集中して Pt3Sc 近傍の蓄積と一致している。
+
+対照的に前述のとおり、Pt–Ni のみでワークフローを適用した場合には、生成される組成は等原子比、すなわち Pt1Ni1 付近に集中した。
+
+これらの傾向は、本ワークフローが低 η と低 Eform への指向性を保ちつつ合金系ごとに最適な組成比へ適応していることを示し、Pt–Ni を超える Pt–X 系への適用可能性を裏付ける。
+
 ## 4. Conclusions
 
 For ORR on the Pt–Ni alloy surface, the cVAE was trained with conditional labels based on CHE overpotential and alloy formation energy, and the NNP accelerated evaluation of the generated structures.
