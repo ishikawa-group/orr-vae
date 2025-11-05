@@ -2,10 +2,7 @@
 /*
 /paper_draft/
 
-# Allow the main paper and readme
+# Allow tracked files
 !.gitignore
-!README.md
-!/paper/
-!/paper/**
 !/cvae-nnp-orr-alloy-design/
 !/cvae-nnp-orr-alloy-design/**
