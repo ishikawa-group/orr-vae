@@ -397,7 +397,7 @@ def run_batch_torchsim(
                 entry["E_alloy_formation"] = calc_alloy_formation_energy(
                     atoms_batch[labels.index(uid)],
                     e_bulk_alloy,
-                    calculator="mace",
+                    calculator="mace-mh",
                 )
             except Exception as exc:  # pragma: no cover
                 print(f"Warning: alloy formation energy calculation failed for {uid}: {exc}")
