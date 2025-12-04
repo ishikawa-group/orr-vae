@@ -4,5 +4,6 @@
 
 # Allow tracked files
 !.gitignore
-!/cvae-nnp-orr-alloy-design/
-!/cvae-nnp-orr-alloy-design/**
+!/README.md
+!/code/
+!/code/**
