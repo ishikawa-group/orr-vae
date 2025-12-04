@@ -423,7 +423,17 @@ def create_dataset_from_json(structures_db_paths, overpotentials_json_paths, gri
     )
     return dataset
 
-def calc_alloy_formation_energy(bulk_atoms, bulk_energy, calculator="fairchem", per_atom=True):
+def calc_alloy_formation_energy(
+    bulk_atoms,
+    bulk_energy,
+    calculator="fairchem",
+    per_atom=True,
+    use_torchsim=False,
+    ts_model=None,
+    ts_force_tol=0.05,
+    ts_max_steps=200,
+    ts_autobatcher=False,
+):
     """
     Compute the alloy formation energy for a slab.
 
@@ -448,6 +458,12 @@ def calc_alloy_formation_energy(bulk_atoms, bulk_energy, calculator="fairchem", 
     from ase.build import fcc111
     
     from orr_overpotential_calculator.calc_orr_energy import optimize_bulk_structure
+    if use_torchsim:
+        if ts_model is None:
+            raise ValueError("ts_model must be provided when use_torchsim=True")
+        from orr_overpotential_calculator.calc_orr_energy_torchsim import (
+            optimize_bulk_structure_ts,
+        )
     
     bulk_data_path = Path("data/bulk_data.json")
     
@@ -481,9 +497,19 @@ def calc_alloy_formation_energy(bulk_atoms, bulk_energy, calculator="fairchem", 
             work_dir.mkdir(exist_ok=True)
             
             try:
-                optimized_bulk, element_bulk_energy = optimize_bulk_structure(
-                    element_bulk, str(work_dir), calculator=calculator
-                )
+                if use_torchsim:
+                    optimized_bulk, element_bulk_energy = optimize_bulk_structure_ts(
+                        element_bulk,
+                        str(work_dir),
+                        model=ts_model,
+                        force_tol=ts_force_tol,
+                        max_steps=ts_max_steps,
+                        autobatcher=ts_autobatcher,
+                    )
+                else:
+                    optimized_bulk, element_bulk_energy = optimize_bulk_structure(
+                        element_bulk, str(work_dir), calculator=calculator
+                    )
                 
                 bulk_data[element] = {
                     "n_atoms": len(element_bulk),
