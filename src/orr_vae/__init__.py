@@ -8,6 +8,7 @@ from orr_vae.tool import (
     tensor_to_structure,
     vegard_lattice_constant,
 )
+from orr_vae.workflow import WorkflowConfig, WorkflowResult, run_workflow
 
 __all__ = [
     "CatalystOrrDataset",
@@ -16,4 +17,7 @@ __all__ = [
     "structure_to_tensor",
     "tensor_to_structure",
     "vegard_lattice_constant",
+    "WorkflowConfig",
+    "WorkflowResult",
+    "run_workflow",
 ]

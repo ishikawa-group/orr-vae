@@ -5,6 +5,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+EXAMPLE_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 CODE_DIR="$(cd "${SCRIPT_DIR}/../code" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 EXAMPLE_NAME="Pt-Ni"
@@ -17,6 +18,26 @@ fi
 export CONDITION_FILE="${CONDITION_FILE:-${CODE_DIR}/condition_list.csv}"
 export VENV_PATH="${VENV_PATH:-${ROOT_DIR}/.venv}"
 export MODULE_LOADS="${MODULE_LOADS:-intel intel-mpi cuda}"
+
+SEED="${SEED:-0}"
+BETA="${BETA:-1.0}"
+MAX_ITER="${MAX_ITER:-5}"
+CALCULATOR="${CALCULATOR:-fairchem}"
+WITH_VISUALIZATION="${WITH_VISUALIZATION:-1}"
+WITH_ANALYSIS="${WITH_ANALYSIS:-1}"
+GRID_X="${GRID_X:-4}"
+GRID_Y="${GRID_Y:-4}"
+GRID_Z="${GRID_Z:-6}"
+INITIAL_NUM_STRUCTURES="${INITIAL_NUM_STRUCTURES:-128}"
+GENERATED_NUM_STRUCTURES="${GENERATED_NUM_STRUCTURES:-128}"
+MIN_SECONDARY_FRACTION="${MIN_SECONDARY_FRACTION:-0.015625}"
+MAX_SECONDARY_FRACTION="${MAX_SECONDARY_FRACTION:-0.984375}"
+SOLVENT_CORRECTION_YAML="${SOLVENT_CORRECTION_YAML:-${CODE_DIR}/solvent_correction.yaml}"
+OUTPUT_DIR="${OUTPUT_DIR:-${EXAMPLE_DIR}/results/seed_${SEED}/${JOB_NUM}}"
+DATA_DIR="${DATA_DIR:-${OUTPUT_DIR}/data}"
+RESULT_DIR="${RESULT_DIR:-${OUTPUT_DIR}/result}"
+LOG_DIR="${LOG_DIR:-${RESULT_DIR}/log}"
+TEMP_DIR="${TEMP_DIR:-${OUTPUT_DIR}/temp}"
 
 # Fill LABEL_THRESHOLD/BATCH_SIZE/MAX_EPOCH/LATENT_SIZE from CSV when omitted
 if [ -z "${LABEL_THRESHOLD:-}" ] || [ -z "${BATCH_SIZE:-}" ] || [ -z "${MAX_EPOCH:-}" ] || [ -z "${LATENT_SIZE:-}" ]; then
@@ -75,7 +96,30 @@ else
 fi
 
 export PYTHONPATH="${ROOT_DIR}/src:${PYTHONPATH:-}"
-eval "$(python3 "${CODE_DIR}/build_plan.py" --shell)"
 mkdir -p "${LOG_DIR}"
 
-python3 "${CODE_DIR}/run_iterative_screening.py"
+python3 "${CODE_DIR}/run_workflow.py" \
+  --seed "${SEED}" \
+  --job-num "${JOB_NUM}" \
+  --label-threshold "${LABEL_THRESHOLD}" \
+  --batch-size "${BATCH_SIZE}" \
+  --max-epoch "${MAX_EPOCH}" \
+  --latent-size "${LATENT_SIZE}" \
+  --beta "${BETA}" \
+  --max-iter "${MAX_ITER}" \
+  --calculator "${CALCULATOR}" \
+  --with-visualization "${WITH_VISUALIZATION}" \
+  --with-analysis "${WITH_ANALYSIS}" \
+  --grid-x "${GRID_X}" \
+  --grid-y "${GRID_Y}" \
+  --grid-z "${GRID_Z}" \
+  --initial-num-structures "${INITIAL_NUM_STRUCTURES}" \
+  --generated-num-structures "${GENERATED_NUM_STRUCTURES}" \
+  --min-secondary-fraction "${MIN_SECONDARY_FRACTION}" \
+  --max-secondary-fraction "${MAX_SECONDARY_FRACTION}" \
+  --output-dir "${OUTPUT_DIR}" \
+  --data-dir "${DATA_DIR}" \
+  --result-dir "${RESULT_DIR}" \
+  --log-dir "${LOG_DIR}" \
+  --temp-dir "${TEMP_DIR}" \
+  --solvent-correction-yaml "${SOLVENT_CORRECTION_YAML}"

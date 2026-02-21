@@ -17,15 +17,15 @@ def _load_module(path: Path, name: str):
 def test_example_structure_counts():
     root = Path(__file__).resolve().parents[1]
 
-    ptni = _load_module(root / "examples" / "Pt-Ni" / "code" / "settings.py", "ptni_settings")
-    ptni_cfg = ptni.load_settings()
-    assert ptni_cfg.generation.initial_num_structures == 128
-    assert ptni_cfg.generation.generated_num_structures == 128
+    ptni = _load_module(root / "examples" / "Pt-Ni" / "code" / "run_workflow.py", "ptni_workflow")
+    ptni_args = ptni.build_parser().parse_args([])
+    assert ptni_args.initial_num_structures == 128
+    assert ptni_args.generated_num_structures == 128
 
     mixed = _load_module(
-        root / "examples" / "Pt-Ni_Pt-Ti_Pt-Y" / "code" / "settings.py",
-        "mixed_settings",
+        root / "examples" / "Pt-Ni_Pt-Ti_Pt-Y" / "code" / "run_workflow.py",
+        "mixed_workflow",
     )
-    mixed_cfg = mixed.load_settings()
-    assert mixed_cfg.generation.initial_num_structures == 255
-    assert mixed_cfg.generation.generated_num_structures == 255
+    mixed_args = mixed.build_parser().parse_args([])
+    assert mixed_args.initial_num_structures == 255
+    assert mixed_args.generated_num_structures == 255
