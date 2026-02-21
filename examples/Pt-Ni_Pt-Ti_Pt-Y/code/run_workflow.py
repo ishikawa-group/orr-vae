@@ -45,6 +45,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--calculator", default="fairchem")
     parser.add_argument("--with-visualization", type=_bool_int, default=True)
     parser.add_argument("--with-analysis", type=_bool_int, default=True)
+    parser.add_argument("--keep-temp", type=_bool_int, default=True)
     parser.add_argument("--grid-x", type=int, default=4)
     parser.add_argument("--grid-y", type=int, default=4)
     parser.add_argument("--grid-z", type=int, default=6)
@@ -239,6 +240,7 @@ def main(argv: list[str] | None = None) -> int:
         ),
         overpotential_condition=args.overpotential_condition,
         alloy_stability_condition=args.alloy_stability_condition,
+        keep_temp_outputs=bool(args.keep_temp),
     )
 
     result = run_workflow(config)

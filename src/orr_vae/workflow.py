@@ -44,6 +44,7 @@ class WorkflowConfig:
     initial_generator: InitialGenerator
     overpotential_condition: int = 1
     alloy_stability_condition: int = 1
+    keep_temp_outputs: bool = True
     environment: Dict[str, str] = field(default_factory=dict)
 
 
@@ -81,6 +82,7 @@ def run_workflow(config: WorkflowConfig) -> WorkflowResult:
     print(f"[{config.example_name}] output_dir={output_dir}")
     print(f"[{config.example_name}] data_dir={data_dir}")
     print(f"[{config.example_name}] result_dir={result_dir}")
+    print(f"[{config.example_name}] keep_temp_outputs={config.keep_temp_outputs}")
 
     config.initial_generator(config)
 
@@ -101,28 +103,28 @@ def run_workflow(config: WorkflowConfig) -> WorkflowResult:
         )
 
         progress.set_postfix(iter=iter_idx, stage="evaluate")
-        _run(
-            [
-                sys.executable,
-                "-m",
-                "orr_vae.cli.main",
-                "calc-orr",
-                "run-all",
-                "--iter",
-                str(iter_idx),
-                "--base_dir",
-                str(output_dir),
-                "--base_data_dir",
-                str(data_dir),
-                "--temp_base_dir",
-                str(temp_dir),
-                "--calculator",
-                config.calculator,
-                "--solvent_correction_yaml_path",
-                str(solvent_yaml),
-            ],
-            env=env,
-        )
+        calc_orr_cmd = [
+            sys.executable,
+            "-m",
+            "orr_vae.cli.main",
+            "calc-orr",
+            "run-all",
+            "--iter",
+            str(iter_idx),
+            "--base_dir",
+            str(output_dir),
+            "--base_data_dir",
+            str(data_dir),
+            "--temp_base_dir",
+            str(temp_dir),
+            "--calculator",
+            config.calculator,
+            "--solvent_correction_yaml_path",
+            str(solvent_yaml),
+        ]
+        if config.keep_temp_outputs:
+            calc_orr_cmd.append("--keep_temp")
+        _run(calc_orr_cmd, env=env)
 
         progress.set_postfix(iter=iter_idx, stage="train")
         _run(

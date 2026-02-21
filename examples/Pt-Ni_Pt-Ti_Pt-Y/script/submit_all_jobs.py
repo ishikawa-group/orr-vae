@@ -49,6 +49,7 @@ def build_env(
     env["CALCULATOR"] = "fairchem"
     env["WITH_VISUALIZATION"] = "1"
     env["WITH_ANALYSIS"] = "1"
+    env["KEEP_TEMP"] = "1"
     env["GRID_X"] = "4"
     env["GRID_Y"] = "4"
     env["GRID_Z"] = "6"
