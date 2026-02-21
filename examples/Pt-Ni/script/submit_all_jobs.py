@@ -14,6 +14,7 @@ from typing import Dict
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Submit Pt-Ni jobs to qsub")
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--keep-temp", type=int, choices=[0, 1], default=1)
     parser.add_argument("--group", default="tga-ishikawalab")
     parser.add_argument("--job-prefix", default="VAE_PtNi")
     parser.add_argument("--only", default="", help="Comma-separated job numbers")
@@ -26,6 +27,7 @@ def build_env(
     job_num: str,
     row: Dict[str, str],
     seed: int,
+    keep_temp: int,
     root_dir: Path,
     example_dir: Path,
     output_dir: Path,
@@ -49,7 +51,7 @@ def build_env(
     env["CALCULATOR"] = "fairchem"
     env["WITH_VISUALIZATION"] = "1"
     env["WITH_ANALYSIS"] = "1"
-    env["KEEP_TEMP"] = "1"
+    env["KEEP_TEMP"] = str(keep_temp)
     env["GRID_X"] = "4"
     env["GRID_Y"] = "4"
     env["GRID_Z"] = "6"
@@ -106,6 +108,7 @@ def main() -> int:
                 job_num=job_num,
                 row=row,
                 seed=args.seed,
+                keep_temp=args.keep_temp,
                 root_dir=root_dir,
                 example_dir=example_dir,
                 output_dir=output_dir,
