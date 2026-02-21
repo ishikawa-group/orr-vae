@@ -39,14 +39,21 @@ def load_vae_class():
     finally:
         sys.argv = original_argv
 
-def convert_tensor_to_atomic_numbers(tensor):
+def convert_tensor_to_atomic_numbers(tensor, n_layers):
     """
-    Convert the generated tensor (12, 8, 8) into atomic numbers.
-    12 channels = 4 layers × 3 classes (vacant / Ni / Pt)
+    Convert generated logits into atomic-number layers.
+    Tensor channels are arranged as 3 classes per layer (vacant / Ni / Pt).
     """
-    discrete_tensor = torch.zeros(4, 8, 8, dtype=torch.long)
-    
-    for layer in range(4):
+    expected_channels = n_layers * 3
+    if tensor.shape[0] != expected_channels:
+        raise ValueError(
+            f"Decoder output channel mismatch: got {tensor.shape[0]}, expected {expected_channels}"
+        )
+
+    _, height, width = tensor.shape
+    discrete_tensor = torch.zeros(n_layers, height, width, dtype=torch.long)
+
+    for layer in range(n_layers):
         layer_logits = tensor[layer*3:(layer+1)*3]  # [3, 8, 8]
         layer_probs = F.softmax(layer_logits, dim=0)
         layer_discrete = torch.argmax(layer_probs, dim=0)  # [8, 8]
@@ -56,7 +63,7 @@ def convert_tensor_to_atomic_numbers(tensor):
     atomic_numbers_tensor[discrete_tensor == 1] = 28  # Ni
     atomic_numbers_tensor[discrete_tensor == 2] = 78  # Pt
     
-    return atomic_numbers_tensor  # [4, 8, 8]
+    return atomic_numbers_tensor
 
 def calculate_composition(atomic_numbers_tensor):
     """
@@ -169,6 +176,12 @@ def generate_structures():
                         help="List of iteration names used for duplicate checking (auto-detected when omitted)")
     parser.add_argument("--seed", type=int, default=0,
                         help="Random seed (default: 0)")
+    parser.add_argument("--grid_x", type=int, default=4,
+                        help="Grid size along x (default: 4)")
+    parser.add_argument("--grid_y", type=int, default=4,
+                        help="Grid size along y (default: 4)")
+    parser.add_argument("--grid_z", type=int, default=4,
+                        help="Grid size along z / number of slab layers (default: 4)")
     args = parser.parse_args()
 
     ITER = args.iter
@@ -183,7 +196,7 @@ def generate_structures():
     np.random.seed(args.seed)
 
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-    size = [4, 4, 4]
+    size = [args.grid_x, args.grid_y, args.grid_z]
     vacuum = None
     
     print("=== Structure generation using trained VAE ===")
@@ -195,13 +208,18 @@ def generate_structures():
     print(f"Overpotential condition: {args.overpotential_condition} ({'low' if args.overpotential_condition == 1 else 'high'})")
     print(f"Alloy stability condition: {args.alloy_stability_condition} ({'stable' if args.alloy_stability_condition == 1 else 'unstable'})")
     print(f"Number of structures to generate: {args.num}")
+    print(f"Grid size: {size}")
     print(f"Latent size: {args.latent_size}")
     print(f"Duplicate check iterations: {args.existing_iters}")
     print("Duplicate checking method: exact match on atoms.numbers")
     
     ConditionalVAE = load_vae_class()
     
-    vae_model = ConditionalVAE(latent_size=args.latent_size, condition_dim=2).to(DEVICE)
+    vae_model = ConditionalVAE(
+        latent_size=args.latent_size,
+        condition_dim=2,
+        structure_layers=args.grid_z,
+    ).to(DEVICE)
     
     if not os.path.exists(args.vae_model_path):
         print(f"Error: VAE checkpoint not found: {args.vae_model_path}")
@@ -243,12 +261,15 @@ def generate_structures():
                 condition = torch.tensor([[args.overpotential_condition, args.alloy_stability_condition]],
                                        dtype=torch.float32).to(DEVICE)  # [1, 2]
                 
-                generated_tensor = vae_model.decode(z, condition)  # [1, 12, 8, 8]
+                generated_tensor = vae_model.decode(z, condition)
                 
                 if generated_tensor.dim() == 4:
-                    generated_tensor = generated_tensor.squeeze(0)  # [12, 8, 8]
+                    generated_tensor = generated_tensor.squeeze(0)
                 
-                atomic_numbers_tensor = convert_tensor_to_atomic_numbers(generated_tensor)
+                atomic_numbers_tensor = convert_tensor_to_atomic_numbers(
+                    generated_tensor,
+                    args.grid_z,
+                )
                 
                 ni_fraction, pt_fraction = calculate_composition(atomic_numbers_tensor)
                 

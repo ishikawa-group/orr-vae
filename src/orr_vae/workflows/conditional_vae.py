@@ -48,6 +48,12 @@ def parse_args():
                        help='Base result directory path')
     parser.add_argument('--label_threshold', type=float, default=0.3,
                        help='Label threshold for binary classification (default: 0.3)')
+    parser.add_argument('--grid_x', type=int, default=4,
+                       help='Grid size along x (default: 4)')
+    parser.add_argument('--grid_y', type=int, default=4,
+                       help='Grid size along y (default: 4)')
+    parser.add_argument('--grid_z', type=int, default=4,
+                       help='Grid size along z / number of slab layers (default: 4)')
     return parser.parse_args()
 
 # ------------------------------
@@ -71,6 +77,9 @@ else:
         base_data_path = str(Path(__file__).parent / "data")
         result_base_path = str(Path(__file__).parent / "result")
         label_threshold = 0.3
+        grid_x = 4
+        grid_y = 4
+        grid_z = 4
     args = DefaultArgs()
 
 # Iteration index (global constant to keep compatibility with legacy code)
@@ -84,7 +93,7 @@ NUM_WORKERS = 0
 LOAD_EPOCH = args.load_epoch
 
 # Dataset configuration
-GRID_SIZE = [4, 4, 4]
+GRID_SIZE = [args.grid_x, args.grid_y, args.grid_z]
 TRAIN_RATIO = args.train_ratio
 SEED = args.seed
 
@@ -137,10 +146,11 @@ set_seed(SEED)
 # Conditional VAE definition
 # ------------------------------
 class ConditionalVAE(nn.Module):
-    def __init__(self, latent_size=16, condition_dim=2):
+    def __init__(self, latent_size=16, condition_dim=2, structure_layers=4):
         super(ConditionalVAE, self).__init__()
         self.latent_size = latent_size
         self.condition_dim = condition_dim  # overpotential and alloy formation energy
+        self.structure_layers = structure_layers
         self.activation = nn.LeakyReLU(0.1, inplace=False)
 
         # ======== Encoder ========
@@ -149,8 +159,8 @@ class ConditionalVAE(nn.Module):
         self.enc_label_fc2 = nn.Linear(32, 32)
         self.enc_label_fc3 = nn.Linear(32, 16)
         
-        # Convolutional stack (input channels: 4 + 16 = 20)
-        self.conv1 = nn.Conv2d(4 + 16, 128, kernel_size=3, stride=1, padding=1)
+        # Convolutional stack (input channels: layers + 16)
+        self.conv1 = nn.Conv2d(self.structure_layers + 16, 128, kernel_size=3, stride=1, padding=1)
         self.enc_gn1 = nn.GroupNorm(16, 128)
         self.conv2 = nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1)
         self.enc_gn2 = nn.GroupNorm(16, 256)
@@ -180,7 +190,7 @@ class ConditionalVAE(nn.Module):
         self.dec_gn5 = nn.GroupNorm(8, 64)
         self.deconv3 = nn.ConvTranspose2d(64, 32, kernel_size=3, stride=1, padding=1)
         self.dec_gn6 = nn.GroupNorm(8, 32)
-        self.deconv4 = nn.ConvTranspose2d(32, 12, kernel_size=3, stride=1, padding=1)
+        self.deconv4 = nn.ConvTranspose2d(32, self.structure_layers * 3, kernel_size=3, stride=1, padding=1)
 
     def encode_condition_enc(self, y):
         """Conditional embedding for the encoder."""
@@ -280,15 +290,22 @@ def vae_loss(recon_x, x, mu, logvar, beta=1):
     """
     Scaled VAE loss made of reconstruction and KL divergence terms.
 
-    recon_x: [B, 12, 8, 8] - decoder logits
-    x: [B, 4, 8, 8] - integer class labels (0, 1, 2)
+    recon_x: [B, 3*L, 8, 8] - decoder logits (L = number of layers)
+    x: [B, L, 8, 8] - integer class labels (0, 1, 2)
     """
     x = x.to(dtype=torch.long)
     
     class_weights = torch.tensor([0.1, 1.0, 1.0], device=x.device)
     
+    n_layers = x.shape[1]
+    expected_channels = n_layers * 3
+    if recon_x.shape[1] != expected_channels:
+        raise ValueError(
+            f"Decoder output channel mismatch: got {recon_x.shape[1]}, expected {expected_channels}"
+        )
+
     recon_loss = 0
-    for z in range(4):
+    for z in range(n_layers):
         layer_pred = recon_x[:, z*3:(z+1)*3]  # [B, 3, 8, 8]
         layer_target = x[:, z]  # [B, 8, 8]
         
@@ -448,6 +465,7 @@ def main():
     print(f"base_data_path: {BASE_DATA_PATH}")
     print(f"result_base_path: {RESULT_BASE_PATH}")
     print(f"label_threshold: {LABEL_THRESHOLD}")
+    print(f"grid_size: {GRID_SIZE}")
     print("=" * 40)
     
     result_dir = os.path.join(RESULT_BASE_PATH, f"iter{ITER}")
@@ -487,7 +505,11 @@ def main():
     print(f"Dataset size: {len(dataset)}")
     print(f"Train samples: {len(train_loader.dataset)}, Test samples: {len(test_loader.dataset)}")
     
-    model = ConditionalVAE(latent_size=latent_size, condition_dim=2).to(device)
+    model = ConditionalVAE(
+        latent_size=latent_size,
+        condition_dim=2,
+        structure_layers=GRID_SIZE[2],
+    ).to(device)
     print("Conditional VAE initialised (two conditional labels: overpotential and alloy formation energy)")
     
     optimizer = optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=1e-4)

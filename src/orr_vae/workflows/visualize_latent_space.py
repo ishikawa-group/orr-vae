@@ -28,6 +28,12 @@ def parse_args():
                        help="結果ディレクトリのパス (default: ./result)")
     parser.add_argument("--seed", type=int, default=42,
                        help="Random seed (default: 42)")
+    parser.add_argument("--grid_x", type=int, default=4,
+                       help="Grid size along x (default: 4)")
+    parser.add_argument("--grid_y", type=int, default=4,
+                       help="Grid size along y (default: 4)")
+    parser.add_argument("--grid_z", type=int, default=4,
+                       help="Grid size along z / number of slab layers (default: 4)")
     return parser.parse_args()
 
 def load_vae_class():
@@ -248,6 +254,7 @@ def main():
     print(f"結果ディレクトリ: {RESULT_DIR}")
     print(f"モデルパス: {MODEL_PATH}")
     print(f"潜在変数次元: {args.latent_size}")
+    print(f"構造グリッド: [{args.grid_x}, {args.grid_y}, {args.grid_z}]")
     
     # ConditionalVAEクラスを動的に読み込み
     ConditionalVAE = load_vae_class()
@@ -261,7 +268,7 @@ def main():
         batch_size=args.batch_size,
         num_workers=0,
         seed=args.seed,
-        grid_size=[4, 4, 4]
+        grid_size=[args.grid_x, args.grid_y, args.grid_z]
     )
     
     print(f"データセットサイズ: {len(dataset)}")
@@ -275,7 +282,11 @@ def main():
         print(f"エラー: モデルファイルが見つかりません: {MODEL_PATH}")
         return
     
-    model = ConditionalVAE(latent_size=args.latent_size, condition_dim=2).to(device)
+    model = ConditionalVAE(
+        latent_size=args.latent_size,
+        condition_dim=2,
+        structure_layers=args.grid_z,
+    ).to(device)
     model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
     print(f"モデルを読み込みました: {MODEL_PATH}")
     

@@ -26,7 +26,7 @@ def _env_bool(name: str, default: bool) -> bool:
 class GenerationSettings:
     binary_variants: tuple[tuple[str, str], ...] = (("Pt", "Ni"), ("Pt", "Ti"), ("Pt", "Y"))
     all_elements: tuple[str, ...] = ("Pt", "Ni", "Ti", "Y")
-    size: tuple[int, int, int] = (4, 4, 4)
+    size: tuple[int, int, int] = (4, 4, 6)
     vacuum: float | None = None
     initial_num_structures: int = 255
     generated_num_structures: int = 255
@@ -76,7 +76,7 @@ def load_settings() -> RuntimeSettings:
         size=(
             _env_int("GRID_X", 4),
             _env_int("GRID_Y", 4),
-            _env_int("GRID_Z", 4),
+            _env_int("GRID_Z", 6),
         ),
         vacuum=float(os.getenv("VACUUM", "0")) if os.getenv("VACUUM") not in (None, "none", "None") else None,
         initial_num_structures=_env_int("INITIAL_NUM_STRUCTURES", 255),

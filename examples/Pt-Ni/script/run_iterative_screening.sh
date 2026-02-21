@@ -37,6 +37,9 @@ for iter_idx in $(seq 0 "${MAX_ITER}"); do
     --max_epoch "${MAX_EPOCH}" \
     --beta "${BETA}" \
     --latent_size "${LATENT_SIZE}" \
+    --grid_x "${GRID_X}" \
+    --grid_y "${GRID_Y}" \
+    --grid_z "${GRID_Z}" \
     --seed "${SEED}" \
     --base_data_path "${DATA_DIR}" \
     --result_base_path "${RESULT_DIR}"
@@ -47,6 +50,9 @@ for iter_idx in $(seq 0 "${MAX_ITER}"); do
     --overpotential_condition 1 \
     --alloy_stability_condition 1 \
     --latent_size "${LATENT_SIZE}" \
+    --grid_x "${GRID_X}" \
+    --grid_y "${GRID_Y}" \
+    --grid_z "${GRID_Z}" \
     --seed "${SEED}" \
     --output_dir "${DATA_DIR}" \
     --result_dir "${RESULT_DIR}"
@@ -55,6 +61,9 @@ for iter_idx in $(seq 0 "${MAX_ITER}"); do
     python3 -m orr_vae.cli.main visualize-latent \
       --iter "${iter_idx}" \
       --latent_size "${LATENT_SIZE}" \
+      --grid_x "${GRID_X}" \
+      --grid_y "${GRID_Y}" \
+      --grid_z "${GRID_Z}" \
       --seed "${SEED}" \
       --data_dir "${DATA_DIR}" \
       --result_dir "${RESULT_DIR}"
