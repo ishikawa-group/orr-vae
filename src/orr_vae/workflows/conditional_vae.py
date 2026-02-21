@@ -15,7 +15,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.multiprocessing import freeze_support
 
-from orr_vae.tool import make_data_loaders_from_json
+from orr_vae.tool import NUM_CLASSES, make_data_loaders_from_json
 
 # ------------------------------
 # Argument parsing
@@ -190,7 +190,9 @@ class ConditionalVAE(nn.Module):
         self.dec_gn5 = nn.GroupNorm(8, 64)
         self.deconv3 = nn.ConvTranspose2d(64, 32, kernel_size=3, stride=1, padding=1)
         self.dec_gn6 = nn.GroupNorm(8, 32)
-        self.deconv4 = nn.ConvTranspose2d(32, self.structure_layers * 3, kernel_size=3, stride=1, padding=1)
+        self.deconv4 = nn.ConvTranspose2d(
+            32, self.structure_layers * NUM_CLASSES, kernel_size=3, stride=1, padding=1
+        )
 
     def encode_condition_enc(self, y):
         """Conditional embedding for the encoder."""
@@ -272,7 +274,7 @@ class ConditionalVAE(nn.Module):
         h = self.dec_gn6(h)
         h = self.activation(h)
 
-        output = self.deconv4(h)  # [B, 12, 8, 8]
+        output = self.deconv4(h)  # [B, structure_layers * NUM_CLASSES, 8, 8]
         
         return output
 
@@ -290,15 +292,15 @@ def vae_loss(recon_x, x, mu, logvar, beta=1):
     """
     Scaled VAE loss made of reconstruction and KL divergence terms.
 
-    recon_x: [B, 3*L, 8, 8] - decoder logits (L = number of layers)
-    x: [B, L, 8, 8] - integer class labels (0, 1, 2)
+    recon_x: [B, NUM_CLASSES*L, 8, 8] - decoder logits (L = number of layers)
+    x: [B, L, 8, 8] - integer class labels (0..NUM_CLASSES-1)
     """
     x = x.to(dtype=torch.long)
     
-    class_weights = torch.tensor([0.1, 1.0, 1.0], device=x.device)
+    class_weights = torch.tensor([0.05] + [1.0] * (NUM_CLASSES - 1), device=x.device)
     
     n_layers = x.shape[1]
-    expected_channels = n_layers * 3
+    expected_channels = n_layers * NUM_CLASSES
     if recon_x.shape[1] != expected_channels:
         raise ValueError(
             f"Decoder output channel mismatch: got {recon_x.shape[1]}, expected {expected_channels}"
@@ -306,7 +308,9 @@ def vae_loss(recon_x, x, mu, logvar, beta=1):
 
     recon_loss = 0
     for z in range(n_layers):
-        layer_pred = recon_x[:, z*3:(z+1)*3]  # [B, 3, 8, 8]
+        start = z * NUM_CLASSES
+        end = start + NUM_CLASSES
+        layer_pred = recon_x[:, start:end]
         layer_target = x[:, z]  # [B, 8, 8]
         
         recon_loss += F.cross_entropy(

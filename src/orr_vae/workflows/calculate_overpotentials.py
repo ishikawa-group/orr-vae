@@ -13,6 +13,7 @@ import os
 import shutil
 import sys
 import time
+from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -27,7 +28,7 @@ except ImportError:  # pragma: no cover - compatibility fallback
     except ImportError:
         from orr_overpotential_calculator.calc_orr_overpotential import calc_orr_overpotential
 
-from orr_vae.tool import calc_alloy_formation_energy
+from orr_vae.tool import ALLOY_ELEMENTS, calc_alloy_formation_energy
 
 
 DEFAULT_SOLVENT_PATH = Path(__file__).parent / "solvent_correction.yaml"
@@ -101,10 +102,14 @@ def calculate_single(
     calc_dir = outdir / unique_id
     calc_dir.mkdir(parents=True, exist_ok=True)
 
-    atomic_numbers = bulk_atoms.get_atomic_numbers()
-    total_atoms = len(atomic_numbers)
-    ni_fraction = sum(num == 28 for num in atomic_numbers) / total_atoms
-    pt_fraction = sum(num == 78 for num in atomic_numbers) / total_atoms
+    symbols = bulk_atoms.get_chemical_symbols()
+    total_atoms = len(symbols)
+    raw_counts = Counter(symbols)
+    element_counts = {element: int(raw_counts.get(element, 0)) for element in ALLOY_ELEMENTS}
+    if total_atoms == 0:
+        composition = {element: 0.0 for element in ALLOY_ELEMENTS}
+    else:
+        composition = {element: element_counts[element] / total_atoms for element in ALLOY_ELEMENTS}
 
     orr_adsorbates: Dict[str, List[Tuple[float, float]]] = {
         "HO2": [(1.0, 1.0), (1.5, 1.0), (1.33, 1.33), (1.66, 1.66)],
@@ -165,13 +170,19 @@ def calculate_single(
         "limiting_potential": limiting_potential,
         "diffG_U0": diffg_u0,
         "diffG_eq": diffg_eq,
-        "ni_fraction": float(ni_fraction),
-        "pt_fraction": float(pt_fraction),
+        "composition": {element: float(composition[element]) for element in ALLOY_ELEMENTS},
+        "element_counts": element_counts,
         "chemical_formula": bulk_atoms.get_chemical_formula(),
         "E_bulk_alloy": e_bulk_alloy,
         "E_alloy_formation": e_alloy_formation,
         "opt_bulk_property": opt_bulk_property,
     }
+    for element in ALLOY_ELEMENTS:
+        entry[f"{element.lower()}_fraction"] = float(composition[element])
+
+    # Keep legacy keys for downstream compatibility.
+    entry["ni_fraction"] = float(composition.get("Ni", 0.0))
+    entry["pt_fraction"] = float(composition.get("Pt", 0.0))
 
     replaced = False
     for idx, existing in enumerate(results):

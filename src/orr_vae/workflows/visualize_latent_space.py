@@ -12,7 +12,7 @@ import matplotlib.cm as cm
 from pathlib import Path
 import argparse
 
-from orr_vae.tool import make_data_loaders_from_json
+from orr_vae.tool import ALLOY_ELEMENTS, make_data_loaders_from_json
 
 def parse_args():
     parser = argparse.ArgumentParser(description="潜在空間可視化")
@@ -62,7 +62,7 @@ def encode_all_data_with_raw_values(model, dataset, batch_size=32):
         raw_overpotentials: numpy array of shape (N,) - 元の過電圧値
         raw_alloy_formations: numpy array of shape (N,) - 元の合金形成エネルギー値
         binary_labels: numpy array of shape (N, 2) - 2つの条件ラベル [overpotential_label, alloy_formation_label]
-        compositions: numpy array of shape (N, 3) - Pt, Ni, Ti の割合
+        compositions: numpy array of shape (N, len(ALLOY_ELEMENTS)) - 合金元素組成
     """
     model.eval()
     latent_vectors = []
@@ -103,7 +103,7 @@ def encode_all_data_with_raw_values(model, dataset, batch_size=32):
             raw_alloy_formations.append(raw_alloy_formation)
             binary_labels.append(binary_label)
             comp = dataset.get_composition(i)
-            compositions.append([comp.get(element, 0.0) for element in ["Pt", "Ni", "Ti"]])
+            compositions.append([comp.get(element, 0.0) for element in ALLOY_ELEMENTS])
 
     # リストを結合
     latent_vectors = np.concatenate(latent_vectors, axis=0)

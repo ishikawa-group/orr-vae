@@ -4,10 +4,16 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader, random_split
 from ase.db import connect
+from ase.data import atomic_numbers
 from typing import List, Union, Dict, Any
 
 
 ALLOY_ELEMENTS = ["Pt", "Ni", "Ti", "Y"]
+ALLOY_Z_NUMBERS = [atomic_numbers[element] for element in ALLOY_ELEMENTS]
+Z_TO_ELEMENT = {z: element for element, z in zip(ALLOY_ELEMENTS, ALLOY_Z_NUMBERS)}
+CLASS_TO_Z = {idx + 1: z for idx, z in enumerate(ALLOY_Z_NUMBERS)}
+Z_TO_CLASS = {z: cls for cls, z in CLASS_TO_Z.items()}
+VACANCY_CLASS = 0
 NUM_CLASSES = len(ALLOY_ELEMENTS) + 1
 
 
@@ -23,6 +29,56 @@ def convert_numpy_types(obj):
     elif isinstance(obj, tuple):
         return tuple(convert_numpy_types(item) for item in obj)
     return obj
+
+
+def atomic_numbers_tensor_to_classes(structure_tensor: torch.Tensor) -> torch.Tensor:
+    """Convert atomic-number tensor into model class IDs (0: vacancy, 1..N: alloy elements)."""
+    class_tensor = torch.zeros_like(structure_tensor, dtype=torch.long)
+    for cls, z_num in CLASS_TO_Z.items():
+        class_tensor[structure_tensor == z_num] = cls
+    return class_tensor
+
+
+def class_tensor_to_atomic_numbers(class_tensor: torch.Tensor) -> torch.Tensor:
+    """Convert model class-ID tensor back into atomic numbers."""
+    atomic_tensor = torch.zeros_like(class_tensor, dtype=torch.int64)
+    for cls, z_num in CLASS_TO_Z.items():
+        atomic_tensor[class_tensor == cls] = z_num
+    return atomic_tensor
+
+
+def normalize_composition(comp: Dict[str, float]) -> Dict[str, float]:
+    """Fill missing elements and normalize fractions to 1.0 when possible."""
+    result = {element: float(comp.get(element, 0.0)) for element in ALLOY_ELEMENTS}
+    total = sum(result.values())
+    if total <= 0:
+        return {element: 0.0 for element in ALLOY_ELEMENTS}
+    return {element: value / total for element, value in result.items()}
+
+
+def compute_composition_from_structure(structure) -> Dict[str, float]:
+    """Compute elemental fractions from an ASE Atoms structure."""
+    symbols = structure.get_chemical_symbols()
+    total = len(symbols)
+    if total == 0:
+        return {element: 0.0 for element in ALLOY_ELEMENTS}
+    counts = {element: 0 for element in ALLOY_ELEMENTS}
+    for symbol in symbols:
+        if symbol in counts:
+            counts[symbol] += 1
+    return {element: counts[element] / total for element in ALLOY_ELEMENTS}
+
+
+def extract_composition(entry: Dict[str, Any], structure=None) -> Dict[str, float]:
+    """Extract normalized composition from JSON entry or fallback structure."""
+    composition = entry.get("composition") or entry.get("element_fractions") or {}
+    if not composition:
+        composition = {element: float(entry.get(f"{element.lower()}_fraction", 0.0)) for element in ALLOY_ELEMENTS}
+    composition = normalize_composition(composition)
+    if sum(composition.values()) == 0 and structure is not None:
+        composition = compute_composition_from_structure(structure)
+    return composition
+
 
 def elemental_a(symbol: str) -> float:
     """Return the FCC lattice constant (Å) for ``symbol`` from ASE reference states."""
@@ -369,14 +425,7 @@ class CatalystOrrDataset(Dataset):
         
         atoms_sorted = sort_atoms(structure, axes=("z", "y", "x"))
         structure_tensor = structure_to_tensor(atoms_sorted, self.grid_size)
-        
-        result = torch.zeros_like(structure_tensor, dtype=torch.long)
-        
-        ni_mask = (structure_tensor == 28)
-        result[ni_mask] = 1
-        
-        pt_mask = (structure_tensor == 78)
-        result[pt_mask] = 2
+        result = atomic_numbers_tensor_to_classes(structure_tensor)
         
         if self.use_binary_labels:
             target_tensor = torch.tensor(target, dtype=torch.float32)
@@ -403,26 +452,8 @@ class CatalystOrrDataset(Dataset):
         """Return elemental fractions for a sample as a dictionary."""
         uid = self.valid_indices[idx]
         entry = self.source_info.get(uid, {})
-
-        if isinstance(entry.get("composition"), dict):
-            comp = {element: float(entry["composition"].get(element, 0.0)) for element in ALLOY_ELEMENTS}
-        else:
-            comp = {element: float(entry.get(f"{element.lower()}_fraction", 0.0)) for element in ALLOY_ELEMENTS}
-
-        total = sum(comp.values())
-        if total > 0:
-            return {k: v / total for k, v in comp.items()}
-
         structure = self.structures.get(uid)
-        if structure is None:
-            return {element: 0.0 for element in ALLOY_ELEMENTS}
-
-        symbols = structure.get_chemical_symbols()
-        n = len(symbols)
-        if n == 0:
-            return {element: 0.0 for element in ALLOY_ELEMENTS}
-
-        return {element: symbols.count(element) / n for element in ALLOY_ELEMENTS}
+        return extract_composition(entry, structure=structure)
 
     def get_raw_overpotential(self, idx):
         """Return the raw overpotential value for the given index."""

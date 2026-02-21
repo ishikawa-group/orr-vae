@@ -13,7 +13,14 @@ from ase.build import fcc111
 from ase.calculators.emt import EMT
 from ase.db import connect
 from ase.data import atomic_numbers
-from orr_vae.tool import vegard_lattice_constant, tensor_to_structure, sort_atoms
+from orr_vae.tool import (
+    ALLOY_ELEMENTS,
+    NUM_CLASSES,
+    class_tensor_to_atomic_numbers,
+    sort_atoms,
+    tensor_to_structure,
+    vegard_lattice_constant,
+)
 
 import torch.nn.functional as F
 
@@ -42,9 +49,9 @@ def load_vae_class():
 def convert_tensor_to_atomic_numbers(tensor, n_layers):
     """
     Convert generated logits into atomic-number layers.
-    Tensor channels are arranged as 3 classes per layer (vacant / Ni / Pt).
+    Tensor channels are arranged as NUM_CLASSES classes per layer.
     """
-    expected_channels = n_layers * 3
+    expected_channels = n_layers * NUM_CLASSES
     if tensor.shape[0] != expected_channels:
         raise ValueError(
             f"Decoder output channel mismatch: got {tensor.shape[0]}, expected {expected_channels}"
@@ -54,44 +61,48 @@ def convert_tensor_to_atomic_numbers(tensor, n_layers):
     discrete_tensor = torch.zeros(n_layers, height, width, dtype=torch.long)
 
     for layer in range(n_layers):
-        layer_logits = tensor[layer*3:(layer+1)*3]  # [3, 8, 8]
+        start = layer * NUM_CLASSES
+        end = start + NUM_CLASSES
+        layer_logits = tensor[start:end]
         layer_probs = F.softmax(layer_logits, dim=0)
-        layer_discrete = torch.argmax(layer_probs, dim=0)  # [8, 8]
+        layer_discrete = torch.argmax(layer_probs, dim=0)
         discrete_tensor[layer] = layer_discrete
-    
-    atomic_numbers_tensor = torch.zeros_like(discrete_tensor, dtype=torch.int64)
-    atomic_numbers_tensor[discrete_tensor == 1] = 28  # Ni
-    atomic_numbers_tensor[discrete_tensor == 2] = 78  # Pt
-    
-    return atomic_numbers_tensor
+
+    return class_tensor_to_atomic_numbers(discrete_tensor)
 
 def calculate_composition(atomic_numbers_tensor):
     """
-    Compute Ni/Pt fractions from the atomic number tensor.
+    Compute composition for all configured alloy elements from the atomic-number tensor.
     """
     flat_tensor = atomic_numbers_tensor.flatten()
-    ni_count = torch.sum(flat_tensor == 28).item()
-    pt_count = torch.sum(flat_tensor == 78).item()
-    total_atoms = ni_count + pt_count
-    
-    if total_atoms == 0:
-        return 0.5, 0.5  # default to a balanced composition
-    
-    ni_fraction = ni_count / total_atoms
-    pt_fraction = pt_count / total_atoms
-    
-    return ni_fraction, pt_fraction
+    total_atoms = torch.count_nonzero(flat_tensor).item()
 
-def create_template_structure(ni_fraction, pt_fraction, size, vacuum):
+    element_counts = {}
+    for element in ALLOY_ELEMENTS:
+        z_num = atomic_numbers[element]
+        count = int(torch.sum(flat_tensor == z_num).item())
+        element_counts[element] = count
+
+    if total_atoms == 0:
+        return {element: 0.0 for element in ALLOY_ELEMENTS}, element_counts
+
+    fractions = {element: count / total_atoms for element, count in element_counts.items()}
+    return fractions, element_counts
+
+def create_template_structure(composition, size, vacuum):
     """
     Build a template structure using Vegard's law and sort atoms in a canonical order.
     """
-    alloy_elements = ["Pt", "Ni"]
-    fractions = [pt_fraction, ni_fraction]
+    fractions = [composition.get(element, 0.0) for element in ALLOY_ELEMENTS]
+    total = sum(fractions)
+    if total <= 0:
+        fractions = [1.0 / len(ALLOY_ELEMENTS)] * len(ALLOY_ELEMENTS)
+    else:
+        fractions = [fraction / total for fraction in fractions]
     
-    lattice_const = vegard_lattice_constant(alloy_elements, fractions)
+    lattice_const = vegard_lattice_constant(ALLOY_ELEMENTS, fractions)
     
-    bulk = fcc111(symbol="Pt", 
+    bulk = fcc111(symbol=ALLOY_ELEMENTS[0], 
                   size=size, 
                   a=lattice_const,
                   vacuum=vacuum, 
@@ -271,13 +282,13 @@ def generate_structures():
                     args.grid_z,
                 )
                 
-                ni_fraction, pt_fraction = calculate_composition(atomic_numbers_tensor)
+                composition, element_counts = calculate_composition(atomic_numbers_tensor)
                 
-                if ni_fraction == 0 and pt_fraction == 0:
+                if sum(element_counts.values()) == 0:
                     continue
 
                 template_structure, lattice_const = create_template_structure(
-                    ni_fraction, pt_fraction, size, vacuum)
+                    composition, size, vacuum)
                 
                 final_structure = tensor_to_structure(atomic_numbers_tensor, template_structure)
 
@@ -319,8 +330,8 @@ def generate_structures():
                 
                 data = {
                     "chemical_formula": final_structure.get_chemical_formula(),
-                    "ni_fraction": float(ni_fraction),
-                    "pt_fraction": float(pt_fraction),
+                    "composition": {element: float(composition[element]) for element in ALLOY_ELEMENTS},
+                    "element_counts": element_counts,
                     "lattice_constant": float(lattice_const),
                     "run": successful_generations + 1,
                     "generation_method": "conditional_vae_dual_labels",
@@ -329,6 +340,11 @@ def generate_structures():
                     "adsorbate_info": ads_info,
                     "total_attempts": attempt,
                 }
+                for element in ALLOY_ELEMENTS:
+                    data[f"{element.lower()}_fraction"] = float(composition[element])
+                # Keep legacy keys for downstream compatibility.
+                data["ni_fraction"] = float(composition.get("Ni", 0.0))
+                data["pt_fraction"] = float(composition.get("Pt", 0.0))
                 
                 db.write(final_structure, data=data)
                 successful_generations += 1
