@@ -13,6 +13,7 @@ import os
 import shutil
 import sys
 import time
+import warnings
 from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -32,6 +33,15 @@ from orr_vae.tool import ALLOY_ELEMENTS, calc_alloy_formation_energy
 
 
 DEFAULT_SOLVENT_PATH = Path(__file__).parent / "solvent_correction.yaml"
+
+# ``ase.io.extxyz`` emits this warning when ``atoms.info`` contains nested dicts
+# such as ``adsorbate_info``. It is harmless in this workflow and clutters logs.
+warnings.filterwarnings(
+    "ignore",
+    message=r"Skipping unhashable information adsorbate_info",
+    category=UserWarning,
+    module=r"ase\.io\.extxyz",
+)
 
 
 def _load_results(out_json: Path) -> List[Dict[str, Any]]:
