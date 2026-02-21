@@ -1,29 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${LABEL_THRESHOLD:=0.3}"
-: "${BATCH_SIZE:=16}"
-: "${MAX_EPOCH:=200}"
-: "${LATENT_SIZE:=32}"
-: "${BETA:=1}"
-: "${SEED:=0}"
-: "${NUM_STRUCTURES:=128}"
-: "${MAX_ITER:=5}"
-: "${CALCULATOR:=fairchem}"
+cat <<'MSG'
+code/run.sh is deprecated.
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-export PYTHONPATH="${ROOT_DIR}/src:${PYTHONPATH:-}"
+The full loop is now example-specific and starts with example-local initial generation:
+  - examples/Pt-Ni/script/run_iterative_screening.sh
+  - examples/Pt-Ni_Pt-Ti_Pt-Y/script/run_iterative_screening.sh
 
-python3 -m orr_vae.cli.main run-pipeline \
-  --data_dir "${DATA_DIR}" \
-  --result_dir "${RESULT_DIR}" \
-  --output_dir "${OUTPUT_DIR}" \
-  --seed "${SEED}" \
-  --label_threshold "${LABEL_THRESHOLD}" \
-  --batch_size "${BATCH_SIZE}" \
-  --max_epoch "${MAX_EPOCH}" \
-  --latent_size "${LATENT_SIZE}" \
-  --beta "${BETA}" \
-  --num_structures "${NUM_STRUCTURES}" \
-  --max_iter "${MAX_ITER}" \
-  --calculator "${CALCULATOR}"
+Each example has Python settings under examples/*/code/settings.py.
+MSG
+
+exit 2

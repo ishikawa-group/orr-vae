@@ -4,37 +4,15 @@
 #$ -l h_rt=24:00:00
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
-EXAMPLE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+EXAMPLE_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+CODE_DIR="${EXAMPLE_DIR}/code"
 
-: "${SEED:=0}"
-: "${LABEL_THRESHOLD:=0.3}"
-: "${BATCH_SIZE:=16}"
-: "${MAX_EPOCH:=200}"
-: "${LATENT_SIZE:=32}"
-: "${BETA:=1}"
-: "${NUM_STRUCTURES:=128}"
-: "${MAX_ITER:=5}"
-: "${CALCULATOR:=fairchem}"
+export JOB_NUM="${JOB_NUM:-manual}"
 
-DATA_DIR="${EXAMPLE_DIR}/results/data"
-RESULT_DIR="${EXAMPLE_DIR}/results/result"
-OUTPUT_DIR="${EXAMPLE_DIR}/results"
-mkdir -p "${DATA_DIR}" "${RESULT_DIR}" "${RESULT_DIR}/log"
+# Resolve output paths early for qsub logs
+export PYTHONPATH="$(cd "${SCRIPT_DIR}/../../.." && pwd)/src:${PYTHONPATH:-}"
+eval "$(python3 "${CODE_DIR}/build_plan.py" --shell)"
+mkdir -p "${LOG_DIR}"
 
-export PYTHONPATH="${ROOT_DIR}/src:${PYTHONPATH:-}"
-python3 -m orr_vae.cli.main run-pipeline \
-  --data_dir "${DATA_DIR}" \
-  --result_dir "${RESULT_DIR}" \
-  --output_dir "${OUTPUT_DIR}" \
-  --seed "${SEED}" \
-  --label_threshold "${LABEL_THRESHOLD}" \
-  --batch_size "${BATCH_SIZE}" \
-  --max_epoch "${MAX_EPOCH}" \
-  --latent_size "${LATENT_SIZE}" \
-  --beta "${BETA}" \
-  --num_structures "${NUM_STRUCTURES}" \
-  --max_iter "${MAX_ITER}" \
-  --calculator "${CALCULATOR}" \
-  --with_visualization \
-  --with_analysis
+bash "${SCRIPT_DIR}/run_iterative_screening.sh"

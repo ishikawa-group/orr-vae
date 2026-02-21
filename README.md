@@ -1,21 +1,22 @@
 # orr-vae
 
 `orr-vae` is a refactored ORR catalyst screening workflow package.
-The workflow keeps the original loop semantics:
+Core package (`src/orr_vae`) focuses on:
 
-1. random slab generation
-2. ORR overpotential + alloy formation-energy calculation
-3. conditional VAE training
-4. new structure generation
-5. latent-space visualization / data analysis (optional)
+- ORR overpotential + alloy formation-energy evaluation
+- conditional VAE training
+- structure generation from trained VAE
+- latent-space visualization and analysis
+
+Random initial dataset generation is intentionally example-specific and implemented under `examples/*/code`.
 
 ## Repository layout
 
-- `src/orr_vae/`: library and workflow modules
+- `src/orr_vae/`: reusable workflow modules (evaluation, training, generation, analysis)
 - `reference/`: external references (submodule)
-- `examples/`: runnable Pt-Ni and Pt-Ni_Pt-Ti_Pt-Y examples
-- `tests/`: lightweight regression and I/O compatibility tests
-- `code/`: legacy command wrappers (`01_*.py` etc.)
+- `examples/`: runnable Pt-Ni and Pt-Ni_Pt-Ti_Pt-Y workflows
+- `tests/`: lightweight regression checks
+- `code/`: legacy wrappers / migration guidance
 
 ## Installation
 
@@ -28,47 +29,37 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-## New CLI
+## CLI (src package)
 
 ```bash
 python -m orr_vae --help
-python -m orr_vae run-pipeline --data_dir ./data --result_dir ./result --output_dir . --max_iter 5
 ```
 
 Main subcommands:
 
-- `generate-random`
 - `calc-orr`
 - `train-cvae`
 - `generate-structures`
 - `visualize-latent`
 - `analyze`
-- `run-pipeline`
 
-## Legacy CLI compatibility
+## Example-driven execution
 
-The historical scripts are preserved as wrappers under `code/`.
-Existing operations such as `python code/03_conditional_vae.py ...` continue to work.
+Use example scripts for end-to-end loops (includes initial dataset generation):
+
+- `examples/Pt-Ni/script/run_iterative_screening.sh`
+- `examples/Pt-Ni_Pt-Ti_Pt-Y/script/run_iterative_screening.sh`
 
 ## Reference dependency
 
 - `reference/orr-overpotential-calculator` (git submodule, `develop` branch)
-- `pyproject.toml` also pins:
+- `pyproject.toml` pins:
   - `orr-overpotential-calculator @ git+https://github.com/ishikawa-group/orr-overpotential-calculator.git@develop`
   - `fairchem-core`
-
-## Examples
-
-- `examples/Pt-Ni`
-- `examples/Pt-Ni_Pt-Ti_Pt-Y`
-
-Both examples include `code/`, `script/`, `results/`, and execution README.
 
 ## Testing
 
 ```bash
 source .venv/bin/activate
-pytest
+PYTHONPATH=src pytest
 ```
-
-Tests are lightweight and focus on compatibility and I/O invariants.

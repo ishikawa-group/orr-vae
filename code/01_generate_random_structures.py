@@ -1,18 +1,23 @@
 #!/usr/bin/env python
-"""Legacy compatibility wrapper."""
+"""Legacy entrypoint retained for guidance."""
 
-from pathlib import Path
-import subprocess
+from __future__ import annotations
+
 import sys
-
-ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
 
 
 def main() -> int:
-    return subprocess.call([sys.executable, "-m", "orr_vae.cli.main", "generate-random", *sys.argv[1:]])
+    print(
+        "This entrypoint is deprecated.\n"
+        "Random initial dataset generation is now example-specific.\n"
+        "Use one of:\n"
+        "  - examples/Pt-Ni/code/initial_generation.py\n"
+        "  - examples/Pt-Ni_Pt-Ti_Pt-Y/code/initial_generation.py\n"
+        "Or run the full loop from example scripts:\n"
+        "  - examples/Pt-Ni/script/run_iterative_screening.sh\n"
+        "  - examples/Pt-Ni_Pt-Ti_Pt-Y/script/run_iterative_screening.sh"
+    )
+    return 2
 
 
 if __name__ == "__main__":

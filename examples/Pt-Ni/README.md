@@ -1,22 +1,28 @@
 # Pt-Ni example
 
-This example runs iterative ORR screening for Pt-Ni up to `iter5`.
+Pt-Ni example is now driven by Python config files under `code/`.
 
-## Structure
+## Main flow
 
-- `code/`: configuration templates
-- `script/`: runnable shell scripts
-- `results/`: output directory (gitignored content)
+1. `code/initial_generation.py` creates initial `iter0_structures.json` (128 structures)
+2. loop for `iter0..iter5`:
+   - ORR evaluation (`calc-orr run-all`)
+   - CVAE training (`train-cvae`)
+   - structure generation (`generate-structures`, 128 structures/iter)
 
-## Quick start
+## Run locally
 
 ```bash
 cd examples/Pt-Ni/script
 bash run_iterative_screening.sh
 ```
 
-The script executes:
+## Batch submission
 
-- random generation
-- `(overpotential + formation-energy -> CVAE training -> structure generation)`
-- loop for `iter0..iter5`
+```bash
+cd examples/Pt-Ni/script
+python3 submit_all_jobs.py --seed 0 --dry-run
+python3 submit_all_jobs.py --seed 0
+```
+
+`submit_all_jobs.py` reads `../code/condition_list.csv`.

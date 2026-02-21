@@ -11,13 +11,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="orr-vae", description="ORR catalyst screening workflows")
     sub = parser.add_subparsers(dest="command")
 
-    sub.add_parser("generate-random", help="Run random structure generation")
     sub.add_parser("calc-orr", help="Run ORR/formation-energy calculation helpers")
     sub.add_parser("train-cvae", help="Run conditional VAE training")
     sub.add_parser("generate-structures", help="Generate structures from trained CVAE")
     sub.add_parser("visualize-latent", help="Visualize latent space")
     sub.add_parser("analyze", help="Analyze ORR catalyst data")
-    sub.add_parser("run-pipeline", help="Run full iterative pipeline")
 
     return parser
 
@@ -41,13 +39,11 @@ def main(argv=None) -> int:
     rest = argv[1:]
 
     mapping = {
-        "generate-random": "orr_vae.workflows.generate_random_structures",
         "calc-orr": "orr_vae.workflows.calculate_overpotentials",
         "train-cvae": "orr_vae.workflows.conditional_vae",
         "generate-structures": "orr_vae.workflows.generate_new_structures",
         "visualize-latent": "orr_vae.workflows.visualize_latent_space",
         "analyze": "orr_vae.workflows.analyze_orr_catalyst_data",
-        "run-pipeline": "orr_vae.workflows.pipeline",
     }
 
     if command not in mapping:
