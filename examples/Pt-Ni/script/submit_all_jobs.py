@@ -57,6 +57,9 @@ def main() -> int:
             env.setdefault("XDG_RUNTIME_DIR", f"/tmp/runtime-{os.getuid()}")
             env.setdefault("VENV_PATH", str(root_dir / ".venv"))
             env.setdefault("MODULE_LOADS", "intel intel-mpi cuda")
+            env.setdefault("ORR_VAE_ROOT", str(root_dir))
+            env.setdefault("ORR_VAE_EXAMPLE_DIR", str(example_dir))
+            env.setdefault("ORR_VAE_CODE_DIR", str(example_dir / "code"))
 
             cmd = [
                 "qsub",

@@ -5,10 +5,36 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-EXAMPLE_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-CODE_DIR="$(cd "${SCRIPT_DIR}/../code" && pwd)"
-ROOT_DIR="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 EXAMPLE_NAME="Pt-Ni_Pt-Ti_Pt-Y"
+
+if [ -n "${ORR_VAE_EXAMPLE_DIR:-}" ] && [ -d "${ORR_VAE_EXAMPLE_DIR}" ]; then
+  EXAMPLE_DIR="$(cd "${ORR_VAE_EXAMPLE_DIR}" && pwd)"
+elif [ -d "${SCRIPT_DIR}/../code" ]; then
+  EXAMPLE_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+elif [ -n "${SGE_O_WORKDIR:-}" ] && [ -d "${SGE_O_WORKDIR}/examples/${EXAMPLE_NAME}/code" ]; then
+  EXAMPLE_DIR="$(cd "${SGE_O_WORKDIR}/examples/${EXAMPLE_NAME}" && pwd)"
+else
+  echo "[${EXAMPLE_NAME}] error: failed to resolve example directory." >&2
+  echo "[${EXAMPLE_NAME}] set ORR_VAE_EXAMPLE_DIR or submit via submit_all_jobs.py." >&2
+  exit 1
+fi
+
+if [ -n "${ORR_VAE_CODE_DIR:-}" ] && [ -d "${ORR_VAE_CODE_DIR}" ]; then
+  CODE_DIR="$(cd "${ORR_VAE_CODE_DIR}" && pwd)"
+else
+  CODE_DIR="${EXAMPLE_DIR}/code"
+fi
+
+if [ -n "${ORR_VAE_ROOT:-}" ] && [ -d "${ORR_VAE_ROOT}" ]; then
+  ROOT_DIR="$(cd "${ORR_VAE_ROOT}" && pwd)"
+else
+  ROOT_DIR="$(cd "${EXAMPLE_DIR}/../.." && pwd)"
+fi
+
+if [ ! -d "${CODE_DIR}" ]; then
+  echo "[${EXAMPLE_NAME}] error: code directory not found: ${CODE_DIR}" >&2
+  exit 1
+fi
 
 if [ -z "${JOB_NUM:-}" ]; then
   echo "JOB_NUM is required" >&2
