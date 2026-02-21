@@ -20,8 +20,8 @@ The first run creates this cache automatically.
 ## Run locally
 
 ```bash
-cd examples/Pt-Ni_Pt-Ti_Pt-Y/script
-bash run_iterative_screening.sh
+cd examples/Pt-Ni_Pt-Ti_Pt-Y/code
+python3 run_iterative_screening.py
 ```
 
 ## Batch submission
@@ -32,4 +32,5 @@ python3 submit_all_jobs.py --seed 0 --dry-run
 python3 submit_all_jobs.py --seed 0
 ```
 
-`submit_all_jobs.py` reads `../code/condition_list.csv`.
+`submit_all_jobs.py` reads `../code/condition_list.csv` and submits
+`run_tsubame_vae_parametric.sh`, which executes `../code/run_iterative_screening.py`.
