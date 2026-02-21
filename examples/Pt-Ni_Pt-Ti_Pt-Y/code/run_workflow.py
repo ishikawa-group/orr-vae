@@ -53,6 +53,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--generated-num-structures", type=int, default=255)
     parser.add_argument("--binary-variants", default="Pt-Ni,Pt-Ti,Pt-Y")
     parser.add_argument("--all-elements", default="Pt,Ni,Ti,Y")
+    parser.add_argument("--min-secondary-fraction", type=float, default=1.0 / 96.0)
+    parser.add_argument("--max-secondary-fraction", type=float, default=95.0 / 96.0)
     parser.add_argument("--output-dir", type=Path, default=None)
     parser.add_argument("--data-dir", type=Path, default=None)
     parser.add_argument("--result-dir", type=Path, default=None)
@@ -99,6 +101,8 @@ def _build_initial_generator(
     vacuum: float | None,
     binary_variants: tuple[tuple[str, str], ...],
     all_elements: tuple[str, ...],
+    min_secondary_fraction: float,
+    max_secondary_fraction: float,
 ) -> callable:
     def _generate(config: WorkflowConfig) -> None:
         np.random.seed(config.seed)
@@ -109,6 +113,14 @@ def _build_initial_generator(
         db = connect(str(db_path))
 
         natoms = int(np.prod(size))
+        min_secondary_count = max(1, int(np.ceil(natoms * min_secondary_fraction)))
+        max_secondary_count = min(natoms - 1, int(np.floor(natoms * max_secondary_fraction)))
+        if min_secondary_count > max_secondary_count:
+            raise ValueError(
+                f"Invalid secondary fraction range: {min_secondary_fraction} - {max_secondary_fraction} "
+                f"for natoms={natoms}"
+            )
+
         num_variants = len(binary_variants)
         total_num = config.initial_num_structures
         base_per_variant = total_num // num_variants
@@ -119,6 +131,10 @@ def _build_initial_generator(
 
         print(f"[{config.example_name}] Generating initial dataset: {total_num} structures")
         print(f"[{config.example_name}] variants={binary_variants}, size={size}, vacuum={vacuum}")
+        print(
+            f"[{config.example_name}] secondary count range per slab: "
+            f"{min_secondary_count}..{max_secondary_count} / {natoms}"
+        )
 
         generated = 0
         for variant_idx, elements in enumerate(binary_variants):
@@ -128,11 +144,9 @@ def _build_initial_generator(
 
             print(f"  variant {elements}: target {target_count}")
             for _ in range(target_count):
-                while True:
-                    fractions = np.random.dirichlet(np.ones(len(elements)))
-                    counts = np.random.multinomial(natoms, fractions)
-                    if np.all(counts > 0):
-                        break
+                n_secondary = int(np.random.randint(min_secondary_count, max_secondary_count + 1))
+                n_primary = natoms - n_secondary
+                counts = np.array([n_primary, n_secondary], dtype=int)
                 fractions = counts / natoms
 
                 lattice_const = vegard_lattice_constant(list(elements), fractions.tolist())
@@ -220,6 +234,8 @@ def main(argv: list[str] | None = None) -> int:
             vacuum=vacuum,
             binary_variants=binary_variants,
             all_elements=all_elements,
+            min_secondary_fraction=args.min_secondary_fraction,
+            max_secondary_fraction=args.max_secondary_fraction,
         ),
         overpotential_condition=args.overpotential_condition,
         alloy_stability_condition=args.alloy_stability_condition,
