@@ -485,7 +485,10 @@ def calc_alloy_formation_energy(
     from collections import Counter
     from ase.build import fcc111
     
-    from orr_overpotential_calculator.calc_orr_energy import optimize_bulk_structure
+    try:
+        from surface.orr_overpotential_calculator.calc_orr_energy import optimize_bulk_structure
+    except ImportError:  # pragma: no cover - compatibility fallback
+        from orr_overpotential_calculator.calc_orr_energy import optimize_bulk_structure
     
     cache_root = Path(cache_dir) if cache_dir is not None else Path(__file__).parent / "data"
     cache_root.mkdir(parents=True, exist_ok=True)

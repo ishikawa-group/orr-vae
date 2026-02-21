@@ -19,9 +19,12 @@ from typing import Any, Dict, List, Optional, Tuple
 from ase.db import connect
 
 try:
-    from orr_overpotential_calculator import calc_orr_overpotential
+    from surface.orr_overpotential_calculator import calc_orr_overpotential
 except ImportError:  # pragma: no cover - compatibility fallback
-    from orr_overpotential_calculator.calc_orr_overpotential import calc_orr_overpotential
+    try:
+        from orr_overpotential_calculator import calc_orr_overpotential
+    except ImportError:
+        from orr_overpotential_calculator.calc_orr_overpotential import calc_orr_overpotential
 
 from orr_vae.tool import calc_alloy_formation_energy
 
