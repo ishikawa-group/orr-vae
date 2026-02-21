@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from ase.db import connect
+from tqdm.auto import tqdm
 
 try:
     from surface.orr_overpotential_calculator import calc_orr_overpotential
@@ -302,7 +303,13 @@ def run_all(
     success_count = 0
     error_count = 0
 
-    for attempt in range(1, max_count + 1):
+    progress = tqdm(
+        range(1, max_count + 1),
+        desc=f"iter{iter_idx} ORR",
+        unit="attempt",
+        dynamic_ncols=True,
+    )
+    for attempt in progress:
         print("-------------------------------------")
         print(f"Attempt {attempt}/{max_count} (success: {success_count}, error: {error_count})")
         try:
@@ -318,6 +325,7 @@ def run_all(
             )
         except Exception as exc:
             error_count += 1
+            progress.set_postfix(success=success_count, error=error_count, status="error")
             print(f"Error encountered: {exc}")
             if attempt < max_count:
                 print(f"Retrying in {wait_time} s ...")
@@ -325,10 +333,12 @@ def run_all(
             continue
 
         if not did_work:
+            progress.set_postfix(success=success_count, error=error_count, status="done")
             print("No remaining structures to process. Exiting loop.")
             break
 
         success_count += 1
+        progress.set_postfix(success=success_count, error=error_count, status="worked")
         if attempt < max_count:
             print(f"Waiting {wait_time} s before the next attempt ...")
             time.sleep(wait_time)

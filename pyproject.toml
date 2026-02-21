@@ -19,6 +19,7 @@ dependencies = [
   "pandas>=2.0",
   "matplotlib>=3.7",
   "seaborn>=0.13",
+  "tqdm>=4.66",
   "scikit-learn>=1.3",
   "pyyaml>=6.0",
   "fairchem-core",

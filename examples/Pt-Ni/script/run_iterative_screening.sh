@@ -19,57 +19,150 @@ python3 "${CODE_DIR}/initial_generation.py" \
   --num "${INITIAL_NUM_STRUCTURES}" \
   --seed "${SEED}"
 
-for iter_idx in $(seq 0 "${MAX_ITER}"); do
-  echo "[Pt-Ni] ===== iter ${iter_idx}/${MAX_ITER} : evaluate -> train -> generate ====="
+python3 - <<'PY'
+import os
+import subprocess
+import sys
 
-  python3 -m orr_vae.cli.main calc-orr run-all \
-    --iter "${iter_idx}" \
-    --base_dir "${OUTPUT_DIR}" \
-    --base_data_dir "${DATA_DIR}" \
-    --temp_base_dir "${OUTPUT_DIR}/temp" \
-    --calculator "${CALCULATOR}" \
-    --solvent_correction_yaml_path "${SOLVENT_CORRECTION_YAML}"
+from tqdm.auto import tqdm
 
-  python3 -m orr_vae.cli.main train-cvae \
-    --iter "${iter_idx}" \
-    --label_threshold "${LABEL_THRESHOLD}" \
-    --batch_size "${BATCH_SIZE}" \
-    --max_epoch "${MAX_EPOCH}" \
-    --beta "${BETA}" \
-    --latent_size "${LATENT_SIZE}" \
-    --grid_x "${GRID_X}" \
-    --grid_y "${GRID_Y}" \
-    --grid_z "${GRID_Z}" \
-    --seed "${SEED}" \
-    --base_data_path "${DATA_DIR}" \
-    --result_base_path "${RESULT_DIR}"
+env = os.environ
+max_iter = int(env["MAX_ITER"])
+with_visualization = env.get("WITH_VISUALIZATION", "0") == "1"
 
-  python3 -m orr_vae.cli.main generate-structures \
-    --iter "${iter_idx}" \
-    --num "${GENERATED_NUM_STRUCTURES}" \
-    --overpotential_condition 1 \
-    --alloy_stability_condition 1 \
-    --latent_size "${LATENT_SIZE}" \
-    --grid_x "${GRID_X}" \
-    --grid_y "${GRID_Y}" \
-    --grid_z "${GRID_Z}" \
-    --seed "${SEED}" \
-    --output_dir "${DATA_DIR}" \
-    --result_dir "${RESULT_DIR}"
+progress = tqdm(
+    range(max_iter + 1),
+    desc="Pt-Ni workflow",
+    unit="iter",
+    dynamic_ncols=True,
+    disable=False,
+)
 
-  if [ "${WITH_VISUALIZATION}" = "1" ]; then
-    python3 -m orr_vae.cli.main visualize-latent \
-      --iter "${iter_idx}" \
-      --latent_size "${LATENT_SIZE}" \
-      --grid_x "${GRID_X}" \
-      --grid_y "${GRID_Y}" \
-      --grid_z "${GRID_Z}" \
-      --seed "${SEED}" \
-      --data_dir "${DATA_DIR}" \
-      --result_dir "${RESULT_DIR}"
-  fi
+for iter_idx in progress:
+    print(
+        f"[Pt-Ni] ===== iter {iter_idx}/{max_iter} : evaluate -> train -> generate =====",
+        flush=True,
+    )
+    progress.set_postfix(iter=iter_idx, stage="evaluate")
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "orr_vae.cli.main",
+            "calc-orr",
+            "run-all",
+            "--iter",
+            str(iter_idx),
+            "--base_dir",
+            env["OUTPUT_DIR"],
+            "--base_data_dir",
+            env["DATA_DIR"],
+            "--temp_base_dir",
+            f'{env["OUTPUT_DIR"]}/temp',
+            "--calculator",
+            env["CALCULATOR"],
+            "--solvent_correction_yaml_path",
+            env["SOLVENT_CORRECTION_YAML"],
+        ],
+        check=True,
+    )
 
-done
+    progress.set_postfix(iter=iter_idx, stage="train")
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "orr_vae.cli.main",
+            "train-cvae",
+            "--iter",
+            str(iter_idx),
+            "--label_threshold",
+            env["LABEL_THRESHOLD"],
+            "--batch_size",
+            env["BATCH_SIZE"],
+            "--max_epoch",
+            env["MAX_EPOCH"],
+            "--beta",
+            env["BETA"],
+            "--latent_size",
+            env["LATENT_SIZE"],
+            "--grid_x",
+            env["GRID_X"],
+            "--grid_y",
+            env["GRID_Y"],
+            "--grid_z",
+            env["GRID_Z"],
+            "--seed",
+            env["SEED"],
+            "--base_data_path",
+            env["DATA_DIR"],
+            "--result_base_path",
+            env["RESULT_DIR"],
+        ],
+        check=True,
+    )
+
+    progress.set_postfix(iter=iter_idx, stage="generate")
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "orr_vae.cli.main",
+            "generate-structures",
+            "--iter",
+            str(iter_idx),
+            "--num",
+            env["GENERATED_NUM_STRUCTURES"],
+            "--overpotential_condition",
+            "1",
+            "--alloy_stability_condition",
+            "1",
+            "--latent_size",
+            env["LATENT_SIZE"],
+            "--grid_x",
+            env["GRID_X"],
+            "--grid_y",
+            env["GRID_Y"],
+            "--grid_z",
+            env["GRID_Z"],
+            "--seed",
+            env["SEED"],
+            "--output_dir",
+            env["DATA_DIR"],
+            "--result_dir",
+            env["RESULT_DIR"],
+        ],
+        check=True,
+    )
+
+    if with_visualization:
+        progress.set_postfix(iter=iter_idx, stage="visualize")
+        subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "orr_vae.cli.main",
+                "visualize-latent",
+                "--iter",
+                str(iter_idx),
+                "--latent_size",
+                env["LATENT_SIZE"],
+                "--grid_x",
+                env["GRID_X"],
+                "--grid_y",
+                env["GRID_Y"],
+                "--grid_z",
+                env["GRID_Z"],
+                "--seed",
+                env["SEED"],
+                "--data_dir",
+                env["DATA_DIR"],
+                "--result_dir",
+                env["RESULT_DIR"],
+            ],
+            check=True,
+        )
+PY
 
 if [ "${WITH_ANALYSIS}" = "1" ]; then
   python3 -m orr_vae.cli.main analyze \
