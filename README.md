@@ -50,6 +50,10 @@ Use example scripts for end-to-end loops (includes initial dataset generation):
 - `examples/Pt-Ni/script/run_iterative_screening.sh`
 - `examples/Pt-Ni_Pt-Ti_Pt-Y/script/run_iterative_screening.sh`
 
+During ORR evaluation, alloy formation-energy references are cached per run under
+each `DATA_DIR` as `{calculator}_bulk_data.json` (for example `fairchem_bulk_data.json`).
+If the cache is missing, bulk references are generated automatically and then reused.
+
 ## Reference dependency
 
 - `reference/orr-overpotential-calculator` (git submodule, `develop` branch)

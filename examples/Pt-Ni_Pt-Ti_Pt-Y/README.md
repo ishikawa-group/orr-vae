@@ -10,6 +10,10 @@ Mixed-alloy example is now driven by Python config files under `code/`.
    - CVAE training (`train-cvae`)
    - structure generation (`generate-structures`, 255 structures/iter)
 
+During ORR evaluation, alloy formation-energy reference cache is written to
+`${DATA_DIR}/{calculator}_bulk_data.json` (typically `fairchem_bulk_data.json`).
+The first run creates this cache automatically.
+
 ## Run locally
 
 ```bash

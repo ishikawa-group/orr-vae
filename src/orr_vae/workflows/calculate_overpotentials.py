@@ -150,6 +150,7 @@ def calculate_single(
                 bulk_atoms,
                 e_bulk_alloy,
                 calculator=calculator,
+                cache_dir=bulk_db.parent,
             )
         except Exception as exc:  # pragma: no cover - informational warning only
             print(f"Warning: alloy formation energy calculation failed: {exc}")

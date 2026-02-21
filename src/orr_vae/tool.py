@@ -452,7 +452,13 @@ def create_dataset_from_json(structures_db_paths, overpotentials_json_paths, gri
     )
     return dataset
 
-def calc_alloy_formation_energy(bulk_atoms, bulk_energy, calculator="fairchem", per_atom=True):
+def calc_alloy_formation_energy(
+    bulk_atoms,
+    bulk_energy,
+    calculator="fairchem",
+    per_atom=True,
+    cache_dir=None,
+):
     """
     Compute the alloy formation energy for a slab.
 
@@ -466,6 +472,9 @@ def calc_alloy_formation_energy(bulk_atoms, bulk_energy, calculator="fairchem", 
         Name of the calculator backend (default: ``"fairchem"``).
     per_atom : bool
         If ``True`` return energy per atom, otherwise return the total value.
+    cache_dir : str | pathlib.Path | None
+        Directory used to store bulk-reference cache files. When omitted,
+        ``src/orr_vae/data`` is used.
 
     Returns
     -------
@@ -478,61 +487,63 @@ def calc_alloy_formation_energy(bulk_atoms, bulk_energy, calculator="fairchem", 
     
     from orr_overpotential_calculator.calc_orr_energy import optimize_bulk_structure
     
-    bulk_data_path = Path("data/bulk_data.json")
-    
+    cache_root = Path(cache_dir) if cache_dir is not None else Path(__file__).parent / "data"
+    cache_root.mkdir(parents=True, exist_ok=True)
+    bulk_data_path = cache_root / f"{calculator}_bulk_data.json"
+
     if bulk_data_path.exists():
-        print("Loading existing bulk_data.json ...")
+        print(f"Loading existing bulk reference cache: {bulk_data_path}")
         with open(bulk_data_path, 'r') as f:
             bulk_data = json.load(f)
     else:
-        print("bulk_data.json not found. Creating a new cache ...")
+        print(f"Bulk reference cache not found. Creating: {bulk_data_path}")
         bulk_data = {}
-        
-        symbols = bulk_atoms.get_chemical_symbols()
-        unique_elements = list(set(symbols))
-        
-        print(f"Elements present: {unique_elements}")
-        
-        for element in unique_elements:
-            print(f"Optimising 4x4x4 bulk for {element} ...")
-            
-            lattice_const = elemental_a(element)
-            print(f"Lattice constant for {element}: {lattice_const:.4f} Å")
-            
-            element_bulk = fcc111(symbol=element, 
-                size=[4, 4, 4], 
-                a=lattice_const,
-                vacuum=None, 
-                periodic=True
-                )
-            
-            work_dir = Path(f"temp_bulk_{element}")
-            work_dir.mkdir(exist_ok=True)
-            
-            try:
-                optimized_bulk, element_bulk_energy = optimize_bulk_structure(
-                    element_bulk, str(work_dir), calculator=calculator
-                )
-                
-                bulk_data[element] = {
-                    "n_atoms": len(element_bulk),
-                    "energy": float(element_bulk_energy)
-                }
-                
-                print(f"{element}: {len(element_bulk)} atoms, energy = {element_bulk_energy:.6f} eV")
-                
-            except Exception as e:
-                print(f"Warning: failed to optimise bulk for {element}: {e}")
-                bulk_data[element] = {
-                    "n_atoms": len(element_bulk),
-                    "energy": 0.0
-                }
-            finally:
-                import shutil
-                if work_dir.exists():
-                    shutil.rmtree(work_dir)
-        
-        bulk_data_path.parent.mkdir(parents=True, exist_ok=True)
+
+    symbols = bulk_atoms.get_chemical_symbols()
+    unique_elements = sorted(set(symbols))
+    missing_elements = [element for element in unique_elements if element not in bulk_data]
+
+    if missing_elements:
+        print(f"Missing bulk references will be computed: {missing_elements}")
+
+    for element in missing_elements:
+        print(f"Optimising 4x4x4 bulk for {element} ...")
+
+        lattice_const = elemental_a(element)
+        print(f"Lattice constant for {element}: {lattice_const:.4f} Å")
+
+        element_bulk = fcc111(
+            symbol=element,
+            size=[4, 4, 4],
+            a=lattice_const,
+            vacuum=None,
+            periodic=True,
+        )
+
+        work_dir = Path(f"temp_bulk_{element}")
+        work_dir.mkdir(exist_ok=True)
+
+        try:
+            optimized_bulk, element_bulk_energy = optimize_bulk_structure(
+                element_bulk, str(work_dir), calculator=calculator
+            )
+            bulk_data[element] = {
+                "n_atoms": len(element_bulk),
+                "energy": float(element_bulk_energy)
+            }
+            print(f"{element}: {len(element_bulk)} atoms, energy = {element_bulk_energy:.6f} eV")
+        except Exception as e:
+            print(f"Warning: failed to optimise bulk for {element}: {e}")
+            bulk_data[element] = {
+                "n_atoms": len(element_bulk),
+                "energy": 0.0
+            }
+        finally:
+            import shutil
+            if work_dir.exists():
+                shutil.rmtree(work_dir)
+
+    if missing_elements:
         with open(bulk_data_path, 'w') as f:
             json.dump(bulk_data, f, indent=2)
         print(f"Stored bulk reference data to {bulk_data_path}")
