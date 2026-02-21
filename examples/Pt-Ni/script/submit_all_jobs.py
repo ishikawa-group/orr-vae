@@ -8,6 +8,7 @@ import csv
 import os
 import subprocess
 from pathlib import Path
+from typing import Dict
 
 
 def parse_args() -> argparse.Namespace:
@@ -18,6 +19,60 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--only", default="", help="Comma-separated job numbers")
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
+
+
+def build_env(
+    *,
+    job_num: str,
+    row: Dict[str, str],
+    seed: int,
+    root_dir: Path,
+    example_dir: Path,
+    output_dir: Path,
+) -> dict[str, str]:
+    data_dir = output_dir / "data"
+    result_dir = output_dir / "result"
+    log_dir = result_dir / "log"
+    temp_dir = output_dir / "temp"
+
+    env = os.environ.copy()
+    env["JOB_NUM"] = job_num
+    env["SEED"] = str(seed)
+    env["LABEL_THRESHOLD"] = str(row["label_threshold"])
+    env["BATCH_SIZE"] = str(row["batch_size"])
+    env["MAX_EPOCH"] = str(row["max_epoch"])
+    env["LATENT_SIZE"] = str(row["latent_size"])
+
+    # Workflow defaults (single source of truth for submit jobs)
+    env["BETA"] = "1.0"
+    env["MAX_ITER"] = "5"
+    env["CALCULATOR"] = "fairchem"
+    env["WITH_VISUALIZATION"] = "1"
+    env["WITH_ANALYSIS"] = "1"
+    env["GRID_X"] = "4"
+    env["GRID_Y"] = "4"
+    env["GRID_Z"] = "6"
+    env["INITIAL_NUM_STRUCTURES"] = "128"
+    env["GENERATED_NUM_STRUCTURES"] = "128"
+    env["MIN_SECONDARY_FRACTION"] = str(1.0 / 96.0)
+    env["MAX_SECONDARY_FRACTION"] = str(95.0 / 96.0)
+
+    # Runtime / path configuration
+    env["QT_QPA_PLATFORM"] = "offscreen"
+    env["XDG_RUNTIME_DIR"] = f"/tmp/runtime-{os.getuid()}"
+    env["MODULE_LOADS"] = "intel intel-mpi cuda"
+    env["ORR_VAE_ROOT"] = str(root_dir)
+    env["ORR_VAE_EXAMPLE_DIR"] = str(example_dir)
+    env["ORR_VAE_CODE_DIR"] = str(example_dir / "code")
+    env["VENV_PATH"] = str(root_dir / ".venv")
+    env["OUTPUT_DIR"] = str(output_dir)
+    env["DATA_DIR"] = str(data_dir)
+    env["RESULT_DIR"] = str(result_dir)
+    env["LOG_DIR"] = str(log_dir)
+    env["TEMP_DIR"] = str(temp_dir)
+    env["SOLVENT_CORRECTION_YAML"] = str(example_dir / "code" / "solvent_correction.yaml")
+
+    return env
 
 
 def main() -> int:
@@ -46,20 +101,14 @@ def main() -> int:
             log_dir = output_dir / "result" / "log"
             log_dir.mkdir(parents=True, exist_ok=True)
 
-            env = os.environ.copy()
-            env["JOB_NUM"] = job_num
-            env["SEED"] = str(args.seed)
-            env["LABEL_THRESHOLD"] = str(row["label_threshold"])
-            env["BATCH_SIZE"] = str(row["batch_size"])
-            env["MAX_EPOCH"] = str(row["max_epoch"])
-            env["LATENT_SIZE"] = str(row["latent_size"])
-            env.setdefault("QT_QPA_PLATFORM", "offscreen")
-            env.setdefault("XDG_RUNTIME_DIR", f"/tmp/runtime-{os.getuid()}")
-            env.setdefault("VENV_PATH", str(root_dir / ".venv"))
-            env.setdefault("MODULE_LOADS", "intel intel-mpi cuda")
-            env.setdefault("ORR_VAE_ROOT", str(root_dir))
-            env.setdefault("ORR_VAE_EXAMPLE_DIR", str(example_dir))
-            env.setdefault("ORR_VAE_CODE_DIR", str(example_dir / "code"))
+            env = build_env(
+                job_num=job_num,
+                row=row,
+                seed=args.seed,
+                root_dir=root_dir,
+                example_dir=example_dir,
+                output_dir=output_dir,
+            )
 
             cmd = [
                 "qsub",

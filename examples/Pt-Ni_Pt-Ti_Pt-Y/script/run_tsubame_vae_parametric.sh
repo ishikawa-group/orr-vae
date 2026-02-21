@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #$ -cwd
-#$ -l gpu_1=1
+#$ -l gpu_h=1
 #$ -l h_rt=24:00:00
 set -euo pipefail
 
@@ -41,61 +41,31 @@ if [ -z "${JOB_NUM:-}" ]; then
   exit 1
 fi
 
-export CONDITION_FILE="${CONDITION_FILE:-${CODE_DIR}/condition_list.csv}"
-export VENV_PATH="${VENV_PATH:-${ROOT_DIR}/.venv}"
-export MODULE_LOADS="${MODULE_LOADS:-intel intel-mpi cuda}"
+required_vars=(
+  JOB_NUM
+  SEED LABEL_THRESHOLD BATCH_SIZE MAX_EPOCH LATENT_SIZE
+  BETA MAX_ITER CALCULATOR WITH_VISUALIZATION WITH_ANALYSIS
+  GRID_X GRID_Y GRID_Z
+  INITIAL_NUM_STRUCTURES GENERATED_NUM_STRUCTURES
+  BINARY_VARIANTS ALL_ELEMENTS
+  MIN_SECONDARY_FRACTION MAX_SECONDARY_FRACTION
+  OUTPUT_DIR DATA_DIR RESULT_DIR LOG_DIR TEMP_DIR
+  SOLVENT_CORRECTION_YAML
+  VENV_PATH MODULE_LOADS
+)
 
-SEED="${SEED:-0}"
-BETA="${BETA:-1.0}"
-MAX_ITER="${MAX_ITER:-5}"
-CALCULATOR="${CALCULATOR:-fairchem}"
-WITH_VISUALIZATION="${WITH_VISUALIZATION:-1}"
-WITH_ANALYSIS="${WITH_ANALYSIS:-1}"
-GRID_X="${GRID_X:-4}"
-GRID_Y="${GRID_Y:-4}"
-GRID_Z="${GRID_Z:-6}"
-INITIAL_NUM_STRUCTURES="${INITIAL_NUM_STRUCTURES:-255}"
-GENERATED_NUM_STRUCTURES="${GENERATED_NUM_STRUCTURES:-255}"
-BINARY_VARIANTS="${BINARY_VARIANTS:-Pt-Ni,Pt-Ti,Pt-Y}"
-ALL_ELEMENTS="${ALL_ELEMENTS:-Pt,Ni,Ti,Y}"
-MIN_SECONDARY_FRACTION="${MIN_SECONDARY_FRACTION:-0.010416666666666666}"
-MAX_SECONDARY_FRACTION="${MAX_SECONDARY_FRACTION:-0.9895833333333334}"
-SOLVENT_CORRECTION_YAML="${SOLVENT_CORRECTION_YAML:-${CODE_DIR}/solvent_correction.yaml}"
-OUTPUT_DIR="${OUTPUT_DIR:-${EXAMPLE_DIR}/results/seed_${SEED}/${JOB_NUM}}"
-DATA_DIR="${DATA_DIR:-${OUTPUT_DIR}/data}"
-RESULT_DIR="${RESULT_DIR:-${OUTPUT_DIR}/result}"
-LOG_DIR="${LOG_DIR:-${RESULT_DIR}/log}"
-TEMP_DIR="${TEMP_DIR:-${OUTPUT_DIR}/temp}"
+missing_vars=()
+for var_name in "${required_vars[@]}"; do
+  if [ -z "${!var_name:-}" ]; then
+    missing_vars+=("${var_name}")
+  fi
+done
 
-# Fill LABEL_THRESHOLD/BATCH_SIZE/MAX_EPOCH/LATENT_SIZE from CSV when omitted
-if [ -z "${LABEL_THRESHOLD:-}" ] || [ -z "${BATCH_SIZE:-}" ] || [ -z "${MAX_EPOCH:-}" ] || [ -z "${LATENT_SIZE:-}" ]; then
-  eval "$(python3 - <<'PY'
-import csv
-import os
-from pathlib import Path
-
-job_num = os.environ["JOB_NUM"]
-csv_path = Path(os.environ["CONDITION_FILE"])
-if not csv_path.exists():
-    raise SystemExit(f"Condition file not found: {csv_path}")
-
-row = None
-with csv_path.open() as f:
-    reader = csv.DictReader(f)
-    for r in reader:
-        if str(r.get("n")) == str(job_num):
-            row = r
-            break
-
-if row is None:
-    raise SystemExit(f"JOB_NUM {job_num} not found in {csv_path}")
-
-print(f"export LABEL_THRESHOLD={row['label_threshold']}")
-print(f"export BATCH_SIZE={row['batch_size']}")
-print(f"export MAX_EPOCH={row['max_epoch']}")
-print(f"export LATENT_SIZE={row['latent_size']}")
-PY
-)"
+if [ "${#missing_vars[@]}" -gt 0 ]; then
+  echo "[${EXAMPLE_NAME}] error: missing required environment variables:" >&2
+  echo "  ${missing_vars[*]}" >&2
+  echo "[${EXAMPLE_NAME}] submit via submit_all_jobs.py to populate all parameters." >&2
+  exit 1
 fi
 
 if ! command -v module >/dev/null 2>&1 && [ -f /etc/profile.d/modules.sh ]; then
