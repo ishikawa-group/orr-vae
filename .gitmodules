@@ -1,0 +1,4 @@
+[submodule "reference/orr-overpotential-calculator"]
+	path = reference/orr-overpotential-calculator
+	url = git@github.com:ishikawa-group/orr-overpotential-calculator.git
+	branch = develop

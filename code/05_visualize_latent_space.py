@@ -12,7 +12,7 @@ if str(SRC) not in sys.path:
 
 
 def main() -> int:
-    return subprocess.call([sys.executable, "-m", "orr_vae.cli.main", "train-cvae", *sys.argv[1:]])
+    return subprocess.call([sys.executable, "-m", "orr_vae.cli.main", "visualize-latent", *sys.argv[1:]])
 
 
 if __name__ == "__main__":

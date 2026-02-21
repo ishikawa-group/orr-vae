@@ -1,9 +1,31 @@
-# Ignore everything by default
-/*
-/paper_draft/
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-# Allow tracked files
-!.gitignore
-!/README.md
-!/code/
-!/code/**
+# Virtual environments
+.venv/
+venv/
+
+# Local outputs
+temp/
+result/
+outputs/
+
+# Jupyter / logs
+.ipynb_checkpoints/
+*.log
+
+# OS files
+.DS_Store
+
+# Build / packaging
+dist/
+build/
+*.egg-info/
+
+# Optional local data backups
+data_backup/

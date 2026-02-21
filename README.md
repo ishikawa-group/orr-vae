@@ -1,23 +1,74 @@
-# cvae-nnp-orr-alloy-design
+# orr-vae
 
-This repository bundles the Pt–Ni alloy ORR catalyst design workflow used in the paper
-“Optimizing Activity and Stability of Alloy ORR Catalysts Using Conditional Variational
-Autoencoder and Machine Learning Interatomic Potential.”
-DOI: https://doi.org/10.XXXX/XXXX (to appear)
+`orr-vae` is a refactored ORR catalyst screening workflow package.
+The workflow keeps the original loop semantics:
 
-## Requirements
+1. random slab generation
+2. ORR overpotential + alloy formation-energy calculation
+3. conditional VAE training
+4. new structure generation
+5. latent-space visualization / data analysis (optional)
 
-- Python 3.11 or newer
-- PyTorch 2.7.x
-- ASE, NumPy, pandas, matplotlib, PyYAML
-- `orr-overpotential-calculator` repository (tested with the `develop-waka` branch)
-- ORR calculator backend (e.g. `mace-torch` model or another supported engine such as `fairchem`)
+## Repository layout
 
-## Usage Overview
+- `src/orr_vae/`: library and workflow modules
+- `reference/`: external references (submodule)
+- `examples/`: runnable Pt-Ni and Pt-Ni_Pt-Ti_Pt-Y examples
+- `tests/`: lightweight regression and I/O compatibility tests
+- `code/`: legacy command wrappers (`01_*.py` etc.)
 
-1. Activate your virtual environment and install the dependencies listed above.
-2. Define the environment variables `DATA_DIR`, `RESULT_DIR`, `OUTPUT_DIR`, `SEED`,
-   `LABEL_THRESHOLD`, `BATCH_SIZE`, `MAX_EPOCH`, and `LATENT_SIZE` as needed for your run.
-3. Execute `code/run.sh` to iterate through structure generation, ORR overpotential evaluation,
-   conditional VAE training, and new structure generation. You can also run each Python script
-   in `code/` individually for finer control.
+## Installation
+
+```bash
+git clone git@github.com:wakamiya0315/orr-vae.git
+cd orr-vae
+git submodule update --init --recursive
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
+```
+
+## New CLI
+
+```bash
+python -m orr_vae --help
+python -m orr_vae run-pipeline --data_dir ./data --result_dir ./result --output_dir . --max_iter 5
+```
+
+Main subcommands:
+
+- `generate-random`
+- `calc-orr`
+- `train-cvae`
+- `generate-structures`
+- `visualize-latent`
+- `analyze`
+- `run-pipeline`
+
+## Legacy CLI compatibility
+
+The historical scripts are preserved as wrappers under `code/`.
+Existing operations such as `python code/03_conditional_vae.py ...` continue to work.
+
+## Reference dependency
+
+- `reference/orr-overpotential-calculator` (git submodule, `develop` branch)
+- `pyproject.toml` also pins:
+  - `orr-overpotential-calculator @ git+https://github.com/ishikawa-group/orr-overpotential-calculator.git@develop`
+  - `fairchem-core`
+
+## Examples
+
+- `examples/Pt-Ni`
+- `examples/Pt-Ni_Pt-Ti_Pt-Y`
+
+Both examples include `code/`, `script/`, `results/`, and execution README.
+
+## Testing
+
+```bash
+source .venv/bin/activate
+pytest
+```
+
+Tests are lightweight and focus on compatibility and I/O invariants.
