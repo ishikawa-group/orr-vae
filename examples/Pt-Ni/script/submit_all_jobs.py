@@ -24,6 +24,7 @@ def main() -> int:
     args = parse_args()
     script_dir = Path(__file__).resolve().parent
     example_dir = script_dir.parent
+    root_dir = example_dir.parents[1]
     condition_file = example_dir / "code" / "condition_list.csv"
     job_script = script_dir / "run_tsubame_vae_parametric.sh"
 
@@ -52,6 +53,10 @@ def main() -> int:
             env["BATCH_SIZE"] = str(row["batch_size"])
             env["MAX_EPOCH"] = str(row["max_epoch"])
             env["LATENT_SIZE"] = str(row["latent_size"])
+            env.setdefault("QT_QPA_PLATFORM", "offscreen")
+            env.setdefault("XDG_RUNTIME_DIR", f"/tmp/runtime-{os.getuid()}")
+            env.setdefault("VENV_PATH", str(root_dir / ".venv"))
+            env.setdefault("MODULE_LOADS", "intel intel-mpi cuda")
 
             cmd = [
                 "qsub",
