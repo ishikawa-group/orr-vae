@@ -533,22 +533,42 @@ def calc_alloy_formation_energy(
         print(f"Bulk reference cache not found. Creating: {bulk_data_path}")
         bulk_data = {}
 
+    reference_bulk_size = [4, 4, 6]
+    expected_bulk_n_atoms = int(np.prod(reference_bulk_size))
+
     symbols = bulk_atoms.get_chemical_symbols()
     unique_elements = sorted(set(symbols))
-    missing_elements = [element for element in unique_elements if element not in bulk_data]
+    elements_to_update = []
 
-    if missing_elements:
-        print(f"Missing bulk references will be computed: {missing_elements}")
+    for element in unique_elements:
+        if element not in bulk_data:
+            elements_to_update.append(element)
+            continue
 
-    for element in missing_elements:
-        print(f"Optimising 4x4x4 bulk for {element} ...")
+        entry = bulk_data.get(element, {})
+        n_atoms = entry.get("n_atoms")
+        energy = entry.get("energy")
+
+        # Rebuild references when cache schema is invalid or created with old slab size.
+        if n_atoms != expected_bulk_n_atoms or energy is None:
+            print(
+                f"Bulk reference cache for {element} is outdated/invalid "
+                f"(n_atoms={n_atoms}, expected={expected_bulk_n_atoms}). Recomputing."
+            )
+            elements_to_update.append(element)
+
+    if elements_to_update:
+        print(f"Bulk references to compute/update: {elements_to_update}")
+
+    for element in elements_to_update:
+        print(f"Optimising {reference_bulk_size[0]}x{reference_bulk_size[1]}x{reference_bulk_size[2]} bulk for {element} ...")
 
         lattice_const = elemental_a(element)
         print(f"Lattice constant for {element}: {lattice_const:.4f} Å")
 
         element_bulk = fcc111(
             symbol=element,
-            size=[4, 4, 4],
+            size=reference_bulk_size,
             a=lattice_const,
             vacuum=None,
             periodic=True,
@@ -577,7 +597,7 @@ def calc_alloy_formation_energy(
             if work_dir.exists():
                 shutil.rmtree(work_dir)
 
-    if missing_elements:
+    if elements_to_update:
         with open(bulk_data_path, 'w') as f:
             json.dump(bulk_data, f, indent=2)
         print(f"Stored bulk reference data to {bulk_data_path}")
