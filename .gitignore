@@ -29,3 +29,8 @@ build/
 
 # Optional local data backups
 data_backup/
+
+# Excluded from ishikawa-group push
+examples/Pt-Ni_Pt-Ti_Pt-Y/
+examples/Pt-Ni/results/
+examples/Pt-Ni/script/
