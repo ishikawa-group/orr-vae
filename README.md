@@ -1,4 +1,4 @@
-> **Note:** This repository is currently under development and refactoring. The code and data in the paper [https://doi.org/10.1038/s41524-026-02075-0](https://doi.org/10.1038/s41524-026-02075-0) are located under `paper/`.
+> ### **Note:** This repository is currently under development and refactoring. The code and data in the paper [https://doi.org/10.1038/s41524-026-02075-0](https://doi.org/10.1038/s41524-026-02075-0) are located under `paper/`.
 
 # orr-vae
 
