@@ -23,7 +23,7 @@ Random initial dataset generation is intentionally example-specific and implemen
 ## Installation
 
 ```bash
-git clone git@github.com:wakamiya0315/orr-vae.git
+git clone git@github.com:ishikawa-group/orr-vae.git
 cd orr-vae
 git submodule update --init --recursive
 python3 -m venv .venv
