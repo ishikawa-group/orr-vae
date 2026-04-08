@@ -1,0 +1,30 @@
+{
+  "Ni": {
+    "n_atoms": 64,
+    "energy": -344.19493327238274,
+    "a": 3.52,
+    "c/a": null,
+    "symmetry": "fcc"
+  },
+  "Pt": {
+    "n_atoms": 64,
+    "energy": -385.6313107616627,
+    "a": 3.92,
+    "c/a": null,
+    "symmetry": "fcc"
+  },
+  "Ti": {
+    "n_atoms": 64,
+    "energy": -499.2546767687017,
+    "a": 2.95,
+    "c/a": 1.588,
+    "symmetry": "hcp"
+  },
+  "Y": {
+    "n_atoms": 64,
+    "energy": -411.60917747015884,
+    "a": 3.65,
+    "c/a": 1.571,
+    "symmetry": "hcp"
+  }
+}
